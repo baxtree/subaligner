@@ -1,0 +1,32 @@
+language: python
+
+notifications:
+  email:
+    - xi.bai.ed@gmail.com
+
+os:
+  - linux
+
+python:
+  - "3.6"
+
+addons:
+  apt:
+    update: true
+
+install:
+  - sudo apt-get -y install software-properties-common
+  - sudo add-apt-repository -y ppa:mc3man/xerus-media
+  - sudo apt-get -yqq update
+  - sudo apt-get -y install ffmpeg espeak libespeak1 libespeak-dev espeak-data
+  - sudo apt-get -y install python3-dev
+  - sudo apt-get -y install python3-tk
+  - sudo apt-get -y install python3-pip
+  - cat requirements.txt | xargs -L 1 pip install
+  - cat requirements-dev.txt | xargs -L 1 pip install
+
+script:
+  - coverage run --source subaligner -m unittest discover
+
+after_success:
+  - "bash <(curl -s https://codecov.io/bash)"
