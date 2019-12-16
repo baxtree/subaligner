@@ -1,0 +1,4 @@
+mock==2.0.0
+coverage==4.5.1
+tox==3.8.6
+pycodestyle==2.5.0
