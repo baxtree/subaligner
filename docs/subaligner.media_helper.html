@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module subaligner.media_helper</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="subaligner.html"><font color="#ffffff">subaligner</font></a>.media_helper</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/baix01/MyWorkspace/subaligner-github/subaligner/media_helper.py">/Users/baix01/MyWorkspace/subaligner-github/subaligner/media_helper.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="subprocess.html">subprocess</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="subaligner.media_helper.html#MediaHelper">MediaHelper</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="MediaHelper">class <strong>MediaHelper</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Utility&nbsp;for&nbsp;processing&nbsp;media&nbsp;assets&nbsp;including&nbsp;audio,&nbsp;video&nbsp;and<br>
+subtitle&nbsp;files.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Static methods defined here:<br>
+<dl><dt><a name="MediaHelper-extract_audio"><strong>extract_audio</strong></a>(video_file_path, decompress=False, freq=16000)</dt><dd><tt>Extract&nbsp;audio&nbsp;track&nbsp;from&nbsp;the&nbsp;video&nbsp;file&nbsp;and&nbsp;save&nbsp;it&nbsp;to&nbsp;a&nbsp;WAV&nbsp;file.<br>
+&nbsp;<br>
+Keyword&nbsp;Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;video_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;input&nbsp;video&nbsp;file&nbsp;path.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;decompress&nbsp;{bool}&nbsp;--&nbsp;Extract&nbsp;WAV&nbsp;if&nbsp;True&nbsp;otherwise&nbsp;extract&nbsp;AAC&nbsp;(default:&nbsp;{False}).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;freq&nbsp;{int}&nbsp;--&nbsp;The&nbsp;audio&nbsp;sample&nbsp;frequency&nbsp;(default:&nbsp;{16000}).<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;--&nbsp;The&nbsp;file&nbsp;path&nbsp;of&nbsp;the&nbsp;extracted&nbsp;audio.</tt></dd></dl>
+
+<dl><dt><a name="MediaHelper-extract_audio_from_start_to_end"><strong>extract_audio_from_start_to_end</strong></a>(audio_file_path, start, end=None)</dt><dd><tt>Extract&nbsp;audio&nbsp;based&nbsp;on&nbsp;the&nbsp;start&nbsp;time&nbsp;and&nbsp;the&nbsp;end&nbsp;time&nbsp;and&nbsp;save&nbsp;it&nbsp;to&nbsp;a&nbsp;temporary&nbsp;file.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;audio_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;of&nbsp;the&nbsp;audio&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;start&nbsp;{string}&nbsp;--&nbsp;The&nbsp;start&nbsp;time&nbsp;(e.g.,&nbsp;00:00:00,750).<br>
+&nbsp;<br>
+Keyword&nbsp;Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;{string}&nbsp;--&nbsp;The&nbsp;end&nbsp;time&nbsp;(e.g.,&nbsp;00:00:10,230)&nbsp;(default:&nbsp;{None}).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tuple&nbsp;--&nbsp;The&nbsp;file&nbsp;path&nbsp;to&nbsp;the&nbsp;extracted&nbsp;audio&nbsp;and&nbsp;its&nbsp;duration.</tt></dd></dl>
+
+<dl><dt><a name="MediaHelper-get_audio_segment_starts_and_ends"><strong>get_audio_segment_starts_and_ends</strong></a>(subs)</dt><dd><tt>Group&nbsp;subtitle&nbsp;cues&nbsp;into&nbsp;larger&nbsp;segments&nbsp;in&nbsp;terms&nbsp;of&nbsp;silence&nbsp;gaps.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subs&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SupRip&nbsp;cues.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tuple&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;start&nbsp;times,&nbsp;a&nbsp;list&nbsp;of&nbsp;end&nbsp;times&nbsp;and&nbsp;a&nbsp;list&nbsp;of&nbsp;grouped&nbsp;SubRip&nbsp;files.</tt></dd></dl>
+
+<dl><dt><a name="MediaHelper-get_duration_in_seconds"><strong>get_duration_in_seconds</strong></a>(start, end)</dt><dd><tt>Get&nbsp;the&nbsp;duration&nbsp;in&nbsp;seconds&nbsp;between&nbsp;a&nbsp;start&nbsp;time&nbsp;and&nbsp;an&nbsp;end&nbsp;time.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;start&nbsp;{string}&nbsp;--&nbsp;The&nbsp;start&nbsp;time&nbsp;(e.g.,&nbsp;00:00:00,750).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;{string}&nbsp;--&nbsp;The&nbsp;end&nbsp;time&nbsp;(e.g.,&nbsp;00:00:10,230).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;float&nbsp;--&nbsp;The&nbsp;duration&nbsp;in&nbsp;seconds.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>AUDIO_FILE_EXTENSION</strong> = ['.wav', '.aac']</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>
