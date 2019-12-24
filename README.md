@@ -26,7 +26,7 @@ make install && source .venv/bin/activate
 (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
 
-The aligned subtitle will be stored at `subtitle_aligned.srt`.
+The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help` or `subaligner_2pass --help`.
 
 ## Supported Formats
 Subtitle: SubRip and TTML
