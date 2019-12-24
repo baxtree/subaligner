@@ -9,6 +9,9 @@ from .logger import Logger
 
 
 class MediaHelper(object):
+    """ Utility for processing media assets including audio, video and
+    subtitle files.
+    """
 
     AUDIO_FILE_EXTENSION = [".wav", ".aac"]
 

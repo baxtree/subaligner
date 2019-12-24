@@ -54,7 +54,6 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(subs), 0)
         self.assertIsNotNone(audio_file_path)
 
-    # test sometimes hangs due to multithreading
     def test_predict_dual_pass(self):
         undertest_obj = Undertest(n_mfcc=20)
         new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
@@ -62,7 +61,26 @@ class PredictorTests(unittest.TestCase):
         )
 
         self.assertGreater(len(new_subs), 0)
-        self.assertGreater(len(subs), 0)
+        self.assertEqual(len(new_subs), len(subs))
+        for index, sub in enumerate(new_subs):
+            self.assertEqual(sub.duration, subs[index].duration)
+        self.assertGreater(len(voice_probabilities), 0)
+
+    def test_predict_dual_pass_with_stretching(self):
+        undertest_obj = Undertest(n_mfcc=20)
+
+        new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
+            self.__video_file_path, self.__subtitle_file_path, self.__weights_dir, stretch=True
+        )
+        stretched = False
+        for index, sub in enumerate(new_subs):
+            if (sub.duration != subs[index].duration):
+                stretched = True
+                break
+
+        self.assertGreater(len(new_subs), 0)
+        self.assertEqual(len(new_subs), len(subs))
+        self.assertTrue(stretched)
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_get_log_loss(self):
