@@ -22,6 +22,9 @@ from .logger import Logger
 
 
 class Predictor(Singleton):
+    """ Predictor for working out the time to shift subtitles
+    """
+
     __LOGGER = Logger().get_logger(__name__)
     __MAX_SHIFT_IN_SECS = (
         100
@@ -32,6 +35,16 @@ class Predictor(Singleton):
     __MAX_HEAD_ROOM = 20000  # Maximum duration without subtitle (10 minutes)
 
     def __init__(self, **kwargs):
+        """Feature predictor initialiser.
+
+        Keyword Arguments:
+            n_mfcc {int} -- The number of MFCC components (default: {13}).
+            frequency {float} -- The sample rate  (default: {16000}).
+            hop_len {int} -- The number of samples per frame (default: {512}).
+            step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
+            len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
+        """
+
         self.__feature_embedder = FeatureEmbedder(**kwargs)
         self.__lock = threading.Lock()
 
@@ -43,6 +56,17 @@ class Predictor(Singleton):
             os.path.dirname(__file__), "models/training/weights"
         ),
     ):
+        """Predict time to shift with single pass
+
+            Arguments:
+                video_file_path {string} -- The input video file path.
+                subtitle_file_path {string} -- The path to the subtitle file.
+                weights_dir {string} -- The the model weights directory.
+
+            Returns:
+                tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+        """
+
         audio_file_path = ""
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(
@@ -63,14 +87,27 @@ class Predictor(Singleton):
         weights_dir=os.path.join(
             os.path.dirname(__file__), "models/training/weights"
         ),
+        stretch=False
     ):
+        """Predict time to shift with single pass
+
+            Arguments:
+            video_file_path {string} -- The input video file path.
+            subtitle_file_path {string} -- The path to the subtitle file.
+            weights_dir {string} -- The the model weights directory.
+            stretch {bool} -- True to stretch the subtitle segments (default: {False})
+
+            Returns:
+            tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+        """
+
         audio_file_path = ""
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(
                 video_file_path, subtitle_file_path, weights_dir
             )
             new_subs = self.__predict_2nd_pass(
-                audio_file_path, subs, weights_dir=weights_dir
+                audio_file_path, subs, weights_dir=weights_dir, stretch=stretch
             )
         except Exception:
             raise
@@ -81,6 +118,16 @@ class Predictor(Singleton):
                 os.remove(audio_file_path)
 
     def get_log_loss(self, voice_probabilities, subs):
+        """Returns a single loss value on voice prediction
+
+            Arguments:
+                voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
+                subs {list} -- A list of subtitle segments.
+
+                Returns:
+                    float -- The loss value.
+        """
+
         subtitle_mask = Predictor.__get_subtitle_mask(self, subs)
         if len(subtitle_mask) == 0:
             raise TerminalException("Subtitle is empty")
@@ -104,6 +151,17 @@ class Predictor(Singleton):
         return result
 
     def get_min_log_loss_and_index(self, voice_probabilities, subs):
+        """Returns the minimum loss value and its shift position
+        after going through all possible shifts.
+
+            Arguments:
+                voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
+                subs {list} -- A list of subtitle segments.
+
+            Returns:
+                tuple -- The minimum loss value and its position.
+        """
+
         local_subs = deepcopy(subs)
 
         local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
@@ -173,7 +231,7 @@ class Predictor(Singleton):
             previous_gap {float} -- The duration betwee the start time of the audio segment and the start time of the subtitle segment.
 
         Returns:
-            tuple -- The shifted subtitles, the file path and the voice probabilities of the original audio.
+            tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
         model_dir = model_weights_dir.replace("/weights", "/model")
@@ -336,14 +394,16 @@ class Predictor(Singleton):
             shifted_subs.shift(seconds=seconds_to_shift)
         return shifted_subs, audio_file_path, voice_probabilities
 
-    def __predict_2nd_pass(self, audio_file_path, subs, weights_dir):
+    def __predict_2nd_pass(self, audio_file_path, subs, weights_dir, stretch):
         """This function uses divide and conquer to align partial subtitle with partial video.
 
         Arguments:
             audio_file_path {string} -- The file path of the original audio.
             subs {list} -- A list of SubRip files.
             weights_dir {string} --  The directory of the model weights.
+            stretch {bool} -- True to stretch the subtitle segments (default: {False})
         """
+
         segment_starts, segment_ends, subs = MediaHelper.get_audio_segment_starts_and_ends(
             subs
         )
@@ -380,6 +440,7 @@ class Predictor(Singleton):
                     audio_file_path,
                     subs,
                     subs_copy,
+                    stretch
                 )
                 for i in range(len(segment_starts))
             ]
@@ -415,7 +476,7 @@ class Predictor(Singleton):
         audio_file_path,
         subs,
         subs_copy,
-        adjust_duration=True,
+        stretch,
     ):
         segment_path = ""
         try:
@@ -458,7 +519,7 @@ class Predictor(Singleton):
                 previous_gap=previous_gap,
             )
 
-            if adjust_duration:
+            if stretch:
                 subs_new = self.__adjust_durations(subs_new, audio_file_path)
             return subs_new
         finally:

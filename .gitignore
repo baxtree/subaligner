@@ -1,10 +1,8 @@
 *__pycache__*
 .venv*
-BUILD*
-src/subaligner.egg-info*
+build*
 dist*
 *.pyc
-.idea
 .vscode
 *.DS_Store*
 .eggs
@@ -12,9 +10,13 @@ tests/subaligner/resource/test.mp4.aac
 tests/subaligner/resource/test.mp4.wav
 tests/subaligner/training.log
 tests/subaligner/output.log
-training.log
-output.log
-program.prof
+*training.log*
+*output.log*
+*program.prof*
+site/build
+site/source/subaligner.rst
+site/source/modules.rst
+*subaligner.egg-info*
 
 # Unit test / coverage reports
 htmlcov/

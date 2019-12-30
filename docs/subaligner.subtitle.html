@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module subaligner.subtitle</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="subaligner.html"><font color="#ffffff">subaligner</font></a>.subtitle</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/baix01/MyWorkspace/subaligner-github/subaligner/subtitle.py">/Users/baix01/MyWorkspace/subaligner-github/subaligner/subtitle.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="xml.etree.ElementTree.html">xml.etree.ElementTree</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="pysrt.html">pysrt</a><br>
+<a href="re.html">re</a><br>
+</td><td width="25%" valign=top><a href="tempfile.html">tempfile</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="subaligner.subtitle.html#Subtitle">Subtitle</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Subtitle">class <strong>Subtitle</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Load&nbsp;a&nbsp;subtitle&nbsp;file&nbsp;into&nbsp;internal&nbsp;data&nbsp;structure<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Subtitle-__init__"><strong>__init__</strong></a>(self, secret, subtitle_file_path, subtitle_format)</dt><dd><tt><a href="#Subtitle">Subtitle</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;initialiser.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;secret&nbsp;{<a href="builtins.html#object">object</a>}&nbsp;--&nbsp;A&nbsp;hash&nbsp;only&nbsp;known&nbsp;by&nbsp;factory&nbsp;methods.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;format&nbsp;{string}&nbsp;--&nbsp;Supported&nbsp;subtitle&nbsp;formats:&nbsp;subrip&nbsp;and&nbsp;ttml.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;NotImplementedError&nbsp;--&nbsp;&nbsp;Thrown&nbsp;when&nbsp;any&nbsp;subtitle&nbsp;attributes&nbsp;are&nbsp;modified.</tt></dd></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="Subtitle-load"><strong>load</strong></a>(subtitle_file_path)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Load&nbsp;a&nbsp;SubRip&nbsp;or&nbsp;TTML&nbsp;subtitle&nbsp;file&nbsp;based&nbsp;on&nbsp;the&nbsp;file&nbsp;extension.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;--&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-load_subrip"><strong>load_subrip</strong></a>(subtitle_file_path)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Load&nbsp;a&nbsp;SubRip&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;--&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-load_ttml"><strong>load_ttml</strong></a>(subtitle_file_path)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Load&nbsp;a&nbsp;TTML&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;--&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-shift_subtitle"><strong>shift_subtitle</strong></a>(subtitle_file_path, seconds, shifted_subtitle_file_path=None, suffix='_aligned')<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Shift&nbsp;subtitle&nbsp;cues&nbsp;based&nbsp;on&nbsp;the&nbsp;input&nbsp;seconds.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;seconds&nbsp;{float}&nbsp;--&nbsp;The&nbsp;number&nbsp;of&nbsp;seconds&nbsp;by&nbsp;which&nbsp;the&nbsp;cues&nbsp;are&nbsp;shifted.<br>
+&nbsp;<br>
+Keyword&nbsp;Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;shifted_subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;shifted&nbsp;subtitle&nbsp;file&nbsp;(default:&nbsp;{None}).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;suffix&nbsp;{string}&nbsp;--&nbsp;The&nbsp;suffix&nbsp;used&nbsp;as&nbsp;part&nbsp;of&nbsp;the&nbsp;aligned&nbsp;subtitle&nbsp;file&nbsp;name.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;shifted&nbsp;subtitle&nbsp;file.</tt></dd></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="Subtitle-export_subtitle"><strong>export_subtitle</strong></a>(subtitle_file_path, subs, target_file_path)</dt><dd><tt>Export&nbsp;subtitle&nbsp;in&nbsp;the&nbsp;format&nbsp;determined&nbsp;by&nbsp;the&nbsp;file&nbsp;extension.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subs&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;target_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;exported&nbsp;subtitle&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-remove_sound_effects_by_affixes"><strong>remove_sound_effects_by_affixes</strong></a>(subs, se_prefix, se_suffix=None)</dt><dd><tt>Remove&nbsp;subtitles&nbsp;of&nbsp;sound&nbsp;effects&nbsp;based&nbsp;on&nbsp;prefix&nbsp;or&nbsp;prefix&nbsp;and&nbsp;suffix<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subs&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;se_prefix&nbsp;{string}&nbsp;--&nbsp;A&nbsp;prefix&nbsp;indicating&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;sound&nbsp;effect.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;se_suffix&nbsp;{string}&nbsp;--&nbsp;A&nbsp;suffix&nbsp;indicating&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;sound&nbsp;effect&nbsp;(default:&nbsp;{None}).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-remove_sound_effects_by_case"><strong>remove_sound_effects_by_case</strong></a>(subs, se_uppercase=True)</dt><dd><tt>Remove&nbsp;subtitles&nbsp;of&nbsp;sound&nbsp;effects&nbsp;based&nbsp;on&nbsp;case<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subs&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;se_uppercase&nbsp;{bool}&nbsp;--&nbsp;True&nbsp;when&nbsp;the&nbsp;sound&nbsp;effect&nbsp;is&nbsp;in&nbsp;uppercase&nbsp;or&nbsp;False&nbsp;when&nbsp;in&nbsp;lowercase&nbsp;(default:&nbsp;{True}).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>subs</strong></dt>
+</dl>
+<dl><dt><strong>subtitle_file_path</strong></dt>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>SUBRIP_EXTENTIONS</strong> = ['.srt']</dl>
+
+<dl><dt><strong>TTML_EXTENSIONS</strong> = ['.xml', '.ttml', 'dfxp']</dl>
+
+<dl><dt><strong>TT_NS</strong> = {'tt': 'http://www.w3.org/ns/ttml'}</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>
