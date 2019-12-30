@@ -49,12 +49,10 @@ class Predictor(Singleton):
         self.__lock = threading.Lock()
 
     def predict_single_pass(
-        self,
-        video_file_path,
-        subtitle_file_path,
-        weights_dir=os.path.join(
-            os.path.dirname(__file__), "models/training/weights"
-        ),
+            self,
+            video_file_path,
+            subtitle_file_path,
+            weights_dir="models/training/weights",
     ):
         """Predict time to shift with single pass
 
@@ -67,6 +65,7 @@ class Predictor(Singleton):
                 tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
+        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
         audio_file_path = ""
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(
@@ -81,13 +80,11 @@ class Predictor(Singleton):
                 os.remove(audio_file_path)
 
     def predict_dual_pass(
-        self,
-        video_file_path,
-        subtitle_file_path,
-        weights_dir=os.path.join(
-            os.path.dirname(__file__), "models/training/weights"
-        ),
-        stretch=False
+            self,
+            video_file_path,
+            subtitle_file_path,
+            weights_dir="models/training/weights",
+            stretch=False,
     ):
         """Predict time to shift with single pass
 
@@ -101,6 +98,7 @@ class Predictor(Singleton):
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
+        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
         audio_file_path = ""
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(

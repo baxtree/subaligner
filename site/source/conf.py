@@ -21,7 +21,7 @@ with open(os.path.join(os.getcwd(), "..", "..", "subaligner", "_version.py")) as
 # -- Project information -----------------------------------------------------
 
 project = "subaligner"
-copyright = "2019, Xi Bai"
+copyright = "2019-present, Xi Bai"
 author = "Xi Bai"
 master_doc = "index"
 
