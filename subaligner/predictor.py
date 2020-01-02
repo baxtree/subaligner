@@ -570,7 +570,7 @@ class Predictor(Singleton):
             # Execute the task
             ExecuteTask(
                 task=task,
-                # rconf=RuntimeConfiguration(config_string=runtime_config_string),
+                rconf=RuntimeConfiguration(config_string=runtime_config_string),
                 logger=AeneasLogger(tee=Logger.VERBOSE),
             ).execute()
 
