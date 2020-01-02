@@ -6,6 +6,10 @@
 ## Dependencies
 [FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
 ```
+apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
+```
+or
+```
 brew install ffmpeg espeak
 ```
 

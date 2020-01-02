@@ -2,11 +2,16 @@
 Installation
 ########################
 
-Subaligner is not available on PyPi's repo yet. To quickly get it installed and running, you can clone the
-`GitHub repo <https://github.com/baxtree/subaligner>`_ and follow the steps down below
+Subaligner is not available on PyPi's repo yet. To quickly get it installed and running, you can download the latest
+release on `GitHub <https://github.com/baxtree/subaligner>`_ and follow the steps down below
 to create a virtual environment and set up all the dependencies:
 
-**Use HomeBrew* to install necessary packages**::
+**Install necessary dependencies**::
+
+    $ apt-get install ffmpeg
+    $ apt-get install espeak libespeak1 libespeak-dev espeak-data
+
+**or**::
 
     $ brew install ffmpeg espeak
 
