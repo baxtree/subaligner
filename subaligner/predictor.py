@@ -560,8 +560,7 @@ class Predictor(Singleton):
             with open(text_file_path, "w") as text_file:
                 for sub_new in subs:
                     text_file.write(sub_new.text)
-                    text_file.write(os.linesep)
-                    text_file.write(os.linesep)
+                    text_file.write(os.linesep * 2)
 
             task.audio_file_path_absolute = segment_path
             task.text_file_path_absolute = text_file_path

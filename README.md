@@ -34,7 +34,7 @@ make install && source .venv/bin/activate
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help` or `subaligner_2pass --help`.
 
 ## Supported Formats
-Subtitle: SubRip and TTML
+Subtitle: SubRip, TTML and WebVTT
 
 Video: MP4, WebM, Ogg, 3GP, FLV and MOV 
 
@@ -48,5 +48,3 @@ First Stage (Global Alignment):
 
 Second Stage (Parallelised Individual Alignment):
 ![](figures/2nd_stage.png)
-
-
