@@ -74,7 +74,6 @@ class MediaHelper(object):
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 raise TerminalException(
@@ -82,7 +81,6 @@ class MediaHelper(object):
                 ) from te
             except Exception as e:
                 process.kill()
-                process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 if isinstance(e, TerminalException):
@@ -168,20 +166,17 @@ class MediaHelper(object):
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
                     "Timeout on extracting audio from audio: {}".format(audio_file_path)
                 ) from te
-                # TODO: from is different from what is expected
             except Exception as e:
                 process.kill()
-                process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 if isinstance(e, TerminalException):
-                    raise
+                    raise e
                 else:
                     raise TerminalException(
                         "Cannot extract audio from audio: {}".format(audio_file_path)

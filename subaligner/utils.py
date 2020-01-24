@@ -72,7 +72,6 @@ class Utils(object):
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                process.wait()
                 raise TerminalException(
                     "Timeout on converting SubRip to WebVTT: {}".format(
                         srt_file_path
@@ -80,7 +79,6 @@ class Utils(object):
                 ) from te
             except Exception as e:
                 process.kill()
-                process.wait()
                 if isinstance(e, TerminalException):
                     raise e
                 else:
@@ -116,7 +114,6 @@ class Utils(object):
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                process.wait()
                 raise TerminalException(
                     "Timeout on converting WebVTT to SubRip: {}".format(
                         vtt_file_path
@@ -124,7 +121,6 @@ class Utils(object):
                 ) from te
             except Exception as e:
                 process.kill()
-                process.wait()
                 if isinstance(e, TerminalException):
                     raise e
                 else:
