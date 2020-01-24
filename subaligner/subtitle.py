@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ElementTree
 from pysrt import SubRipFile
 from copy import deepcopy
 from pycaption import CaptionConverter, DFXPReader, SRTWriter
+from .utils import Utils
 from .exception import UnsupportedFormatException
 
 
@@ -18,15 +19,14 @@ class Subtitle(object):
     ElementTree.register_namespace("", "http://www.w3.org/ns/ttml")
     ElementTree.register_namespace("tts", "http://www.w3.org/ns/ttml#styling")
     ElementTree.register_namespace("ttm", "http://www.w3.org/ns/ttml#metadata")
-    ElementTree.register_namespace(
-        "ttp", "http://www.w3.org/ns/ttml#parameter"
-    )
+    ElementTree.register_namespace("ttp", "http://www.w3.org/ns/ttml#parameter")
     ElementTree.register_namespace("ebuttm", "urn:ebu:tt:metadata")
     ElementTree.register_namespace("ebutts", "urn:ebu:tt:style")
     TT_NS = {"tt": "http://www.w3.org/ns/ttml"}
 
     SUBRIP_EXTENTIONS = [".srt"]
-    TTML_EXTENSIONS = [".xml", ".ttml", "dfxp"]
+    TTML_EXTENSIONS = [".xml", ".ttml", ".dfxp"]
+    WEBVTT_EXTENSIONS = [".vtt"]
 
     def __init__(self, secret, subtitle_file_path, subtitle_format):
         """Subtitle object initialiser.
@@ -50,6 +50,12 @@ class Subtitle(object):
             self.__subs = pysrt.open(subtitle_file_path, encoding="utf-8")
         elif subtitle_format == "ttml":
             self.__subs = self.__convert_ttml_to_subs(subtitle_file_path)
+        elif subtitle_format == "webvtt":
+            self.__subs = self.__convert_vtt_to_subs(subtitle_file_path)
+        else:
+            raise UnsupportedFormatException(
+                "Unknown subtitle format for file: {}".format(subtitle_file_path)
+            )
 
         # freeze the object after creation
         def __setattr__(self, *args):
@@ -68,6 +74,7 @@ class Subtitle(object):
         Returns:
             Subtitle -- Subtitle object.
         """
+
         return cls(cls.__secret, subtitle_file_path, "subrip")
 
     @classmethod
@@ -80,7 +87,21 @@ class Subtitle(object):
         Returns:
             Subtitle -- Subtitle object.
         """
+
         return cls(cls.__secret, subtitle_file_path, "ttml")
+
+    @classmethod
+    def load_webvtt(cls, subtitle_file_path):
+        """Load a WebVTT subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            Subtitle -- Subtitle object.
+        """
+
+        return cls(cls.__secret, subtitle_file_path, "webvtt")
 
     @classmethod
     def load(cls, subtitle_file_path):
@@ -98,12 +119,10 @@ class Subtitle(object):
             return cls(cls.__secret, subtitle_file_path, "subrip")
         elif file_extension in cls.TTML_EXTENSIONS:
             return cls(cls.__secret, subtitle_file_path, "ttml")
+        elif file_extension in cls.WEBVTT_EXTENSIONS:
+            return cls(cls.__secret, subtitle_file_path, "webvtt")
         else:
-            raise ValueError(
-                "Unknown subtitle format for file: {}".format(
-                    subtitle_file_path
-                )
-            )
+            return cls(cls.__secret, subtitle_file_path, "unknown")
 
     @classmethod
     def shift_subtitle(
@@ -111,7 +130,7 @@ class Subtitle(object):
         subtitle_file_path,
         seconds,
         shifted_subtitle_file_path=None,
-        suffix="_aligned",
+        suffix="_shifted",
     ):
         """Shift subtitle cues based on the input seconds.
 
@@ -130,17 +149,12 @@ class Subtitle(object):
         if file_extension.lower() in cls.SUBRIP_EXTENTIONS:
             subs = cls(cls.__secret, subtitle_file_path, "subrip").subs
             subs.shift(seconds=seconds)
-            if shifted_subtitle_file_path is not None:
-                subs.save(
-                    shifted_subtitle_file_path.replace(
-                        file_extension, "{}{}".format(suffix, file_extension)
-                    ),
-                    encoding="utf8",
+            if shifted_subtitle_file_path is None:
+                shifted_subtitle_file_path = subtitle_file_path.replace(
+                    file_extension, "{}{}".format(suffix, file_extension)
                 )
-                return shifted_subtitle_file_path
-            else:
-                subs.save(subtitle_file_path, encoding="utf8")
-                return subtitle_file_path
+            Subtitle.export_subtitle(subtitle_file_path, subs, shifted_subtitle_file_path)
+            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.TTML_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "ttml").subs
             subs.shift(seconds=seconds)
@@ -154,39 +168,41 @@ class Subtitle(object):
             for index, cue in enumerate(cues):
                 cue.attrib["begin"] = subs[index].start
                 cue.attrib["end"] = subs[index].end
-            if shifted_subtitle_file_path is not None:
-                tree.write(
-                    shifted_subtitle_file_path.replace(
-                        file_extension, "{}{}".format(suffix, file_extension)
-                    ),
-                    encoding="utf8",
+            if shifted_subtitle_file_path is None:
+                shifted_subtitle_file_path = subtitle_file_path.replace(
+                    file_extension, "{}{}".format(suffix, file_extension)
                 )
-                return shifted_subtitle_file_path
-            else:
-                tree.write(subtitle_file_path, encoding="utf8")
-                return subtitle_file_path
+            tree.write(shifted_subtitle_file_path, encoding="utf8")
+            return shifted_subtitle_file_path
+        elif file_extension.lower() in cls.WEBVTT_EXTENSIONS:
+            subs = cls(cls.__secret, subtitle_file_path, "webvtt").subs
+            subs.shift(seconds=seconds)
+            if shifted_subtitle_file_path is None:
+                shifted_subtitle_file_path = subtitle_file_path.replace(
+                    file_extension, "{}{}".format(suffix, file_extension)
+                )
+            Subtitle.export_subtitle(subtitle_file_path, subs, shifted_subtitle_file_path)
+            return shifted_subtitle_file_path
         else:
             raise UnsupportedFormatException(
-                "Unknown subtitle format for file: {}".format(
-                    subtitle_file_path
-                )
+                "Unknown subtitle format for file: {}".format(subtitle_file_path)
             )
 
     @staticmethod
-    def export_subtitle(subtitle_file_path, subs, target_file_path):
+    def export_subtitle(source_file_path, subs, target_file_path):
         """Export subtitle in the format determined by the file extension.
 
         Arguments:
-            subtitle_file_path {string} -- The path to the subtitle file.
+            source_file_path {string} -- The path to the original subtitle file.
             subs {list} -- A list of SubRipItems.
             target_file_path {string} -- The path to the exported subtitle file.
         """
 
-        filename, file_extension = os.path.splitext(subtitle_file_path.lower())
+        filename, file_extension = os.path.splitext(source_file_path.lower())
         if file_extension in Subtitle.SUBRIP_EXTENTIONS:
             SubRipFile(subs).save(target_file_path, encoding="utf8")
         elif file_extension in Subtitle.TTML_EXTENSIONS:
-            tree = ElementTree.parse(subtitle_file_path)
+            tree = ElementTree.parse(source_file_path)
             tt = tree.getroot()
             cues = (
                 tt.find("tt:body", Subtitle.TT_NS)
@@ -208,11 +224,16 @@ class Subtitle(object):
                     )
                 )
                 target.write(normalised)
+        elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding="utf8")
+                Utils.srt2vtt(path, target_file_path)
+            finally:
+                os.remove(path)
         else:
             raise UnsupportedFormatException(
-                "Unknown subtitle format for file: {}".format(
-                    subtitle_file_path
-                )
+                "Unknown subtitle format for file: {}".format(source_file_path)
             )
 
     @staticmethod
@@ -257,12 +278,25 @@ class Subtitle(object):
                     sub.text,
                 )
             else:
-                match = re.search(
-                    "^{0}[^{0}]+$".format(re.escape(se_prefix)), sub.text
-                )
+                match = re.search("^{0}[^{0}]+$".format(re.escape(se_prefix)), sub.text)
             if match:
                 new_subs.remove(sub)
         return new_subs
+
+    @staticmethod
+    def extract_text(subtitle_file_path, delimiter=" "):
+        """Extract plain texts from a subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            {string} -- The plain text of subtitle.
+        """
+
+        subs = Subtitle.load(subtitle_file_path).subs
+        texts = [sub.text for sub in subs]
+        return delimiter.join(texts)
 
     @property
     def subtitle_file_path(self):
@@ -273,23 +307,40 @@ class Subtitle(object):
         return self.__subs
 
     @staticmethod
-    def __convert_ttml_to_subs(subtitle_file_path):
+    def __convert_ttml_to_subs(ttml_file_path):
         """Convert a subtitle file from the TTML format to the SubRip format
 
         Arguments:
-            subtitle_file_path {string} -- The path to the subtitle file.
+            ttml_file_path {string} -- The path to the TTML subtitle file.
 
         Returns:
             {list} -- A list of SubRipItems.
         """
 
-        converter = CaptionConverter()
-        with open(subtitle_file_path, "r") as file:
-            converter.read(file.read(), DFXPReader())
-        fd, path = tempfile.mkstemp()
+        _, path = tempfile.mkstemp()
+        Utils.ttml2srt(ttml_file_path, path)
+
         try:
-            with os.fdopen(fd, "wb") as temp:
-                temp.write(converter.write(SRTWriter()).encode("utf-8"))
+            subs = pysrt.open(path, encoding="utf-8")
+        finally:
+            os.remove(path)
+        return subs
+
+    @staticmethod
+    def __convert_vtt_to_subs(vtt_file_path):
+        """Convert a subtitle file from the WebVTT format to the SubRip format
+
+        Arguments:
+            vtt_file_path {string} -- The path to the WebVTT subtitle file.
+
+        Returns:
+            {list} -- A list of SubRipItems.
+        """
+
+        _, path = tempfile.mkstemp()
+        Utils.vtt2srt(vtt_file_path, path)
+
+        try:
             subs = pysrt.open(path, encoding="utf-8")
         finally:
             os.remove(path)

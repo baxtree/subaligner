@@ -16,12 +16,10 @@ class MediaHelper(object):
     AUDIO_FILE_EXTENSION = [".wav", ".aac"]
 
     __LOGGER = Logger().get_logger(__name__)
-    __MIN_SECS_PER_WORD = (
-        0.414
-    )  # 60 secs / 145 wpm
+    __MIN_SECS_PER_WORD = 0.414  # 60 secs / 145 wpm
     __MIN_GAP_IN_SECS = (
-        1
-    )  # minimum gap in seconds between consecutive subtitle during segmentation
+        1  # minimum gap in seconds between consecutive subtitle during segmentation
+    )
     __CMD_TIME_OUT = 600  # time out for subprocess
 
     @staticmethod
@@ -61,45 +59,42 @@ class MediaHelper(object):
         )
         MediaHelper.__LOGGER.debug("Running: {}".format(command))
         with subprocess.Popen(
-            command.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+            command.split(),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=True,
         ) as process:
             try:
-                _, std_err = process.communicate(
-                    timeout=MediaHelper.__CMD_TIME_OUT
-                )
+                _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                 MediaHelper.__LOGGER.debug(std_err.decode("utf-8").strip())
                 if process.returncode != 0:
                     raise TerminalException(
-                        "Cannot extract audio from video: {}".format(
-                            video_file_path
-                        )
+                        "Cannot extract audio from video: {}".format(video_file_path)
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                _, std_err = process.communicate()
+                process.communicate()
                 MediaHelper.__LOGGER.error(std_err.decode("utf-8").strip())
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 raise TerminalException(
-                    "Cannot extract audio from video: {}".format(
-                        video_file_path
-                    )
+                    "Timeout on extracting audio from video: {}".format(video_file_path)
                 ) from te
             except Exception as e:
                 process.kill()
                 process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
-                raise TerminalException(
-                    "Cannot extract audio from video: {}".format(
-                        video_file_path
-                    )
-                ) from e
+                if isinstance(e, TerminalException):
+                    raise e
+                else:
+                    raise TerminalException(
+                        "Cannot extract audio from video: {}".format(video_file_path)
+                    ) from e
             finally:
                 os.system("stty sane")
-        MediaHelper.__LOGGER.info(
-            "Extracted audio file:{}".format(audio_file_path)
-        )
+        MediaHelper.__LOGGER.info("Extracted audio file:{}".format(audio_file_path))
         return audio_file_path
 
     @staticmethod
@@ -123,7 +118,8 @@ class MediaHelper(object):
         start_h, start_m, start_s = map(Decimal, start.split(":"))
         end_h, end_m, end_s = map(Decimal, end.split(":"))
         return float(
-            (end_h * 3600 + end_m * 60 + end_s) - (start_h * 3600 + start_m * 60 + start_s)
+            (end_h * 3600 + end_m * 60 + end_s)
+            - (start_h * 3600 + start_m * 60 + start_s)
         )
 
     @staticmethod
@@ -146,9 +142,7 @@ class MediaHelper(object):
         start = start.replace(",", ".")
         if end is not None:
             end = end.replace(",", ".")
-        segment_path = "{0}_{1}_{2}{3}".format(
-            root, str(start), str(end), extension
-        )
+        segment_path = "{0}_{1}_{2}{3}".format(root, str(start), str(end), extension)
 
         if end is not None:
             command = "ffmpeg -y -xerror -i {0} -ss {1} -to {2} -acodec copy {3}".format(
@@ -160,45 +154,42 @@ class MediaHelper(object):
             )
         MediaHelper.__LOGGER.debug("Running: {}".format(command))
         with subprocess.Popen(
-            command.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+            command.split(),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=True,
         ) as process:
             try:
-                _, std_err = process.communicate(
-                    timeout=MediaHelper.__CMD_TIME_OUT
-                )
+                _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                 MediaHelper.__LOGGER.debug(std_err.decode("utf-8").strip())
                 if process.returncode != 0:
                     raise TerminalException(
-                        "Cannot extract audio from audio: {}".format(
-                            audio_file_path
-                        )
+                        "Cannot extract audio from audio: {}".format(audio_file_path)
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                _, std_err = process.communicate()
+                process.communicate()
                 MediaHelper.__LOGGER.error(std_err.decode("utf-8").strip())
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
-                    "Cannot extract audio from audio: {}".format(
-                        audio_file_path
-                    )
+                    "Timeout on extracting audio from audio: {}".format(audio_file_path)
                 ) from te
             except Exception as e:
                 process.kill()
                 process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
-                raise TerminalException(
-                    "Cannot extract audio from audio: {}".format(
-                        audio_file_path
-                    )
-                ) from e
+                if isinstance(e, TerminalException):
+                    raise e
+                else:
+                    raise TerminalException(
+                        "Cannot extract audio from audio: {}".format(audio_file_path)
+                    ) from e
             finally:
                 os.system("stty sane")
-        MediaHelper.__LOGGER.info(
-            "Extracted audio segment:{}".format(segment_path)
-        )
+        MediaHelper.__LOGGER.info("Extracted audio segment:{}".format(segment_path))
         return segment_path, segement_duration
 
     @staticmethod
@@ -240,7 +231,10 @@ class MediaHelper(object):
                 gap = FeatureEmbedder.time_to_sec(
                     subs[i + 1].start
                 ) - FeatureEmbedder.time_to_sec(subs[i].end)
-                if subs[i].end == subs[i + 1].start or gap < MediaHelper.__MIN_GAP_IN_SECS:
+                if (
+                    subs[i].end == subs[i + 1].start
+                    or gap < MediaHelper.__MIN_GAP_IN_SECS
+                ):
                     combined.append(subs[i])
                     continue
                 combined.append(subs[i])
