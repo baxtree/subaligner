@@ -80,7 +80,7 @@ class UtilsTests(unittest.TestCase):
             Undertest.srt2vtt(self.__real_srt_path, "output")
         except Exception as e:
             self.assertTrue(mock_communicate.called)
-            self.assertTrue(isinstance(e, subprocess.TimeoutExpired))
+            self.assertTrue(isinstance(e, TerminalException))
         else:
             self.fail("Should have thrown exception")
 
@@ -110,7 +110,7 @@ class UtilsTests(unittest.TestCase):
             Undertest.vtt2srt(self.__real_vtt_path, "output")
         except Exception as e:
             self.assertTrue(mock_communicate.called)
-            self.assertTrue(isinstance(e, subprocess.TimeoutExpired))
+            self.assertTrue(isinstance(e, TerminalException))
         else:
             self.fail("Should have thrown exception")
 

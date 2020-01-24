@@ -5,7 +5,6 @@ import re
 import xml.etree.ElementTree as ElementTree
 from pysrt import SubRipFile
 from copy import deepcopy
-from pycaption import CaptionConverter, DFXPReader, SRTWriter
 from .utils import Utils
 from .exception import UnsupportedFormatException
 
