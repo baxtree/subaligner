@@ -16,6 +16,9 @@ class MediaHelperTests(unittest.TestCase):
         self.__subtitle_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
+        self.__test_audio_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
+        )
         self.__audio_file_path = None
         self.__segment_paths = []
 
@@ -127,7 +130,7 @@ class MediaHelperTests(unittest.TestCase):
     def test_throw_exception_on_extract_partial_audio_with_error_code(self, mock_communicate):
         try:
             Undertest.extract_audio_from_start_to_end(
-                "sample.wav", "00:00:13,750", "00:00:16,150"
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
             )
         except Exception as e:
             self.assertTrue(mock_communicate.called)
@@ -140,10 +143,9 @@ class MediaHelperTests(unittest.TestCase):
     def test_throw_exception_on_extract_partial_audio_timeout(self, mock_communicate):
         try:
             Undertest.extract_audio_from_start_to_end(
-                "sample.wav", "00:00:13,750", "00:00:16,150"
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
             )
         except Exception as e:
-            print(e)
             self.assertTrue(mock_communicate.called)
             self.assertTrue(isinstance(e, TerminalException))
             self.assertTrue("Timeout on extracting audio from audio:" in str(e))
@@ -154,12 +156,11 @@ class MediaHelperTests(unittest.TestCase):
     def test_throw_exception_on_extract_partial_audio_exception(self, mock_communicate):
         try:
             Undertest.extract_audio_from_start_to_end(
-                "sample.wav", "00:00:13,750", "00:00:16,150"
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
             )
         except Exception as e:
             self.assertTrue(mock_communicate.called)
             self.assertTrue(isinstance(e, TerminalException))
-            print(e)
             self.assertTrue("Cannot extract audio from audio:" in str(e))
         else:
             self.fail("Should have thrown exception")

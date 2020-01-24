@@ -74,6 +74,7 @@ class MediaHelper(object):
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
+                process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 raise TerminalException(
@@ -81,6 +82,7 @@ class MediaHelper(object):
                 ) from te
             except Exception as e:
                 process.kill()
+                process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 if isinstance(e, TerminalException):
@@ -166,6 +168,7 @@ class MediaHelper(object):
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
+                process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
@@ -173,6 +176,7 @@ class MediaHelper(object):
                 ) from te
             except Exception as e:
                 process.kill()
+                process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 if isinstance(e, TerminalException):
