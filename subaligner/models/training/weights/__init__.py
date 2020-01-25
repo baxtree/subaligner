@@ -1,1 +1,1 @@
-'''This folder contains the model weights.'''
+"""This folder contains the model weights."""

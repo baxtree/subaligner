@@ -83,7 +83,15 @@ Arguments:<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;--&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
 
-<dl><dt><a name="Subtitle-shift_subtitle"><strong>shift_subtitle</strong></a>(subtitle_file_path, seconds, shifted_subtitle_file_path=None, suffix='_aligned')<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Shift&nbsp;subtitle&nbsp;cues&nbsp;based&nbsp;on&nbsp;the&nbsp;input&nbsp;seconds.<br>
+<dl><dt><a name="Subtitle-load_webvtt"><strong>load_webvtt</strong></a>(subtitle_file_path)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Load&nbsp;a&nbsp;WebVTT&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;--&nbsp;<a href="#Subtitle">Subtitle</a>&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-shift_subtitle"><strong>shift_subtitle</strong></a>(subtitle_file_path, seconds, shifted_subtitle_file_path=None, suffix='_shifted')<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Shift&nbsp;subtitle&nbsp;cues&nbsp;based&nbsp;on&nbsp;the&nbsp;input&nbsp;seconds.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
@@ -98,12 +106,20 @@ Returns:<br>
 
 <hr>
 Static methods defined here:<br>
-<dl><dt><a name="Subtitle-export_subtitle"><strong>export_subtitle</strong></a>(subtitle_file_path, subs, target_file_path)</dt><dd><tt>Export&nbsp;subtitle&nbsp;in&nbsp;the&nbsp;format&nbsp;determined&nbsp;by&nbsp;the&nbsp;file&nbsp;extension.<br>
+<dl><dt><a name="Subtitle-export_subtitle"><strong>export_subtitle</strong></a>(source_file_path, subs, target_file_path)</dt><dd><tt>Export&nbsp;subtitle&nbsp;in&nbsp;the&nbsp;format&nbsp;determined&nbsp;by&nbsp;the&nbsp;file&nbsp;extension.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;source_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;original&nbsp;subtitle&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;subs&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;target_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;exported&nbsp;subtitle&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="Subtitle-extract_text"><strong>extract_text</strong></a>(subtitle_file_path, delimiter=' ')</dt><dd><tt>Extract&nbsp;plain&nbsp;texts&nbsp;from&nbsp;a&nbsp;subtitle&nbsp;file.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;subtitle_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;subtitle&nbsp;file.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;subs&nbsp;{list}&nbsp;--&nbsp;A&nbsp;list&nbsp;of&nbsp;SubRipItems.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;target_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;exported&nbsp;subtitle&nbsp;file.</tt></dd></dl>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{string}&nbsp;--&nbsp;The&nbsp;plain&nbsp;text&nbsp;of&nbsp;subtitle.</tt></dd></dl>
 
 <dl><dt><a name="Subtitle-remove_sound_effects_by_affixes"><strong>remove_sound_effects_by_affixes</strong></a>(subs, se_prefix, se_suffix=None)</dt><dd><tt>Remove&nbsp;subtitles&nbsp;of&nbsp;sound&nbsp;effects&nbsp;based&nbsp;on&nbsp;prefix&nbsp;or&nbsp;prefix&nbsp;and&nbsp;suffix<br>
 &nbsp;<br>
@@ -140,9 +156,11 @@ Data descriptors defined here:<br>
 Data and other attributes defined here:<br>
 <dl><dt><strong>SUBRIP_EXTENTIONS</strong> = ['.srt']</dl>
 
-<dl><dt><strong>TTML_EXTENSIONS</strong> = ['.xml', '.ttml', 'dfxp']</dl>
+<dl><dt><strong>TTML_EXTENSIONS</strong> = ['.xml', '.ttml', '.dfxp']</dl>
 
 <dl><dt><strong>TT_NS</strong> = {'tt': 'http://www.w3.org/ns/ttml'}</dl>
+
+<dl><dt><strong>WEBVTT_EXTENSIONS</strong> = ['.vtt']</dl>
 
 </td></tr></table></td></tr></table>
 </body></html>

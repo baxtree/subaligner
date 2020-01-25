@@ -12,6 +12,15 @@
     <p></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="subprocess.html">subprocess</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
@@ -35,17 +44,31 @@
 <td colspan=2><tt>Utility&nbsp;functions<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Static methods defined here:<br>
-<dl><dt><a name="Utils-srt2ttml"><strong>srt2ttml</strong></a>(srt_file_path)</dt><dd><tt>Convert&nbsp;SubRip&nbsp;subtitles&nbsp;to&nbsp;TTML&nbsp;subtitles.<br>
+<dl><dt><a name="Utils-srt2ttml"><strong>srt2ttml</strong></a>(srt_file_path, ttml_file_path=None)</dt><dd><tt>Convert&nbsp;SubRip&nbsp;subtitles&nbsp;to&nbsp;TTML&nbsp;subtitles.<br>
 &nbsp;<br>
 Arguments:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;srt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;SubRip&nbsp;file.</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;srt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;SubRip&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ttml_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;TTML&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="Utils-srt2vtt"><strong>srt2vtt</strong></a>(srt_file_path, vtt_file_path=None, timeout_secs=30)</dt><dd><tt>Convert&nbsp;SubRip&nbsp;subtitles&nbsp;to&nbsp;WebVTT&nbsp;subtitles.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;srt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;SubRip&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;WebVTT&nbsp;file.</tt></dd></dl>
 
 <dl><dt><a name="Utils-suppress_lib_logs"><strong>suppress_lib_logs</strong></a>()</dt></dl>
 
-<dl><dt><a name="Utils-ttml2srt"><strong>ttml2srt</strong></a>(ttml_file_path)</dt><dd><tt>Convert&nbsp;TTML&nbsp;subtitles&nbsp;to&nbsp;SubRip&nbsp;subtitles.<br>
+<dl><dt><a name="Utils-ttml2srt"><strong>ttml2srt</strong></a>(ttml_file_path, srt_file_path=None)</dt><dd><tt>Convert&nbsp;TTML&nbsp;subtitles&nbsp;to&nbsp;SubRip&nbsp;subtitles.<br>
 &nbsp;<br>
 Arguments:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;ttml_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;TTML&nbsp;file.</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;ttml_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;TTML&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;srt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;SubRip&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="Utils-vtt2srt"><strong>vtt2srt</strong></a>(vtt_file_path, srt_file_path=None, timeout_secs=30)</dt><dd><tt>Convert&nbsp;WebVTT&nbsp;subtitles&nbsp;to&nbsp;SubRip&nbsp;subtitles.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vtt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;WebVTT&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;srt_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;SubRip&nbsp;file.</tt></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>

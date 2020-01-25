@@ -1,9 +1,11 @@
 import unittest
 import os
 import pysrt
+import subprocess
 
 from subaligner.exception import TerminalException
 from subaligner.media_helper import MediaHelper as Undertest
+from mock import patch
 
 
 class MediaHelperTests(unittest.TestCase):
@@ -13,6 +15,9 @@ class MediaHelperTests(unittest.TestCase):
         )
         self.__subtitle_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
+        )
+        self.__test_audio_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
         )
         self.__audio_file_path = None
         self.__segment_paths = []
@@ -85,6 +90,78 @@ class MediaHelperTests(unittest.TestCase):
         except Exception as e:
             self.assertTrue(isinstance(e, TerminalException))
             self.assertFalse(os.path.exists("bad_video_file_path.mp4.wav"))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", return_value=1)
+    def test_throw_exception_on_extract_audio_with_error_code(self, mock_communicate):
+        try:
+            Undertest.extract_audio(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Cannot extract audio from video:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    def test_throw_exception_on_extract_audio_timeout(self, mock_communicate):
+        try:
+            Undertest.extract_audio(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Timeout on extracting audio from video:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=Exception())
+    def test_throw_exception_on_vtt2srt_exception(self, mock_communicate):
+        try:
+            Undertest.extract_audio(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Cannot extract audio from video:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", return_value=1)
+    def test_throw_exception_on_extract_partial_audio_with_error_code(self, mock_communicate):
+        try:
+            Undertest.extract_audio_from_start_to_end(
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
+            )
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Cannot extract audio from audio:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    def test_throw_exception_on_extract_partial_audio_timeout(self, mock_communicate):
+        try:
+            Undertest.extract_audio_from_start_to_end(
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
+            )
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Timeout on extracting audio from audio:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=Exception())
+    def test_throw_exception_on_extract_partial_audio_exception(self, mock_communicate):
+        try:
+            Undertest.extract_audio_from_start_to_end(
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
+            )
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Cannot extract audio from audio:" in str(e))
         else:
             self.fail("Should have thrown exception")
 
