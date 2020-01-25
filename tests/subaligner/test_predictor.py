@@ -92,30 +92,6 @@ class PredictorTests(unittest.TestCase):
             self.assertEqual(sub.duration, subs[index].duration)
         self.assertGreater(len(voice_probabilities), 0)
 
-    def test_predict_dual_pass_with_ttml(self):
-        undertest_obj = Undertest(n_mfcc=20)
-        new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
-            self.__video_file_path, self.__ttml_file_path, self.__weights_dir
-        )
-
-        self.assertGreater(len(new_subs), 0)
-        self.assertEqual(len(new_subs), len(subs))
-        for index, sub in enumerate(new_subs):
-            self.assertEqual(sub.duration, subs[index].duration)
-        self.assertGreater(len(voice_probabilities), 0)
-
-    def test_predict_dual_pass_with_ttml(self):
-        undertest_obj = Undertest(n_mfcc=20)
-        new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
-            self.__video_file_path, self.__vtt_file_path, self.__weights_dir
-        )
-
-        self.assertGreater(len(new_subs), 0)
-        self.assertEqual(len(new_subs), len(subs))
-        for index, sub in enumerate(new_subs):
-            self.assertEqual(sub.duration, subs[index].duration)
-        self.assertGreater(len(voice_probabilities), 0)
-
     def test_predict_dual_pass_with_stretching(self):
         undertest_obj = Undertest(n_mfcc=20)
 

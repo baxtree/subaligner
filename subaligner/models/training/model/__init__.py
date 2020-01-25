@@ -1,1 +1,1 @@
-'''This folder contains the model.'''
+"""This folder contains the model."""

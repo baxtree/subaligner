@@ -5,7 +5,7 @@ absl_logging._warn_preinit_stderr = 0
 
 
 class Logger(Singleton):
-    '''Common logging.'''
+    """Common logging."""
 
     VERBOSE = True
 
