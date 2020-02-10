@@ -28,13 +28,10 @@ class FeatureEmbedder(Singleton):
             n_mfcc {int} -- The number of MFCC components (default: {13}).
             frequency {float} -- The sample rate  (default: {16000}).
             hop_len {int} -- The number of samples per frame (default: {512}).
-            step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
+            step_sample {float} -- The space (in seconds) between the beginning of each sample (default: 1s / 25 FPS = 0.04s).
             len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
         """
 
-        self.__mfcc_extraction_lock = (
-            None
-        )  # TODO: This lock is not in use any more
         self.__n_mfcc = n_mfcc  # number of MFCC components
         self.__frequency = frequency  # sample rate
         self.__hop_len = hop_len  # number of samples per frame
@@ -94,6 +91,16 @@ class FeatureEmbedder(Singleton):
         """
 
         return self.__step_sample
+
+    @ step_sample.setter
+    def step_sample(self, step_sample):
+        """Configure the step sample
+
+        Arguments:
+            step_sample {float} -- the value of the step sample (1 / frame_rate)
+        """
+
+        self.__step_sample = step_sample
 
     @property
     def len_sample(self):
@@ -284,10 +291,6 @@ class FeatureEmbedder(Singleton):
                 "{} sound effects removed".format(original_size - len(subs))
             )
 
-        if self.__mfcc_extraction_lock is not None:
-            # Deprecated
-            # self.__mfcc_extraction_lock.acquire()
-            pass
         t = datetime.now()
 
         # Load audio file
@@ -311,11 +314,6 @@ class FeatureEmbedder(Singleton):
             hop_length=int(self.__hop_len),
             n_mfcc=self.__n_mfcc,
         )
-
-        if self.__mfcc_extraction_lock is not None:
-            # Deprecated
-            # self.__mfcc_extraction_lock.release()
-            pass
 
         # Group multiple MFCCs of 32 ms into a larger range for LSTM
         # and each stride will have an overlay with the previous one

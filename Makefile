@@ -49,22 +49,25 @@ test-all: ## run tests on every Python version with tox
 	.venv/bin/tox
 
 pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
-	python -m pydoc -w subaligner; mv subaligner.html docs/index.html
-	python -m pydoc -w subaligner.embedder; mv subaligner.embedder.html docs
-	python -m pydoc -w subaligner.media_helper; mv subaligner.media_helper.html docs
-	python -m pydoc -w subaligner.network; mv subaligner.network.html docs
-	python -m pydoc -w subaligner.predictor; mv subaligner.predictor.html docs
-	python -m pydoc -w subaligner.singleton; mv subaligner.singleton.html docs
-	python -m pydoc -w subaligner.trainer; mv subaligner.trainer.html docs
-	python -m pydoc -w subaligner.utils; mv subaligner.utils.html docs
-	python -m pydoc -w subaligner.subtitle; mv subaligner.subtitle.html docs
-	python -m pydoc -w subaligner.logger; mv subaligner.logger.html docs
-	python -m pydoc -w subaligner.exception; mv subaligner.exception.html docs
-	python -m pydoc -w subaligner.models; mv subaligner.models.html docs
-	python -m pydoc -w subaligner.models.training; mv subaligner.models.training.html docs
-	python -m pydoc -w subaligner.models.training.model; mv subaligner.models.training.model.html docs
-	python -m pydoc -w subaligner.models.training.weights; mv subaligner.models.training.weights.html docs
-	python -m pydoc -w subaligner._version; mv subaligner._version.html docs
+	if [ ! -e ".venv" ]; then pip3 install virtualenv; virtualenv -p python3 .venv; fi
+	.venv/bin/pip install --upgrade pip setuptools wheel; \
+	cat requirements.txt | xargs -L 1 .venv/bin/pip install; \
+	.venv/bin/python -m pydoc -w subaligner; mv subaligner.html docs/index.html
+	.venv/bin/python -m pydoc -w subaligner.embedder; mv subaligner.embedder.html docs
+	.venv/bin/python -m pydoc -w subaligner.media_helper; mv subaligner.media_helper.html docs
+	.venv/bin/python -m pydoc -w subaligner.network; mv subaligner.network.html docs
+	.venv/bin/python -m pydoc -w subaligner.predictor; mv subaligner.predictor.html docs
+	.venv/bin/python -m pydoc -w subaligner.singleton; mv subaligner.singleton.html docs
+	.venv/bin/python -m pydoc -w subaligner.trainer; mv subaligner.trainer.html docs
+	.venv/bin/python -m pydoc -w subaligner.utils; mv subaligner.utils.html docs
+	.venv/bin/python -m pydoc -w subaligner.subtitle; mv subaligner.subtitle.html docs
+	.venv/bin/python -m pydoc -w subaligner.logger; mv subaligner.logger.html docs
+	.venv/bin/python -m pydoc -w subaligner.exception; mv subaligner.exception.html docs
+	.venv/bin/python -m pydoc -w subaligner.models; mv subaligner.models.html docs
+	.venv/bin/python -m pydoc -w subaligner.models.training; mv subaligner.models.training.html docs
+	.venv/bin/python -m pydoc -w subaligner.models.training.model; mv subaligner.models.training.model.html docs
+	.venv/bin/python -m pydoc -w subaligner.models.training.weights; mv subaligner.models.training.weights.html docs
+	.venv/bin/python -m pydoc -w subaligner._version; mv subaligner._version.html docs
 	$(BROWSER) docs/index.html
 
 coverage: ## check code coverage quickly with the default Python

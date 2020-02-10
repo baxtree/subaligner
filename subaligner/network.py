@@ -270,19 +270,18 @@ class Network(object):
 
         return self.__model.layers
 
-    def get_predictions(self, input_data, weights_filepath, verbose=1):
+    def get_predictions(self, input_data, weights_filepath):
         """Get a Numpy array of predictions.
 
         Arguments:
             input_data {numpy.ndarray} -- The input data, as a Numpy array.
             weights_filepath {string} -- The weights file path.
-            verbose {int} -- The verbosity mode of logging, either 0 (succinct) or 1 (verbose).
 
         Returns:
             numpy.ndarray -- The Numpy array of predictions.
         """
         self.__model.load_weights(weights_filepath)
-        return self.__model.predict(input_data, verbose=verbose)
+        return self.__model.predict_on_batch(input_data)
 
     def fit_and_get_history(
         self,

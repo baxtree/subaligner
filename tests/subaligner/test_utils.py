@@ -55,7 +55,6 @@ class UtilsTests(unittest.TestCase):
 
         self.assertTrue(filecmp.cmp(self.__real_vtt_path, output_file_path))
 
-
     def test_vtt2srt(self):
         output_file_path = os.path.join(self.__resource_tmp, "converted.srt")
 
@@ -72,7 +71,6 @@ class UtilsTests(unittest.TestCase):
             self.assertTrue(isinstance(e, TerminalException))
         else:
             self.fail("Should have thrown exception")
-
 
     @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
     def test_throw_exception_on_srt2vtt_timeout(self, mock_communicate):
@@ -123,6 +121,7 @@ class UtilsTests(unittest.TestCase):
             self.assertTrue(isinstance(e, TerminalException))
         else:
             self.fail("Should have thrown exception")
+
 
 if __name__ == "__main__":
     unittest.main()
