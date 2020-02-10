@@ -42,6 +42,16 @@ class PredictorTests(unittest.TestCase):
         self.assertIsNotNone(audio_file_path)
         self.assertGreater(len(voice_probabilities), 0)
 
+    def test_predict_single_pass_with_fps(self):
+        subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20, step_sample=0.02).predict_single_pass(
+            self.__video_file_path, self.__srt_file_path, self.__weights_dir
+        )
+        self.__audio_file_paths.append(audio_file_path)
+
+        self.assertGreater(len(subs), 0)
+        self.assertIsNotNone(audio_file_path)
+        self.assertGreater(len(voice_probabilities), 0)
+
     def test_predict_single_pass_with_ttml(self):
         subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__ttml_file_path, self.__weights_dir
@@ -88,8 +98,6 @@ class PredictorTests(unittest.TestCase):
 
         self.assertGreater(len(new_subs), 0)
         self.assertEqual(len(new_subs), len(subs))
-        for index, sub in enumerate(new_subs):
-            self.assertEqual(sub.duration, subs[index].duration)
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_predict_dual_pass_with_stretching(self):

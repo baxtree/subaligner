@@ -47,8 +47,9 @@ subtitle&nbsp;files.<br>&nbsp;</tt></td></tr>
 <td width="100%">Static methods defined here:<br>
 <dl><dt><a name="MediaHelper-extract_audio"><strong>extract_audio</strong></a>(video_file_path, decompress=False, freq=16000)</dt><dd><tt>Extract&nbsp;audio&nbsp;track&nbsp;from&nbsp;the&nbsp;video&nbsp;file&nbsp;and&nbsp;save&nbsp;it&nbsp;to&nbsp;a&nbsp;WAV&nbsp;file.<br>
 &nbsp;<br>
-Keyword&nbsp;Arguments:<br>
+Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;video_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;input&nbsp;video&nbsp;file&nbsp;path.<br>
+Keyword&nbsp;Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;decompress&nbsp;{bool}&nbsp;--&nbsp;Extract&nbsp;WAV&nbsp;if&nbsp;True&nbsp;otherwise&nbsp;extract&nbsp;AAC&nbsp;(default:&nbsp;{False}).<br>
 &nbsp;&nbsp;&nbsp;&nbsp;freq&nbsp;{int}&nbsp;--&nbsp;The&nbsp;audio&nbsp;sample&nbsp;frequency&nbsp;(default:&nbsp;{16000}).<br>
 Returns:<br>
@@ -82,6 +83,13 @@ Arguments:<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;float&nbsp;--&nbsp;The&nbsp;duration&nbsp;in&nbsp;seconds.</tt></dd></dl>
+
+<dl><dt><a name="MediaHelper-get_frame_rate"><strong>get_frame_rate</strong></a>(video_file_path)</dt><dd><tt>Extract&nbsp;audio&nbsp;track&nbsp;from&nbsp;the&nbsp;video&nbsp;file&nbsp;and&nbsp;save&nbsp;it&nbsp;to&nbsp;a&nbsp;WAV&nbsp;file.<br>
+&nbsp;<br>
+Arguments:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;video_file_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;input&nbsp;video&nbsp;file&nbsp;path.<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;float&nbsp;--&nbsp;The&nbsp;frame&nbsp;rate</tt></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>

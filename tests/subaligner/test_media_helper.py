@@ -84,6 +84,9 @@ class MediaHelperTests(unittest.TestCase):
         for sub in new_subs:
             self.assertIsInstance(sub, pysrt.SubRipFile)
 
+    def test_get_frame_rate(self):
+        self.assertEqual(24.0, Undertest.get_frame_rate(self.__video_file_path))
+
     def test_throw_terminal_exception_on_bad_video(self):
         try:
             Undertest.extract_audio("bad_video_file_path", True, 16000)
@@ -162,6 +165,39 @@ class MediaHelperTests(unittest.TestCase):
             self.assertTrue(mock_communicate.called)
             self.assertTrue(isinstance(e, TerminalException))
             self.assertTrue("Cannot extract audio from audio:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", return_value=1)
+    def test_throw_exception_on_get_frame_rate(self, mock_communicate):
+        try:
+            Undertest.get_frame_rate(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Cannot extract the frame rate from video:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    def test_throw_exception_on_get_frame_rate_timeout(self, mock_communicate):
+        try:
+            Undertest.get_frame_rate(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Timeout on extracting the frame rate from video:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=Exception())
+    def test_throw_exception_on_get_frame_rate_exception(self, mock_communicate):
+        try:
+            Undertest.get_frame_rate(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("Cannot extract the frame rate from video:" in str(e))
         else:
             self.fail("Should have thrown exception")
 

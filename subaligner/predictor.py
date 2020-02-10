@@ -6,6 +6,7 @@ import concurrent.futures
 import numpy as np
 import multiprocessing as mp
 
+from pysrt import SubRipTime
 from sklearn.metrics import log_loss
 from copy import deepcopy
 from aeneas.executetask import ExecuteTask
@@ -74,6 +75,9 @@ class Predictor(Singleton):
         except Exception:
             raise
         else:
+            frame_rate = MediaHelper.get_frame_rate(video_file_path)
+            self.__feature_embedder.step_sample = 1 / frame_rate
+            self.__on_frame_timecodes(subs)
             return subs, audio_file_path, voice_probabilities
         finally:
             if os.path.exists(audio_file_path):
@@ -110,6 +114,9 @@ class Predictor(Singleton):
         except Exception:
             raise
         else:
+            frame_rate = MediaHelper.get_frame_rate(video_file_path)
+            self.__feature_embedder.step_sample = 1 / frame_rate
+            self.__on_frame_timecodes(new_subs)
             return new_subs, subs, voice_probabilities
         finally:
             if os.path.exists(audio_file_path):
@@ -357,9 +364,6 @@ class Predictor(Singleton):
                 os.remove(audio_file_path)
             raise ValueError("Error: No subtitles passed in")
 
-        seconds_to_shift = Predictor.__normalise_seconds_to_shift(
-            seconds_to_shift, self.__feature_embedder.step_sample
-        )
         if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
@@ -601,3 +605,13 @@ class Predictor(Singleton):
                 os.remove(task.text_file_path_absolute)
             if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
                 os.remove(task.sync_map_file_path_absolute)
+
+    def __on_frame_timecodes(self, subs):
+        for sub in subs:
+            millis_per_frame = self.__feature_embedder.step_sample * 1000
+            new_start_millis = round(int(str(sub.start).split(",")[1]) / millis_per_frame + 0.5) * millis_per_frame
+            new_start = str(sub.start).split(",")[0] + "," + str(int(new_start_millis)).zfill(3)
+            new_end_millis = round(int(str(sub.end).split(",")[1]) / millis_per_frame - 0.5) * millis_per_frame
+            new_end = str(sub.end).split(",")[0] + "," + str(int(new_end_millis)).zfill(3)
+            sub.start = SubRipTime.coerce(new_start)
+            sub.end = SubRipTime.coerce(new_end)
