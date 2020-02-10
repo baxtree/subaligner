@@ -219,5 +219,6 @@ class SubtitleTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
+
 if __name__ == "__main__":
     unittest.main()
