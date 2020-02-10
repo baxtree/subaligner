@@ -321,7 +321,7 @@ class Predictor(Singleton):
             network = Network.get_from_model(model_path)
             Predictor.__LOGGER.debug("Start predicting...")
             pred_start = datetime.datetime.now()
-            voice_probabilities = network.get_predictions(train_data, weights_path, verbose=int(Logger.VERBOSE))
+            voice_probabilities = network.get_predictions(train_data, weights_path)
         finally:
             self.__lock.release()
 
