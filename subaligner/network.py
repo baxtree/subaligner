@@ -1,4 +1,6 @@
 import os
+import math
+import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras.layers import (
@@ -347,6 +349,7 @@ class Network(object):
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
             assert epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
+
         hist = self.__model.fit(
             train_data,
             labels,
@@ -363,36 +366,34 @@ class Network(object):
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
     def fit_with_generator(
-        self,
-        data_label_generator,
-        steps_per_epoch,
-        model_filepath,
-        weights_filepath,
-        logs_dir,
-        epochs,
-        training_log,
-        resume,
-        tb_debug=False,
-        cli_debug=False,
+            self,
+            train_data_raw,
+            labels_raw,
+            model_filepath,
+            weights_filepath,
+            logs_dir,
+            epochs,
+            training_log,
+            resume,
     ):
-        """Fit the training data to the network.
+        """Fit the training data to the network and save the network model as a HDF file.
 
         Arguments:
-            train_data {numpy.array} -- The Numpy array of training data.
-            labels {numpy.array} -- The Numpy array of training labels.
+            train_data_raw {list} -- The HDF5 raw training data.
+            labels_raw {list} -- The HDF5 raw training labels.
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
             logs_dir {string} -- The TensorBoard log file directory.
             epochs {int} -- The number of training epochs.
             training_log {string} -- The path to the log file of epoch results.
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
-            tb_debug {bool} -- True to turn on the Tensorboard debug mode.
-            cli_debug {bool} -- True to turn on the CLI debug mode.
-
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
         """
 
+        initial_epoch = 0
+        batch_size = 32
+        validation_split = 0.25
         csv_logger = CSVLogger(training_log)
         checkpoint = ModelCheckpoint(
             filepath=weights_filepath,
@@ -419,7 +420,6 @@ class Network(object):
                 optimizer=Adam(lr=0.001),
                 metrics=["accuracy"],
             )
-        initial_epoch = 0
         if resume:
             assert os.path.isfile(training_log), "{} does not exist and is required by training resumption".format(
                 training_log)
@@ -427,11 +427,46 @@ class Network(object):
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
             assert epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
-        hist = self.__model.fit_generator(
-            data_label_generator,
-            epochs=epochs,
-            shuffle=True,
+
+        def __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation):
+            while True:
+                total_size = train_data_raw.shape[0]
+                for i in range(0, total_size, batch_size):
+                    real_batch_size = total_size - i - 1 if total_size - i - 1 < batch_size else batch_size
+                    train_range_right = i + int(real_batch_size * (1 - validation_split))
+                    if is_validation:
+                        batched_train_data = train_data_raw[train_range_right:i + real_batch_size]
+                        batched_labels = labels_raw[train_range_right:i + real_batch_size]
+                    else:
+                        batched_train_data = train_data_raw[i:train_range_right]
+                        batched_labels = labels_raw[i:train_range_right]
+
+                    np_batched_train_data = np.array(batched_train_data)
+                    np_batched_labels = np.array(batched_labels)
+
+                    rand = np.random.permutation(np.arange(len(np_batched_labels)))
+                    np_batched_random_train_data = np_batched_train_data[rand]
+                    np_batched_random_labels = np_batched_labels[rand]
+
+                    np_batched_random_train_data = np.array(
+                        [np.rot90(m=val, k=1, axes=(0, 1)) for val in np_batched_random_train_data]
+                    )
+                    np_batched_random_train_data = np_batched_random_train_data - np.mean(np_batched_random_train_data, axis=0)
+
+                    yield np_batched_random_train_data, np_batched_random_labels
+
+        train_generator = __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=False)
+        test_generator = __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=True)
+        steps_per_epoch = math.ceil(float(train_data_raw.shape[0]) * (1 - validation_split) / batch_size)
+        validation_steps = math.ceil(float(train_data_raw.shape[0]) * validation_split / batch_size)
+
+        hist = self.__model.fit(
+            train_generator,
             steps_per_epoch=steps_per_epoch,
+            validation_data=test_generator,
+            validation_steps=validation_steps,
+            epochs=epochs,
+            shuffle=False,
             callbacks=callbacks_list,
             initial_epoch=initial_epoch,
         )
