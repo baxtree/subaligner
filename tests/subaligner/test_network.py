@@ -2,6 +2,7 @@ import unittest
 import os
 import pickle
 import shutil
+import h5py
 import numpy as np
 
 from subaligner.network import Network as Undertest
@@ -20,6 +21,9 @@ class NetworkTests(unittest.TestCase):
         )
         self.__labels = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/labels"
+        )
+        self.__training_dump = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/training_dump.hdf5"
         )
         self.__resource_tmp = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/tmp"
@@ -253,6 +257,24 @@ class NetworkTests(unittest.TestCase):
         )
         self.assertEqual(list, type(val_loss))
         self.assertEqual(list, type(val_acc))
+
+    def test_fit_with_generator(self):
+        network = Undertest.get_lstm((2, 20), [12], [56, 28])
+        model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
+        weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
+        with h5py.File(self.__training_dump, "r") as hf:
+            val_loss, val_acc = network.fit_with_generator(
+                hf["train_data"],
+                hf["labels"],
+                model_filepath,
+                weights_filepath,
+                self.__resource_tmp,
+                2,
+                "training.log",
+                False,
+            )
+            self.assertEqual(list, type(val_loss))
+            self.assertEqual(list, type(val_acc))
 
 
 if __name__ == "__main__":

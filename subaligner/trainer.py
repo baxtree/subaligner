@@ -68,27 +68,40 @@ class Trainer(object):
             epochs {int} -- The number of training epochs (default: {1000}).
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
         """
+
         training_start = datetime.datetime.now()
+        model_filepath = "{0}/{1}".format(model_dir, "model.hdf5")
+        weights_filepath = "{0}/{1}".format(weights_dir, "weights.hdf5")
 
         if av_file_paths is None or subtitle_file_paths is None:
-
             # Load the data and labels dump from the disk
             training_dump = training_dump_dir + "/training_dump.hdf5"
             Trainer.__LOGGER.debug(
-                "Loading existing training data dump from {}".format(
+                "Resume training on data dump: ".format(
                     training_dump
                 )
             )
-            loading_start = datetime.datetime.now()
-            hf = h5py.File(training_dump, "r")
-            train_data = np.array(hf.get("train_data"))
-            labels = np.array(hf.get("labels"))
-            hf.close()
-            Trainer.__LOGGER.debug(
-                "Training data dump loaded after {}".format(
-                    str(datetime.datetime.now() - loading_start)
+            with h5py.File(training_dump, "r") as hf:
+                train_data_raw = hf["train_data"]
+                labels_raw = hf["labels"]
+
+                if resume:
+                    network = Network.load_model_and_weights(model_filepath, weights_filepath)
+                else:
+                    input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
+                    Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+                    network = Network.get_lstm(input_shape)
+
+                val_loss, val_acc = network.fit_with_generator(
+                    train_data_raw,
+                    labels_raw,
+                    model_filepath,
+                    weights_filepath,
+                    logs_dir,
+                    epochs,
+                    training_log,
+                    resume,
                 )
-            )
         else:
             train_data, labels = Trainer.__extract_data_and_label_from_avs(
                 self, av_file_paths, subtitle_file_paths
@@ -96,50 +109,33 @@ class Trainer(object):
 
             # Dump extracted data and labels to files for re-training
             training_dump = training_dump_dir + "/training_dump.hdf5"
-            hf = h5py.File(training_dump, "w")
-            hf.create_dataset("train_data", data=train_data)
-            hf.create_dataset("labels", data=labels)
-            hf.close()
+            with h5py.File(training_dump, "w") as hf:
+                hf.create_dataset("train_data", data=train_data)
+                hf.create_dataset("labels", data=labels)
 
-        rand = np.random.permutation(np.arange(len(labels)))
-        train_data = train_data[rand]
-        labels = labels[rand]
+                rand = np.random.permutation(np.arange(len(labels)))
+                train_data = train_data[rand]
+                labels = labels[rand]
 
-        train_data = np.array(
-            [np.rot90(m=val, k=1, axes=(0, 1)) for val in train_data]
-        )
-        train_data = train_data - np.mean(train_data, axis=0)
+                train_data = np.array(
+                    [np.rot90(m=val, k=1, axes=(0, 1)) for val in train_data]
+                )
+                train_data = train_data - np.mean(train_data, axis=0)
 
-        input_shape = (train_data.shape[1], train_data.shape[2])
-        Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+                input_shape = (train_data.shape[1], train_data.shape[2])
+                Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
 
-        model_filepath = "{0}/{1}".format(model_dir, "model.hdf5")
-        weights_filepath = "{0}/{1}".format(weights_dir, "weights.hdf5")
-
-        if resume:
-            network = Network.load_model_and_weights(model_filepath, weights_filepath)
-            val_loss, val_acc = network.fit_and_get_history(
-                train_data,
-                labels,
-                model_filepath,
-                weights_filepath,
-                logs_dir,
-                epochs,
-                training_log,
-                True,
-            )
-        else:
-            network = Network.get_lstm(input_shape)
-            val_loss, val_acc = network.fit_and_get_history(
-                train_data,
-                labels,
-                model_filepath,
-                weights_filepath,
-                logs_dir,
-                epochs,
-                training_log,
-                False,
-            )
+                network = Network.get_lstm(input_shape)
+                val_loss, val_acc = network.fit_and_get_history(
+                    train_data,
+                    labels,
+                    model_filepath,
+                    weights_filepath,
+                    logs_dir,
+                    epochs,
+                    training_log,
+                    False,
+                )
 
         Trainer.__LOGGER.debug("val_loss: {}".format(min(val_loss)))
         Trainer.__LOGGER.debug("val_acc: {}".format(max(val_acc)))
