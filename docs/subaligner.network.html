@@ -17,8 +17,10 @@
 <font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="os.html">os</a><br>
-</td><td width="25%" valign=top><a href="tensorflow.html">tensorflow</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="math.html">math</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="tensorflow.html">tensorflow</a><br>
 </td><td width="25%" valign=top><a href="tensorflow.python.debug.html">tensorflow.python.debug</a><br>
 </td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -70,20 +72,17 @@ Arguments:<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;tuple&nbsp;--&nbsp;A&nbsp;tuple&nbsp;contains&nbsp;validation&nbsp;losses&nbsp;and&nbsp;validation&nbsp;accuracies.</tt></dd></dl>
 
-<dl><dt><a name="Network-fit_with_generator"><strong>fit_with_generator</strong></a>(self, data_label_generator, steps_per_epoch, model_filepath, weights_filepath, logs_dir, epochs, training_log, resume, tb_debug=False, cli_debug=False)</dt><dd><tt>Fit&nbsp;the&nbsp;training&nbsp;data&nbsp;to&nbsp;the&nbsp;network.<br>
+<dl><dt><a name="Network-fit_with_generator"><strong>fit_with_generator</strong></a>(self, train_data_raw, labels_raw, model_filepath, weights_filepath, logs_dir, epochs, training_log, resume)</dt><dd><tt>Fit&nbsp;the&nbsp;training&nbsp;data&nbsp;to&nbsp;the&nbsp;network&nbsp;and&nbsp;save&nbsp;the&nbsp;network&nbsp;model&nbsp;as&nbsp;a&nbsp;HDF&nbsp;file.<br>
 &nbsp;<br>
 Arguments:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;train_data&nbsp;{numpy.array}&nbsp;--&nbsp;The&nbsp;Numpy&nbsp;array&nbsp;of&nbsp;training&nbsp;data.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;labels&nbsp;{numpy.array}&nbsp;--&nbsp;The&nbsp;Numpy&nbsp;array&nbsp;of&nbsp;training&nbsp;labels.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;train_data_raw&nbsp;{list}&nbsp;--&nbsp;The&nbsp;HDF5&nbsp;raw&nbsp;training&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;labels_raw&nbsp;{list}&nbsp;--&nbsp;The&nbsp;HDF5&nbsp;raw&nbsp;training&nbsp;labels.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;model&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;weights_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;weights&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;logs_dir&nbsp;{string}&nbsp;--&nbsp;The&nbsp;TensorBoard&nbsp;log&nbsp;file&nbsp;directory.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;epochs&nbsp;{int}&nbsp;--&nbsp;The&nbsp;number&nbsp;of&nbsp;training&nbsp;epochs.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;training_log&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;log&nbsp;file&nbsp;of&nbsp;epoch&nbsp;results.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;resume&nbsp;{bool}&nbsp;--&nbsp;True&nbsp;to&nbsp;continue&nbsp;with&nbsp;previous&nbsp;training&nbsp;result&nbsp;or&nbsp;False&nbsp;to&nbsp;start&nbsp;a&nbsp;new&nbsp;one&nbsp;(default:&nbsp;{False}).<br>
-&nbsp;&nbsp;&nbsp;&nbsp;tb_debug&nbsp;{bool}&nbsp;--&nbsp;True&nbsp;to&nbsp;turn&nbsp;on&nbsp;the&nbsp;Tensorboard&nbsp;debug&nbsp;mode.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;cli_debug&nbsp;{bool}&nbsp;--&nbsp;True&nbsp;to&nbsp;turn&nbsp;on&nbsp;the&nbsp;CLI&nbsp;debug&nbsp;mode.<br>
-&nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;tuple&nbsp;--&nbsp;A&nbsp;tuple&nbsp;contains&nbsp;validation&nbsp;losses&nbsp;and&nbsp;validation&nbsp;accuracies.</tt></dd></dl>
 
