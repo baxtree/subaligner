@@ -48,7 +48,7 @@ class Trainer(object):
         weights_dir,
         logs_dir,
         training_dump_dir,
-        epochs=1000,
+        hyperparameters,
         training_log="training.log",
         resume=False,
     ):
@@ -60,12 +60,10 @@ class Trainer(object):
             model_dir {string} -- The directory of the model file.
             weights_dir {string} -- The directory of the weights file.
             logs_dir {string} -- The directory of the log file.
-            resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
-
-        Keyword Arguments:
             training_dump_dir {string} --  The directory of the training data dump file.
-            epochs {int} -- The number of training epochs (default: {1000}).
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
+            resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
         """
 
         training_start = datetime.datetime.now()
@@ -85,11 +83,11 @@ class Trainer(object):
                 labels_raw = hf["labels"]
 
                 if resume:
-                    network = Network.load_model_and_weights(model_filepath, weights_filepath)
+                    network = Network.load_model_and_weights(model_filepath, weights_filepath, hyperparameters)
                 else:
                     input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
                     Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
-                    network = Network.get_lstm(input_shape)
+                    network = Network.get_lstm(input_shape, hyperparameters)
 
                 val_loss, val_acc = network.fit_with_generator(
                     train_data_raw,
@@ -97,7 +95,6 @@ class Trainer(object):
                     model_filepath,
                     weights_filepath,
                     logs_dir,
-                    epochs,
                     training_log,
                     resume,
                 )
@@ -124,14 +121,13 @@ class Trainer(object):
                 input_shape = (train_data.shape[1], train_data.shape[2])
                 Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
 
-                network = Network.get_lstm(input_shape)
+                network = Network.get_lstm(input_shape, hyperparameters)
                 val_loss, val_acc = network.fit_and_get_history(
                     train_data,
                     labels,
                     model_filepath,
                     weights_filepath,
                     logs_dir,
-                    epochs,
                     training_log,
                     False,
                 )

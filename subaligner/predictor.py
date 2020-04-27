@@ -35,17 +35,21 @@ class Predictor(Singleton):
     )  # Average 0.3 word per sec multiplies average 6 characters per word
     __MAX_HEAD_ROOM = 20000  # Maximum duration without subtitle (10 minutes)
 
-    def __init__(self, **kwargs):
+    def __init__(self, hyperparameters, **kwargs):
         """Feature predictor initialiser.
 
-        Keyword Arguments:
-            n_mfcc {int} -- The number of MFCC components (default: {13}).
-            frequency {float} -- The sample rate  (default: {16000}).
-            hop_len {int} -- The number of samples per frame (default: {512}).
-            step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
-            len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
+            Arguments:
+                hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+
+            Keyword Arguments:
+                n_mfcc {int} -- The number of MFCC components (default: {13}).
+                frequency {float} -- The sample rate  (default: {16000}).
+                hop_len {int} -- The number of samples per frame (default: {512}).
+                step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
+                len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
         """
 
+        self.__hyperparameters = hyperparameters
         self.__feature_embedder = FeatureEmbedder(**kwargs)
         self.__lock = threading.Lock()
 
@@ -318,7 +322,7 @@ class Predictor(Singleton):
         # Network class is not thread safe so a new graph is created for each thread
         self.__lock.acquire()
         try:
-            network = Network.get_from_model(model_path)
+            network = Network.get_from_model(model_path, self.__hyperparameters)
             Predictor.__LOGGER.debug("Start predicting...")
             pred_start = datetime.datetime.now()
             voice_probabilities = network.get_predictions(train_data, weights_path)

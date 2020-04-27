@@ -22,7 +22,6 @@ from tensorflow.keras.callbacks import (
     TensorBoard,
     CSVLogger,
 )
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras import backend as K
@@ -47,9 +46,7 @@ class Network(object):
         secret,
         input_shape,
         n_type,
-        front_layers,
-        relu_layers,
-        dropout,
+        hyperparameters,
         model_path=None,
         backend="tensorflow"
     ):
@@ -59,7 +56,10 @@ class Network(object):
             secret {object} -- A hash only known by factory methods.
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             n_type {string} -- Can be "lstm" or "conv_1d".
-            backend {string} -- The tensor manipulation backend (default: {tensorflow}).
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            model_path {string} -- The path to the model file.
+            backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
+                                by TF 2 and this parameter is here only for a historical reason.
         Raises:
             NotImplementedError -- Thrown when any network attributes are modified.
         """
@@ -73,22 +73,23 @@ class Network(object):
         if n_type == Network.__LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
-                input_shape, front_layers, relu_layers, dropout
+                input_shape, hyperparameters
             )
         if n_type == Network.__BI_LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
-                input_shape, front_layers, relu_layers, dropout, is_bidirectional=True
+                input_shape, hyperparameters, is_bidirectional=True
             )
         if n_type == Network.__CONV_1D:
             self.__input_shape = input_shape
             self.__model = self.__conv1d(
-                input_shape, front_layers, relu_layers, dropout
+                input_shape, hyperparameters
             )
         if (input_shape is None and n_type == Network.__UNKNOWN and model_path is not None):
             self.__model = load_model(model_path)
             self.__input_shape = self.__model.input_shape[1:]
         self.__n_type = n_type
+        self.hyperparameters = hyperparameters
 
         # freeze the object after creation
         def __setattr__(self, *args):
@@ -98,13 +99,12 @@ class Network(object):
             raise NotImplementedError("Cannot modify the immutable object")
 
     @classmethod
-    def get_lstm(
-        cls, input_shape, front_layers=[64], relu_layers=[32, 16], dropout=0.2
-    ):
+    def get_lstm(cls, input_shape, hyperparameters):
         """Factory method for creating a LSTM network.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Constructed LSTM network object.
@@ -114,19 +114,16 @@ class Network(object):
             cls.__secret,
             input_shape,
             Network.__LSTM,
-            front_layers,
-            relu_layers,
-            dropout,
+            hyperparameters
         )
 
     @classmethod
-    def get_bi_lstm(
-            cls, input_shape, front_layers=[64], relu_layers=[32, 16], dropout=0.2
-    ):
+    def get_bi_lstm(cls, input_shape, hyperparameters):
         """Factory method for creating a bidirectional LSTM network.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Constructed Bidirectional LSTM network object.
@@ -136,19 +133,16 @@ class Network(object):
             cls.__secret,
             input_shape,
             Network.__BI_LSTM,
-            front_layers,
-            relu_layers,
-            dropout,
+            hyperparameters
         )
 
     @classmethod
-    def get_conv1d(
-        cls, input_shape, front_layers=[12], relu_layers=[56, 28], dropout=0.2
-    ):
+    def get_conv1d(cls, input_shape, hyperparameters):
         """Factory method for creating a 1D convolutional network.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Constructed 1D convolutional network object.
@@ -157,26 +151,23 @@ class Network(object):
             cls.__secret,
             input_shape,
             Network.__CONV_1D,
-            front_layers,
-            relu_layers,
-            dropout,
+            hyperparameters
         )
 
     @classmethod
-    def get_from_model(cls, model_path):
+    def get_from_model(cls, model_path, hyperparameters):
         """Load model into a network object.
 
         Arguments:
             model_path {string} -- The path to the model file.
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
         """
 
         return cls(
             cls.__secret,
             None,
             Network.__UNKNOWN,
-            None,
-            None,
-            None,
+            hyperparameters,
             model_path=model_path,
         )
 
@@ -196,17 +187,18 @@ class Network(object):
         model.save(combined_filepath)
 
     @staticmethod
-    def load_model_and_weights(model_filepath, weights_filepath):
+    def load_model_and_weights(model_filepath, weights_filepath, hyperparameters):
         """Load weights to the Network model.
 
         Arguments:
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
+            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Reconstructed network object.
         """
-        network = Network.get_from_model(model_filepath)
+        network = Network.get_from_model(model_filepath, hyperparameters)
         network.__model.load_weights(weights_filepath)
         return network
 
@@ -270,7 +262,6 @@ class Network(object):
         model_filepath,
         weights_filepath,
         logs_dir,
-        epochs,
         training_log,
         resume,
     ):
@@ -282,7 +273,6 @@ class Network(object):
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
             logs_dir {string} -- The TensorBoard log file directory.
-            epochs {int} -- The number of training epochs.
             training_log {string} -- The path to the log file of epoch results.
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
         Returns:
@@ -296,7 +286,7 @@ class Network(object):
         )
         checkpoint = ModelCheckpoint(
             filepath=weights_filepath,
-            monitor="val_loss",
+            monitor=self.hyperparameters.monitor,
             verbose=1,
             save_best_only=False,
             save_weights_only=True,
@@ -307,17 +297,20 @@ class Network(object):
             write_graph=True,
             write_images=True,
         )
-        # earlyStopping = EarlyStopping(monitor="val_loss", min_delta=0.00001, verbose=1, mode="min", patience=20)
+        earlyStopping = EarlyStopping(monitor=self.hyperparameters.monitor, min_delta=self.hyperparameters.es_min_delta,
+                                      mode=self.hyperparameters.es_mode, patience=self.hyperparameters.es_patience,
+                                      verbose=1)
         callbacks_list = [
             checkpoint,
             tensorboard,
             csv_logger,
-        ]  # , earlyStopping]
+            earlyStopping,
+        ]
         if not resume:
             self.__model.compile(
-                loss="binary_crossentropy",
-                optimizer=Adam(lr=0.001),
-                metrics=["accuracy"],
+                loss=self.hyperparameters.loss,
+                optimizer=self.hyperparameters.optimizer,
+                metrics=self.hyperparameters.metrics,
             )
         initial_epoch = 0
         if resume:
@@ -326,15 +319,15 @@ class Network(object):
             training_log_file = open(training_log)
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
-            assert epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
+            assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
 
         hist = self.__model.fit(
             train_data,
             labels,
-            epochs=epochs,
-            batch_size=32,
+            epochs=self.hyperparameters.epochs,
+            batch_size=self.hyperparameters.batch_size,
             shuffle=True,
-            validation_split=0.25,
+            validation_split=self.hyperparameters.validation_split,
             verbose=1,
             callbacks=callbacks_list,
             initial_epoch=initial_epoch,
@@ -350,7 +343,6 @@ class Network(object):
             model_filepath,
             weights_filepath,
             logs_dir,
-            epochs,
             training_log,
             resume,
     ):
@@ -362,7 +354,6 @@ class Network(object):
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
             logs_dir {string} -- The TensorBoard log file directory.
-            epochs {int} -- The number of training epochs.
             training_log {string} -- The path to the log file of epoch results.
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
         Returns:
@@ -370,12 +361,12 @@ class Network(object):
         """
 
         initial_epoch = 0
-        batch_size = 32
-        validation_split = 0.25
+        batch_size = self.hyperparameters.batch_size
+        validation_split = self.hyperparameters.validation_split
         csv_logger = CSVLogger(training_log)
         checkpoint = ModelCheckpoint(
             filepath=weights_filepath,
-            monitor="val_loss",
+            monitor=self.hyperparameters.monitor,
             verbose=1,
             save_best_only=False,
             save_weights_only=True,
@@ -386,17 +377,20 @@ class Network(object):
             write_graph=True,
             write_images=True,
         )
-        # earlyStopping = EarlyStopping(monitor="val_loss", min_delta=0.00001, verbose=1, mode="min", patience=20)
+        earlyStopping = EarlyStopping(monitor=self.hyperparameters.monitor, min_delta=self.hyperparameters.es_min_delta,
+                                      mode=self.hyperparameters.es_mode, patience=self.hyperparameters.es_patience,
+                                      verbose=1)
         callbacks_list = [
             checkpoint,
             tensorboard,
             csv_logger,
-        ]  # , earlyStopping]
+            earlyStopping,
+        ]
         if not resume:
             self.__model.compile(
-                loss="binary_crossentropy",
-                optimizer=Adam(lr=0.001),
-                metrics=["accuracy"],
+                loss=self.hyperparameters.loss,
+                optimizer=self.hyperparameters.optimizer,
+                metrics=self.hyperparameters.metrics,
             )
         if resume:
             assert os.path.isfile(training_log), "{} does not exist and is required by training resumption".format(
@@ -404,7 +398,7 @@ class Network(object):
             training_log_file = open(training_log)
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
-            assert epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
+            assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
 
         def __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation):
             while True:
@@ -443,14 +437,14 @@ class Network(object):
             steps_per_epoch=steps_per_epoch,
             validation_data=test_generator,
             validation_steps=validation_steps,
-            epochs=epochs,
+            epochs=self.hyperparameters.epochs,
             shuffle=False,
             callbacks=callbacks_list,
             initial_epoch=initial_epoch,
         )
         self.__model.save(model_filepath)
 
-        return hist.history["loss"], hist.history["acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["accuracy"]
+        return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
     # To make this work, need to change model._network_nodes to model._container_nodes
     # in tensorflow/python/keras/_impl/keras/utils/vis_utils.py
@@ -468,21 +462,21 @@ class Network(object):
         K.clear_session()
 
     @staticmethod
-    def __lstm(input_shape, front_layers, relu_layers, dropout, is_bidirectional=False):
+    def __lstm(input_shape, hyperparameters, is_bidirectional=False):
         inputs = Input(shape=input_shape)
         hidden = BatchNormalization()(inputs)
 
-        for nodes in front_layers:
+        for nodes in hyperparameters.front_hidden_size:
             hidden = Bidirectional(LSTM(nodes))(hidden) if is_bidirectional else LSTM(nodes)(hidden)
             hidden = BatchNormalization()(hidden)
             hidden = Activation("relu")(hidden)
-            hidden = Dropout(dropout)(hidden)
+            hidden = Dropout(hyperparameters.dropout)(hidden)
 
-        for nodes in relu_layers:
+        for nodes in hyperparameters.back_hidden_size:
             hidden = Dense(nodes)(hidden)
             hidden = BatchNormalization()(hidden)
             hidden = Activation("relu")(hidden)
-            hidden = Dropout(dropout)(hidden)
+            hidden = Dropout(hyperparameters.dropout)(hidden)
 
         hidden = Dense(1)(hidden)
         outputs = Activation("sigmoid")(hidden)
@@ -490,20 +484,20 @@ class Network(object):
         return Model(inputs, outputs)
 
     @staticmethod
-    def __conv1d(input_shape, front_layers, relu_layers, dropout):
+    def __conv1d(input_shape, hyperparameters):
         inputs = Input(shape=input_shape)
         hidden = BatchNormalization()(inputs)
 
-        for nodes in front_layers:
+        for nodes in hyperparameters.front_hidden_size:
             hidden = Conv1D(filters=nodes, kernel_size=3, activation="relu")(
                 hidden
             )
 
-        for nodes in relu_layers:
+        for nodes in hyperparameters.back_hidden_size:
             hidden = Dense(nodes)(hidden)
             hidden = BatchNormalization()(hidden)
             hidden = Activation("relu")(hidden)
-            hidden = Dropout(dropout)(hidden)
+            hidden = Dropout(hyperparameters.dropout)(hidden)
 
         hidden = Dense(1)(hidden)
         outputs = Activation("sigmoid")(hidden)
@@ -512,10 +506,12 @@ class Network(object):
 
     @staticmethod
     def __set_keras_backend(backend):
+        # Changing backend is no longer supported by tf.keras in TF2
         if K.backend() != backend:
             os.environ["KERAS_BACKEND"] = backend
             importlib.reload(K)
             assert K.backend() == backend, "Unable to set backend to {}".format(backend)
+
         if backend.lower() == "tensorflow":
             # Set the number of inter/intra threads to the number of physical cores (experiment shows this is the best)
             physical_core_num = psutil.cpu_count(logical=False)
@@ -526,13 +522,13 @@ class Network(object):
             try:
                 for gpu in physical_devices:
                     tf.config.experimental.set_memory_growth(gpu, True)
-            except:
+            except Exception:
                 # Invalid device or cannot modify virtual devices once initialized.
                 pass
             K.clear_session()
         elif backend.lower() == "theano" or backend.lower() == "cntk":
             #  Backends other than tensorflow require separate installations before being used.
-            pass
+            if (int(tf.__version__.split(".")[0]) >= 2):
+                raise ValueError("Multi-backend is not supported")
         else:
             raise ValueError("Unknown backend: {}".format(backend))
-

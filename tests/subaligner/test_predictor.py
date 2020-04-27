@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+from subaligner.hyperparameters import Hyperparameters
 from subaligner.predictor import Predictor as Undertest
 from subaligner.exception import TerminalException
 
@@ -8,6 +9,7 @@ from subaligner.exception import TerminalException
 class PredictorTests(unittest.TestCase):
     def setUp(self):
         Undertest._Predictor__MAX_SHIFT_IN_SECS = sys.maxsize
+        self.__hyperparameters = Hyperparameters()
         self.__weights_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/models/training/weights"
         )
@@ -33,7 +35,7 @@ class PredictorTests(unittest.TestCase):
             os.remove(file) if os.path.isfile(file) else None
 
     def test_predict_single_pass(self):
-        subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20).predict_single_pass(
+        subs, audio_file_path, voice_probabilities = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
@@ -43,7 +45,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_predict_single_pass_with_fps(self):
-        subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20, step_sample=0.02).predict_single_pass(
+        subs, audio_file_path, voice_probabilities = Undertest(self.__hyperparameters, n_mfcc=20, step_sample=0.02).predict_single_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
@@ -53,7 +55,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_predict_single_pass_with_ttml(self):
-        subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20).predict_single_pass(
+        subs, audio_file_path, voice_probabilities = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__ttml_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
@@ -63,7 +65,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_predict_single_pass_with_vtt(self):
-        subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20).predict_single_pass(
+        subs, audio_file_path, voice_probabilities = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__vtt_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
@@ -73,7 +75,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_predict_on_subtitle_longer_than_audio_within_threshold(self):
-        subs, audio_file_path, _ = Undertest(n_mfcc=20).predict_single_pass(
+        subs, audio_file_path, _ = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__long_subtitle_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
@@ -82,7 +84,7 @@ class PredictorTests(unittest.TestCase):
         self.assertIsNotNone(audio_file_path)
 
     def test_predict_on_subtitle_longer_than_audio_above_threshold(self):
-        subs, audio_file_path, _ = Undertest(n_mfcc=20).predict_single_pass(
+        subs, audio_file_path, _ = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__long_subtitle_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
@@ -91,7 +93,7 @@ class PredictorTests(unittest.TestCase):
         self.assertIsNotNone(audio_file_path)
 
     def test_predict_dual_pass(self):
-        undertest_obj = Undertest(n_mfcc=20)
+        undertest_obj = Undertest(self.__hyperparameters, n_mfcc=20)
         new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
         )
@@ -101,7 +103,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_predict_dual_pass_with_stretching(self):
-        undertest_obj = Undertest(n_mfcc=20)
+        undertest_obj = Undertest(self.__hyperparameters, n_mfcc=20)
 
         new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir, stretch=True
@@ -118,7 +120,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
 
     def test_get_log_loss(self):
-        undertest_obj = Undertest(n_mfcc=20)
+        undertest_obj = Undertest(self.__hyperparameters, n_mfcc=20)
         subs, audio_file_path, voice_probabilities = undertest_obj.predict_single_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
         )
@@ -126,7 +128,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(log_loss, 0)
 
     def test_get_min_log_loss_and_index(self):
-        undertest_obj = Undertest(n_mfcc=20)
+        undertest_obj = Undertest(self.__hyperparameters, n_mfcc=20)
         subs, audio_file_path, voice_probabilities = undertest_obj.predict_single_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
         )
@@ -144,7 +146,7 @@ class PredictorTests(unittest.TestCase):
 
     def test_throw_terminal_exception_on_missing_video(self):
         try:
-            subs, audio_file_path, _ = Undertest(n_mfcc=20).predict_single_pass(None, self.__srt_file_path, self.__weights_dir)
+            subs, audio_file_path, _ = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(None, self.__srt_file_path, self.__weights_dir)
         except Exception as e:
             self.assertTrue(isinstance(e, TerminalException))
         else:
@@ -152,7 +154,7 @@ class PredictorTests(unittest.TestCase):
 
     def test_throw_terminal_exception_on_missing_subtitle(self):
         try:
-            subs, audio_file_path, _ = Undertest(n_mfcc=20).predict_single_pass(self.__video_file_path, None, self.__weights_dir)
+            subs, audio_file_path, _ = Undertest(self.__hyperparameters, n_mfcc=20).predict_single_pass(self.__video_file_path, None, self.__weights_dir)
             self.fail("Should not have reached here")
         except Exception as e:
             self.assertTrue(isinstance(e, TerminalException))
