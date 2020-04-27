@@ -38,7 +38,7 @@ class NetworkTests(unittest.TestCase):
                 ".hdf5"
             ) else None
         shutil.rmtree(self.__resource_tmp)
-        Undertest.clear_session()
+        Undertest.reset()
 
     def test_suppressed_init(self):
         self.assertRaises(
@@ -194,7 +194,7 @@ class NetworkTests(unittest.TestCase):
             )
         except Exception as e:
             self.assertTrue(isinstance(e, AssertionError))
-            self.assertEquals("Existing model has been trained for 2 epochs", str(e))
+            self.assertEqual("Existing model has been trained for 2 epochs", str(e))
         else:
             self.fail("Should have thrown exception")
 

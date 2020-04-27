@@ -1,5 +1,7 @@
 import os
 import math
+import importlib
+import psutil
 import numpy as np
 import tensorflow as tf
 
@@ -23,15 +25,15 @@ from tensorflow.keras.callbacks import (
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.utils import plot_model
-from tensorflow.python import debug as tf_debug
+from tensorflow.keras import backend as K
 from .utils import Utils
 Utils.suppress_lib_logs()
 
 
-# Not thread safe since the session of keras_backend is global
 class Network(object):
-    """ Network factory creates immutable DNNs. Only factory methods are allowed
-    when generating DNN objects.
+    """ Network factory creates immutable DNNs.
+    Not thread safe since the session of keras_backend is global.
+    Only factory methods are allowed when generating DNN objects.
     """
 
     __secret = object()
@@ -49,6 +51,7 @@ class Network(object):
         relu_layers,
         dropout,
         model_path=None,
+        backend="tensorflow"
     ):
         """ Network object initialiser used by factory methods.
 
@@ -56,7 +59,7 @@ class Network(object):
             secret {object} -- A hash only known by factory methods.
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             n_type {string} -- Can be "lstm" or "conv_1d".
-
+            backend {string} -- The tensor manipulation backend (default: {tensorflow}).
         Raises:
             NotImplementedError -- Thrown when any network attributes are modified.
         """
@@ -65,32 +68,7 @@ class Network(object):
             secret == Network.__secret
         ), "Only factory methods are supported when creating instances"
 
-        # Set the number of inter/intra threads to the number of physical cores (experiment shows this is the best)
-        self.__config = tf.compat.v1.ConfigProto(
-            inter_op_parallelism_threads=4,
-            intra_op_parallelism_threads=4,
-            allow_soft_placement=False,
-            # log_device_placement=True,
-        )
-        if not hasattr("self", "__graph"):
-            self.__graph = tf.compat.v1.Graph()
-        if not hasattr("self", "__session"):
-            self.__session = tf.compat.v1.Session(config=self.__config, graph=self.__graph)
-
-        # for tb_debug:
-        # tf.compat.v1.keras.backend.set_session(
-        #     tf_debug.TensorBoardDebugWrapperSession(
-        #         self.__session, "localhost:6064"
-        #     )
-        # )
-
-        # for cli_debug:
-        # tf.compat.v1.keras.backend.set_session(
-        #     tf_debug.LocalCLIDebugWrapperSession(session)
-        # )
-
-        # non-debug mode
-        tf.compat.v1.keras.backend.set_session(self.__session)
+        Network.__set_keras_backend(backend)
 
         if n_type == Network.__LSTM:
             self.__input_shape = input_shape
@@ -485,10 +463,9 @@ class Network(object):
 
         plot_model(self.__model, to_file=file_path, show_shapes=True)
 
-    # Clear Keras backend session due to https://github.com/tensorflow/tensorflow/issues/3388
     @staticmethod
-    def clear_session():
-        tf.compat.v1.keras.backend.clear_session()
+    def reset():
+        K.clear_session()
 
     @staticmethod
     def __lstm(input_shape, front_layers, relu_layers, dropout, is_bidirectional=False):
@@ -532,3 +509,30 @@ class Network(object):
         outputs = Activation("sigmoid")(hidden)
 
         return Model(inputs, outputs)
+
+    @staticmethod
+    def __set_keras_backend(backend):
+        if K.backend() != backend:
+            os.environ["KERAS_BACKEND"] = backend
+            importlib.reload(K)
+            assert K.backend() == backend, "Unable to set backend to {}".format(backend)
+        if backend.lower() == "tensorflow":
+            # Set the number of inter/intra threads to the number of physical cores (experiment shows this is the best)
+            physical_core_num = psutil.cpu_count(logical=False)
+            tf.config.threading.set_inter_op_parallelism_threads(physical_core_num)
+            tf.config.threading.set_intra_op_parallelism_threads(physical_core_num)
+            tf.config.set_soft_device_placement(True)
+            physical_devices = tf.config.experimental.list_physical_devices("GPU")
+            try:
+                for gpu in physical_devices:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+            except:
+                # Invalid device or cannot modify virtual devices once initialized.
+                pass
+            K.clear_session()
+        elif backend.lower() == "theano" or backend.lower() == "cntk":
+            #  Backends other than tensorflow require separate installations before being used.
+            pass
+        else:
+            raise ValueError("Unknown backend: {}".format(backend))
+

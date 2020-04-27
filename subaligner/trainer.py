@@ -4,7 +4,6 @@ import h5py
 import traceback
 import concurrent.futures
 import numpy as np
-import tensorflow as tf
 import multiprocessing as mp
 
 from .network import Network
@@ -267,33 +266,3 @@ class Trainer(object):
             train_data[index] = x
             labels[index] = y
         return audio_file_path, subtitle_file_path
-
-    def __convert_to_pb_model(self, pb_model_dir, pb_model_name):
-        """Covert a HDF 5 model to a protobuf model.
-
-        Arguments:
-            pb_model_dir {string} -- The path to the protobuf model file.
-            pb_model_name {string} -- The name of the protobuf model.
-        """
-
-        saver = tf.compat.v1.train.Saver()
-        saver.save(
-            self.__backend.get_session(),
-            os.path.join(pb_model_dir, "{}.ckpt".format(pb_model_name)),
-        )
-
-    def __create_saved_model(self, saved_model_path):
-        """Create a saved model.
-
-        Arguments:
-            saved_model_path {string} -- The path to the saved model.
-        """
-
-        saved_model_builder = tf.compat.v1.saved_model.builder.SavedModelBuilder(
-            saved_model_path
-        )
-        saved_model_builder.add_meta_graph_and_variables(
-            self.__backend.get_session(),
-            [tf.saved_model.SERVING],
-        )
-        saved_model_builder.save()
