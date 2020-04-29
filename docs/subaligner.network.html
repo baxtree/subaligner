@@ -17,12 +17,15 @@
 <font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="math.html">math</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="tensorflow_core.keras.backend.html">tensorflow_core.keras.backend</a><br>
+<a href="importlib.html">importlib</a><br>
+</td><td width="25%" valign=top><a href="math.html">math</a><br>
 <a href="numpy.html">numpy</a><br>
 </td><td width="25%" valign=top><a href="os.html">os</a><br>
-<a href="tensorflow.html">tensorflow</a><br>
-</td><td width="25%" valign=top><a href="tensorflow.python.debug.html">tensorflow.python.debug</a><br>
-</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<a href="psutil.html">psutil</a><br>
+</td><td width="25%" valign=top><a href="tensorflow.html">tensorflow</a><br>
+<a href="tensorflow_core.keras.optimizers.html">tensorflow_core.keras.optimizers</a><br>
+</td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -44,21 +47,25 @@
 <font color="#000000" face="helvetica, arial"><a name="Network">class <strong>Network</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt><a href="#Network">Network</a>&nbsp;factory&nbsp;creates&nbsp;immutable&nbsp;DNNs.&nbsp;Only&nbsp;factory&nbsp;methods&nbsp;are&nbsp;allowed<br>
-when&nbsp;generating&nbsp;DNN&nbsp;objects.<br>&nbsp;</tt></td></tr>
+<td colspan=2><tt><a href="#Network">Network</a>&nbsp;factory&nbsp;creates&nbsp;immutable&nbsp;DNNs.<br>
+Not&nbsp;thread&nbsp;safe&nbsp;since&nbsp;the&nbsp;session&nbsp;of&nbsp;keras_backend&nbsp;is&nbsp;global.<br>
+Only&nbsp;factory&nbsp;methods&nbsp;are&nbsp;allowed&nbsp;when&nbsp;generating&nbsp;DNN&nbsp;objects.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="Network-__init__"><strong>__init__</strong></a>(self, secret, input_shape, n_type, front_layers, relu_layers, dropout, model_path=None)</dt><dd><tt><a href="#Network">Network</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;initialiser&nbsp;used&nbsp;by&nbsp;factory&nbsp;methods.<br>
+<dl><dt><a name="Network-__init__"><strong>__init__</strong></a>(self, secret, input_shape, n_type, hyperparameters, model_path=None, backend='tensorflow')</dt><dd><tt><a href="#Network">Network</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;initialiser&nbsp;used&nbsp;by&nbsp;factory&nbsp;methods.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;secret&nbsp;{<a href="builtins.html#object">object</a>}&nbsp;--&nbsp;A&nbsp;hash&nbsp;only&nbsp;known&nbsp;by&nbsp;factory&nbsp;methods.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;n_type&nbsp;{string}&nbsp;--&nbsp;Can&nbsp;be&nbsp;"lstm"&nbsp;or&nbsp;"conv_1d".<br>
-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;model_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;model&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;backend&nbsp;{string}&nbsp;--&nbsp;The&nbsp;tensor&nbsp;manipulation&nbsp;backend&nbsp;(default:&nbsp;{tensorflow}).&nbsp;Only&nbsp;tensorflow&nbsp;is&nbsp;supported<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;TF&nbsp;2&nbsp;and&nbsp;this&nbsp;parameter&nbsp;is&nbsp;here&nbsp;only&nbsp;for&nbsp;a&nbsp;historical&nbsp;reason.<br>
 Raises:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;NotImplementedError&nbsp;--&nbsp;Thrown&nbsp;when&nbsp;any&nbsp;network&nbsp;attributes&nbsp;are&nbsp;modified.</tt></dd></dl>
 
-<dl><dt><a name="Network-fit_and_get_history"><strong>fit_and_get_history</strong></a>(self, train_data, labels, model_filepath, weights_filepath, logs_dir, epochs, training_log, resume)</dt><dd><tt>Fit&nbsp;the&nbsp;training&nbsp;data&nbsp;to&nbsp;the&nbsp;network&nbsp;and&nbsp;save&nbsp;the&nbsp;network&nbsp;model&nbsp;as&nbsp;a&nbsp;HDF&nbsp;file.<br>
+<dl><dt><a name="Network-fit_and_get_history"><strong>fit_and_get_history</strong></a>(self, train_data, labels, model_filepath, weights_filepath, logs_dir, training_log, resume)</dt><dd><tt>Fit&nbsp;the&nbsp;training&nbsp;data&nbsp;to&nbsp;the&nbsp;network&nbsp;and&nbsp;save&nbsp;the&nbsp;network&nbsp;model&nbsp;as&nbsp;a&nbsp;HDF&nbsp;file.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;train_data&nbsp;{numpy.array}&nbsp;--&nbsp;The&nbsp;Numpy&nbsp;array&nbsp;of&nbsp;training&nbsp;data.<br>
@@ -66,13 +73,12 @@ Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;model&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;weights_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;weights&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;logs_dir&nbsp;{string}&nbsp;--&nbsp;The&nbsp;TensorBoard&nbsp;log&nbsp;file&nbsp;directory.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;epochs&nbsp;{int}&nbsp;--&nbsp;The&nbsp;number&nbsp;of&nbsp;training&nbsp;epochs.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;training_log&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;log&nbsp;file&nbsp;of&nbsp;epoch&nbsp;results.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;resume&nbsp;{bool}&nbsp;--&nbsp;True&nbsp;to&nbsp;continue&nbsp;with&nbsp;previous&nbsp;training&nbsp;result&nbsp;or&nbsp;False&nbsp;to&nbsp;start&nbsp;a&nbsp;new&nbsp;one&nbsp;(default:&nbsp;{False}).<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;tuple&nbsp;--&nbsp;A&nbsp;tuple&nbsp;contains&nbsp;validation&nbsp;losses&nbsp;and&nbsp;validation&nbsp;accuracies.</tt></dd></dl>
 
-<dl><dt><a name="Network-fit_with_generator"><strong>fit_with_generator</strong></a>(self, train_data_raw, labels_raw, model_filepath, weights_filepath, logs_dir, epochs, training_log, resume)</dt><dd><tt>Fit&nbsp;the&nbsp;training&nbsp;data&nbsp;to&nbsp;the&nbsp;network&nbsp;and&nbsp;save&nbsp;the&nbsp;network&nbsp;model&nbsp;as&nbsp;a&nbsp;HDF&nbsp;file.<br>
+<dl><dt><a name="Network-fit_with_generator"><strong>fit_with_generator</strong></a>(self, train_data_raw, labels_raw, model_filepath, weights_filepath, logs_dir, training_log, resume)</dt><dd><tt>Fit&nbsp;the&nbsp;training&nbsp;data&nbsp;to&nbsp;the&nbsp;network&nbsp;and&nbsp;save&nbsp;the&nbsp;network&nbsp;model&nbsp;as&nbsp;a&nbsp;HDF&nbsp;file.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;train_data_raw&nbsp;{list}&nbsp;--&nbsp;The&nbsp;HDF5&nbsp;raw&nbsp;training&nbsp;data.<br>
@@ -80,7 +86,6 @@ Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;model&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;weights_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;weights&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;logs_dir&nbsp;{string}&nbsp;--&nbsp;The&nbsp;TensorBoard&nbsp;log&nbsp;file&nbsp;directory.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;epochs&nbsp;{int}&nbsp;--&nbsp;The&nbsp;number&nbsp;of&nbsp;training&nbsp;epochs.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;training_log&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;log&nbsp;file&nbsp;of&nbsp;epoch&nbsp;results.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;resume&nbsp;{bool}&nbsp;--&nbsp;True&nbsp;to&nbsp;continue&nbsp;with&nbsp;previous&nbsp;training&nbsp;result&nbsp;or&nbsp;False&nbsp;to&nbsp;start&nbsp;a&nbsp;new&nbsp;one&nbsp;(default:&nbsp;{False}).<br>
 Returns:<br>
@@ -102,31 +107,35 @@ Arguments:<br>
 
 <hr>
 Class methods defined here:<br>
-<dl><dt><a name="Network-get_bi_lstm"><strong>get_bi_lstm</strong></a>(input_shape, front_layers=[64], relu_layers=[32, 16], dropout=0.2)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;bidirectional&nbsp;LSTM&nbsp;network.<br>
+<dl><dt><a name="Network-get_bi_lstm"><strong>get_bi_lstm</strong></a>(input_shape, hyperparameters)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;bidirectional&nbsp;LSTM&nbsp;network.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Constructed&nbsp;Bidirectional&nbsp;LSTM&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
 
-<dl><dt><a name="Network-get_conv1d"><strong>get_conv1d</strong></a>(input_shape, front_layers=[12], relu_layers=[56, 28], dropout=0.2)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;1D&nbsp;convolutional&nbsp;network.<br>
+<dl><dt><a name="Network-get_conv1d"><strong>get_conv1d</strong></a>(input_shape, hyperparameters)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;1D&nbsp;convolutional&nbsp;network.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Constructed&nbsp;1D&nbsp;convolutional&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
 
-<dl><dt><a name="Network-get_from_model"><strong>get_from_model</strong></a>(model_path)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Load&nbsp;model&nbsp;into&nbsp;a&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.<br>
+<dl><dt><a name="Network-get_from_model"><strong>get_from_model</strong></a>(model_path, hyperparameters)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Load&nbsp;model&nbsp;into&nbsp;a&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.<br>
 &nbsp;<br>
 Arguments:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;model_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;model&nbsp;file.</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;model_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;model&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.</tt></dd></dl>
 
-<dl><dt><a name="Network-get_lstm"><strong>get_lstm</strong></a>(input_shape, front_layers=[64], relu_layers=[32, 16], dropout=0.2)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;LSTM&nbsp;network.<br>
+<dl><dt><a name="Network-get_lstm"><strong>get_lstm</strong></a>(input_shape, hyperparameters)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;LSTM&nbsp;network.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Constructed&nbsp;LSTM&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
@@ -139,16 +148,17 @@ Arguments:<br>
 
 <hr>
 Static methods defined here:<br>
-<dl><dt><a name="Network-clear_session"><strong>clear_session</strong></a>()</dt><dd><tt>#&nbsp;Clear&nbsp;Keras&nbsp;backend&nbsp;session&nbsp;due&nbsp;to&nbsp;https://github.com/tensorflow/tensorflow/issues/3388</tt></dd></dl>
-
-<dl><dt><a name="Network-load_model_and_weights"><strong>load_model_and_weights</strong></a>(model_filepath, weights_filepath)</dt><dd><tt>Load&nbsp;weights&nbsp;to&nbsp;the&nbsp;<a href="#Network">Network</a>&nbsp;model.<br>
+<dl><dt><a name="Network-load_model_and_weights"><strong>load_model_and_weights</strong></a>(model_filepath, weights_filepath, hyperparameters)</dt><dd><tt>Load&nbsp;weights&nbsp;to&nbsp;the&nbsp;<a href="#Network">Network</a>&nbsp;model.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;model&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;weights_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;weights&nbsp;file&nbsp;path.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Reconstructed&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<dl><dt><a name="Network-reset"><strong>reset</strong></a>()</dt></dl>
 
 <hr>
 Data descriptors defined here:<br>

@@ -18,6 +18,7 @@ from .embedder import FeatureEmbedder
 from .media_helper import MediaHelper
 from .singleton import Singleton
 from .subtitle import Subtitle
+from .hyperparameters import Hyperparameters
 from .exception import TerminalException
 from .logger import Logger
 
@@ -38,12 +39,12 @@ class Predictor(Singleton):
     def __init__(self, **kwargs):
         """Feature predictor initialiser.
 
-        Keyword Arguments:
-            n_mfcc {int} -- The number of MFCC components (default: {13}).
-            frequency {float} -- The sample rate  (default: {16000}).
-            hop_len {int} -- The number of samples per frame (default: {512}).
-            step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
-            len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
+            Keyword Arguments:
+                n_mfcc {int} -- The number of MFCC components (default: {13}).
+                frequency {float} -- The sample rate  (default: {16000}).
+                hop_len {int} -- The number of samples per frame (default: {512}).
+                step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
+                len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
         """
 
         self.__feature_embedder = FeatureEmbedder(**kwargs)
@@ -240,6 +241,7 @@ class Predictor(Singleton):
         """
 
         model_dir = model_weights_dir.replace("/weights", "/model")
+        config_dir = model_weights_dir.replace("/weights", "/config")
         files = os.listdir(model_dir)
         model_files = [
             file
@@ -253,6 +255,13 @@ class Predictor(Singleton):
             if file.startswith("weights")
         ]
 
+        files = os.listdir(config_dir)
+        hyperparams_files = [
+            file
+            for file in files
+            if file.startswith("hyperparameters")
+        ]
+
         if not model_files:
             raise TerminalException(
                 "Cannot find model files at {}".format(model_weights_dir)
@@ -264,10 +273,12 @@ class Predictor(Singleton):
 
         Predictor.__LOGGER.debug("model files: {}".format(model_files))
         Predictor.__LOGGER.debug("weigths files: {}".format(weights_files))
+        Predictor.__LOGGER.debug("config files: {}".format(hyperparams_files))
 
         # Get the first file from the file lists
         model_path = "{}/{}".format(model_dir, model_files[0])
         weights_path = "{}/{}".format(model_weights_dir, weights_files[0])
+        hyperparams_path = "{}/{}".format(config_dir, hyperparams_files[0])
 
         result = {}
         pred_start = datetime.datetime.now()
@@ -318,7 +329,8 @@ class Predictor(Singleton):
         # Network class is not thread safe so a new graph is created for each thread
         self.__lock.acquire()
         try:
-            network = Network.get_from_model(model_path)
+            hyperparams = Hyperparameters.from_file(hyperparams_path)
+            network = Network.get_from_model(model_path, hyperparams)
             Predictor.__LOGGER.debug("Start predicting...")
             pred_start = datetime.datetime.now()
             voice_probabilities = network.get_predictions(train_data, weights_path)

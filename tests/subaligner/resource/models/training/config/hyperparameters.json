@@ -1,0 +1,25 @@
+{
+    "_Hyperparameters__batch_size": 32,
+    "_Hyperparameters__dropout": 0.2,
+    "_Hyperparameters__epochs": 1,
+    "_Hyperparameters__es_min_delta": 1e-05,
+    "_Hyperparameters__es_mode": "min",
+    "_Hyperparameters__es_patience": 9223372036854775807,
+    "_Hyperparameters__hidden_size": {
+        "back_layers": [
+            32,
+            16
+        ],
+        "front_layers": [
+            64
+        ]
+    },
+    "_Hyperparameters__learning_rate": 0.001,
+    "_Hyperparameters__loss": "binary_crossentropy",
+    "_Hyperparameters__metrics": [
+        "accuracy"
+    ],
+    "_Hyperparameters__monitor": "val_loss",
+    "_Hyperparameters__optimizer": "Adam",
+    "_Hyperparameters__validation_split": 0.25
+}

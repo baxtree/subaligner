@@ -2,11 +2,14 @@ import unittest
 import os
 import shutil
 from subaligner.embedder import FeatureEmbedder
+from subaligner.hyperparameters import Hyperparameters
 from subaligner.trainer import Trainer as Undertest
 
 
 class TrainerTests(unittest.TestCase):
     def setUp(self):
+        self.__hyperparameters = Hyperparameters()
+        self.__hyperparameters.epochs = 1
         self.__video_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mp4"
         )
@@ -46,7 +49,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
@@ -62,7 +65,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
@@ -78,7 +81,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
@@ -94,7 +97,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__training_dump_dir,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
@@ -112,8 +115,9 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
+        self.__hyperparameters.epochs = 2
         underTest.train(
             None,
             None,
@@ -121,7 +125,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__training_dump_dir,
-            epochs=2,
+            hyperparameters=self.__hyperparameters,
             resume=True,
         )
         output_files = os.listdir(self.__model_dir)
@@ -139,7 +143,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
@@ -155,7 +159,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
@@ -172,7 +176,7 @@ class TrainerTests(unittest.TestCase):
             weights_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            epochs=1,
+            hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
