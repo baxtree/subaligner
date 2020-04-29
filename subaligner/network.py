@@ -4,6 +4,7 @@ import importlib
 import psutil
 import numpy as np
 import tensorflow as tf
+import tensorflow.keras.optimizers as tf_optimizers
 
 from tensorflow.keras.layers import (
     Dense,
@@ -56,7 +57,7 @@ class Network(object):
             secret {object} -- A hash only known by factory methods.
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             n_type {string} -- Can be "lstm" or "conv_1d".
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
             model_path {string} -- The path to the model file.
             backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
                                 by TF 2 and this parameter is here only for a historical reason.
@@ -104,7 +105,7 @@ class Network(object):
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Constructed LSTM network object.
@@ -123,7 +124,7 @@ class Network(object):
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Constructed Bidirectional LSTM network object.
@@ -142,7 +143,7 @@ class Network(object):
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Constructed 1D convolutional network object.
@@ -160,7 +161,7 @@ class Network(object):
 
         Arguments:
             model_path {string} -- The path to the model file.
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
         """
 
         return cls(
@@ -193,7 +194,7 @@ class Network(object):
         Arguments:
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
             Network -- Reconstructed network object.
@@ -307,9 +308,10 @@ class Network(object):
             earlyStopping,
         ]
         if not resume:
+            Optimizer = getattr(tf_optimizers, self.hyperparameters.optimizer)
             self.__model.compile(
                 loss=self.hyperparameters.loss,
-                optimizer=self.hyperparameters.optimizer,
+                optimizer=Optimizer(learning_rate=self.hyperparameters.learning_rate),
                 metrics=self.hyperparameters.metrics,
             )
         initial_epoch = 0
@@ -387,9 +389,10 @@ class Network(object):
             earlyStopping,
         ]
         if not resume:
+            Optimizer = getattr(tf_optimizers, self.hyperparameters.optimizer)
             self.__model.compile(
                 loss=self.hyperparameters.loss,
-                optimizer=self.hyperparameters.optimizer,
+                optimizer=Optimizer(learning_rate=self.hyperparameters.learning_rate),
                 metrics=self.hyperparameters.metrics,
             )
         if resume:

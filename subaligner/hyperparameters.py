@@ -1,9 +1,9 @@
 import sys
-import tensorflow as tf
+import json
 
 
 class Hyperparameters(object):
-    """ The configuration for hyper parameters used for training
+    """ The configuration on hyper parameters used for training
     """
 
     def __init__(self):
@@ -14,7 +14,7 @@ class Hyperparameters(object):
         }
         self.__dropout = 0.2
         self.__epochs = 100
-        self.__optimizer = tf.keras.optimizers.Adam(lr=0.001)
+        self.__optimizer = "Adam"
         self.__loss = "binary_crossentropy"
         self.__metrics = ["accuracy"]
         self.__batch_size = 32
@@ -23,6 +23,26 @@ class Hyperparameters(object):
         self.__es_mode = "min"
         self.__es_min_delta = 0.00001
         self.__es_patience = sys.maxsize
+
+    def __eq__(self, other):
+        if isinstance(other, Hyperparameters):
+            return all([
+                self.__learning_rate == other.learning_rate,
+                self.__hidden_size["front_layers"] == other.front_hidden_size,
+                self.__hidden_size["back_layers"] == other.back_hidden_size,
+                self.__dropout == other.dropout,
+                self.__epochs == other.epochs,
+                self.__optimizer == other.optimizer,
+                self.__loss == other.loss,
+                self.__metrics == other.metrics,
+                self.__batch_size == other.batch_size,
+                self.__validation_split == other.validation_split,
+                self.__monitor == other.monitor,
+                self.__es_mode == other.es_mode,
+                self.__es_min_delta == other.es_min_delta,
+                self.__es_patience == other.es_patience,
+            ])
+        return False
 
     @property
     def learning_rate(self):
@@ -71,13 +91,13 @@ class Hyperparameters(object):
     @optimizer.setter
     def optimizer(self, value):
         if value.lower() == "adam":
-            self.__optimizer = tf.keras.optimizers.Adam(learning_rate=self.__learning_rate)
+            self.__optimizer = "Adam"
         elif value.lower == "adagrad":
-            self.__optimizer = tf.keras.optimizers.Adagrad(learning_rate=self.__learning_rate)
+            self.__optimizer = "Adagrad"
         elif value.lower == "rms":
-            self.__optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.__learning_rate)
+            self.__optimizer = "RMSprop"
         elif value.lower == "sgd":
-            self.__optimizer = tf.keras.optimizers.SGD(learning_rate=self.__learning_rate)
+            self.__optimizer = "SGD"
         else:
             raise ValueError("Optimizer {} is not supported".format(value))
 
@@ -140,3 +160,21 @@ class Hyperparameters(object):
     @es_patience.setter
     def es_patience(self, value):
         self.__es_patience = value
+
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+    def to_file(self, file_path):
+        with open(file_path, "w", encoding="utf8") as file:
+            file.write(self.to_json())
+
+    @classmethod
+    def from_json(cls, json_str):
+        hp = cls()
+        hp.__dict__ = json.loads(json_str)
+        return hp
+
+    @classmethod
+    def from_file(cls, file_path):
+        with open(file_path, "r", encoding="utf8") as file:
+            return cls.from_json(file.read())

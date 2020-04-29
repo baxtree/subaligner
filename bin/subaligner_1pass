@@ -70,12 +70,11 @@ if __name__ == "__main__":
         from subaligner.logger import Logger
         Logger.VERBOSE = verbose
         from subaligner.predictor import Predictor
-        from subaligner.hyperparameters import Hyperparameters
         from subaligner.subtitle import Subtitle
         from subaligner.exception import UnsupportedFormatException
         from subaligner.exception import TerminalException
 
-        predictor = Predictor(Hyperparameters())
+        predictor = Predictor()
         subs, audio_file_path, voice_probabilities = predictor.predict_single_pass(
             video_file_path=FLAGS.video_path, subtitle_file_path=FLAGS.subtitle_path
         )

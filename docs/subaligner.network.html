@@ -24,6 +24,7 @@
 </td><td width="25%" valign=top><a href="os.html">os</a><br>
 <a href="psutil.html">psutil</a><br>
 </td><td width="25%" valign=top><a href="tensorflow.html">tensorflow</a><br>
+<a href="tensorflow_core.keras.optimizers.html">tensorflow_core.keras.optimizers</a><br>
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
@@ -57,7 +58,7 @@ Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;secret&nbsp;{<a href="builtins.html#object">object</a>}&nbsp;--&nbsp;A&nbsp;hash&nbsp;only&nbsp;known&nbsp;by&nbsp;factory&nbsp;methods.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;n_type&nbsp;{string}&nbsp;--&nbsp;Can&nbsp;be&nbsp;"lstm"&nbsp;or&nbsp;"conv_1d".<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{subaligner.Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;model&nbsp;file.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;backend&nbsp;{string}&nbsp;--&nbsp;The&nbsp;tensor&nbsp;manipulation&nbsp;backend&nbsp;(default:&nbsp;{tensorflow}).&nbsp;Only&nbsp;tensorflow&nbsp;is&nbsp;supported<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;TF&nbsp;2&nbsp;and&nbsp;this&nbsp;parameter&nbsp;is&nbsp;here&nbsp;only&nbsp;for&nbsp;a&nbsp;historical&nbsp;reason.<br>
@@ -110,7 +111,7 @@ Class methods defined here:<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{subaligner.Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Constructed&nbsp;Bidirectional&nbsp;LSTM&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
@@ -119,7 +120,7 @@ Returns:<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{subaligner.Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Constructed&nbsp;1D&nbsp;convolutional&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
@@ -128,13 +129,13 @@ Returns:<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_path&nbsp;{string}&nbsp;--&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;model&nbsp;file.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{subaligner.Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.</tt></dd></dl>
 
 <dl><dt><a name="Network-get_lstm"><strong>get_lstm</strong></a>(input_shape, hyperparameters)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Factory&nbsp;method&nbsp;for&nbsp;creating&nbsp;a&nbsp;LSTM&nbsp;network.<br>
 &nbsp;<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;input_shape&nbsp;{tuple}&nbsp;--&nbsp;A&nbsp;shape&nbsp;tuple&nbsp;(integers),&nbsp;not&nbsp;including&nbsp;the&nbsp;batch&nbsp;size.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{subaligner.Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Constructed&nbsp;LSTM&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
@@ -152,7 +153,7 @@ Static methods defined here:<br>
 Arguments:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;model_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;model&nbsp;file&nbsp;path.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;weights_filepath&nbsp;{string}&nbsp;--&nbsp;The&nbsp;weights&nbsp;file&nbsp;path.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{subaligner.Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hyperparameters&nbsp;{Hyperparameters}&nbsp;--&nbsp;A&nbsp;configuration&nbsp;for&nbsp;hyper&nbsp;parameters&nbsp;used&nbsp;for&nbsp;training.<br>
 &nbsp;<br>
 Returns:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Network">Network</a>&nbsp;--&nbsp;Reconstructed&nbsp;network&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>

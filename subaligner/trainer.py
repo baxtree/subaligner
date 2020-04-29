@@ -61,7 +61,7 @@ class Trainer(object):
             weights_dir {string} -- The directory of the weights file.
             logs_dir {string} -- The directory of the log file.
             training_dump_dir {string} --  The directory of the training data dump file.
-            hyperparameters {subaligner.Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
         """
