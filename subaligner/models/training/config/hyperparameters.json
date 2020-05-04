@@ -4,7 +4,7 @@
     "_Hyperparameters__epochs": 100,
     "_Hyperparameters__es_min_delta": 1e-05,
     "_Hyperparameters__es_mode": "min",
-    "_Hyperparameters__es_patience": 9223372036854775807,
+    "_Hyperparameters__es_patience": 1000000,
     "_Hyperparameters__hidden_size": {
         "back_layers": [
             32,
@@ -20,6 +20,7 @@
         "accuracy"
     ],
     "_Hyperparameters__monitor": "val_loss",
+    "_Hyperparameters__network_type": "lstm",
     "_Hyperparameters__optimizer": "Adam",
     "_Hyperparameters__validation_split": 0.25
 }

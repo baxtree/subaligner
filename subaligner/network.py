@@ -46,7 +46,6 @@ class Network(object):
         self,
         secret,
         input_shape,
-        n_type,
         hyperparameters,
         model_path=None,
         backend="tensorflow"
@@ -56,7 +55,6 @@ class Network(object):
         Arguments:
             secret {object} -- A hash only known by factory methods.
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            n_type {string} -- Can be "lstm" or "conv_1d".
             hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
             model_path {string} -- The path to the model file.
             backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
@@ -71,25 +69,25 @@ class Network(object):
 
         Network.__set_keras_backend(backend)
 
-        if n_type == Network.__LSTM:
+        if hyperparameters.network_type == Network.__LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
                 input_shape, hyperparameters
             )
-        if n_type == Network.__BI_LSTM:
+        if hyperparameters.network_type == Network.__BI_LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
                 input_shape, hyperparameters, is_bidirectional=True
             )
-        if n_type == Network.__CONV_1D:
+        if hyperparameters.network_type == Network.__CONV_1D:
             self.__input_shape = input_shape
             self.__model = self.__conv1d(
                 input_shape, hyperparameters
             )
-        if (input_shape is None and n_type == Network.__UNKNOWN and model_path is not None):
+        if (input_shape is None and hyperparameters.network_type == Network.__UNKNOWN and model_path is not None):
             self.__model = load_model(model_path)
             self.__input_shape = self.__model.input_shape[1:]
-        self.__n_type = n_type
+        self.__n_type = hyperparameters.network_type
         self.hyperparameters = hyperparameters
 
         # freeze the object after creation
@@ -100,58 +98,20 @@ class Network(object):
             raise NotImplementedError("Cannot modify the immutable object")
 
     @classmethod
-    def get_lstm(cls, input_shape, hyperparameters):
-        """Factory method for creating a LSTM network.
+    def get_network(cls, input_shape, hyperparameters):
+        """Factory method for creating a network.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
 
         Returns:
-            Network -- Constructed LSTM network object.
+            Network -- A constructed network object.
         """
 
         return cls(
             cls.__secret,
             input_shape,
-            Network.__LSTM,
-            hyperparameters
-        )
-
-    @classmethod
-    def get_bi_lstm(cls, input_shape, hyperparameters):
-        """Factory method for creating a bidirectional LSTM network.
-
-        Arguments:
-            input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
-
-        Returns:
-            Network -- Constructed Bidirectional LSTM network object.
-        """
-
-        return cls(
-            cls.__secret,
-            input_shape,
-            Network.__BI_LSTM,
-            hyperparameters
-        )
-
-    @classmethod
-    def get_conv1d(cls, input_shape, hyperparameters):
-        """Factory method for creating a 1D convolutional network.
-
-        Arguments:
-            input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
-
-        Returns:
-            Network -- Constructed 1D convolutional network object.
-        """
-        return cls(
-            cls.__secret,
-            input_shape,
-            Network.__CONV_1D,
             hyperparameters
         )
 
@@ -164,12 +124,13 @@ class Network(object):
             hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
         """
 
+        hp = hyperparameters.clone()
+        hp.network_type = Network.__UNKNOWN
         return cls(
             cls.__secret,
             None,
-            Network.__UNKNOWN,
-            hyperparameters,
-            model_path=model_path,
+            hp,
+            model_path=model_path
         )
 
     @classmethod
@@ -403,35 +364,8 @@ class Network(object):
             training_log_file.close()
             assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
 
-        def __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation):
-            while True:
-                total_size = train_data_raw.shape[0]
-                for i in range(0, total_size, batch_size):
-                    real_batch_size = total_size - i - 1 if total_size - i - 1 < batch_size else batch_size
-                    train_range_right = i + int(real_batch_size * (1 - validation_split))
-                    if is_validation:
-                        batched_train_data = train_data_raw[train_range_right:i + real_batch_size]
-                        batched_labels = labels_raw[train_range_right:i + real_batch_size]
-                    else:
-                        batched_train_data = train_data_raw[i:train_range_right]
-                        batched_labels = labels_raw[i:train_range_right]
-
-                    np_batched_train_data = np.array(batched_train_data)
-                    np_batched_labels = np.array(batched_labels)
-
-                    rand = np.random.permutation(np.arange(len(np_batched_labels)))
-                    np_batched_random_train_data = np_batched_train_data[rand]
-                    np_batched_random_labels = np_batched_labels[rand]
-
-                    np_batched_random_train_data = np.array(
-                        [np.rot90(m=val, k=1, axes=(0, 1)) for val in np_batched_random_train_data]
-                    )
-                    np_batched_random_train_data = np_batched_random_train_data - np.mean(np_batched_random_train_data, axis=0)
-
-                    yield np_batched_random_train_data, np_batched_random_labels
-
-        train_generator = __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=False)
-        test_generator = __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=True)
+        train_generator = self.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=False)
+        test_generator = self.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=True)
         steps_per_epoch = math.ceil(float(train_data_raw.shape[0]) * (1 - validation_split) / batch_size)
         validation_steps = math.ceil(float(train_data_raw.shape[0]) * validation_split / batch_size)
 
@@ -446,6 +380,94 @@ class Network(object):
             initial_epoch=initial_epoch,
         )
         self.__model.save(model_filepath)
+
+        return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
+
+    @classmethod
+    def simple_fit(
+        cls,
+        input_shape,
+        train_data,
+        labels,
+        hyperparameters,
+    ):
+        """Fit the training data to the network and save the network model as a HDF file.
+
+        Arguments:
+            input_shape {tuple} -- A shape tuple (integers), not including the batch size.
+            train_data {numpy.array} -- The Numpy array of training data.
+            labels {numpy.array} -- The Numpy array of training labels.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+
+        Returns:
+            tuple -- A tuple contains validation losses and validation accuracies.
+        """
+
+        network = cls(cls.__secret, input_shape, hyperparameters)
+        Optimizer = getattr(tf_optimizers, hyperparameters.optimizer)
+        network.__model.compile(
+            loss=hyperparameters.loss,
+            optimizer=Optimizer(learning_rate=hyperparameters.learning_rate),
+            metrics=hyperparameters.metrics,
+        )
+        initial_epoch = 0
+        hist = network.__model.fit(
+            train_data,
+            labels,
+            epochs=hyperparameters.epochs,
+            batch_size=hyperparameters.batch_size,
+            shuffle=True,
+            validation_split=hyperparameters.validation_split,
+            verbose=1,
+            initial_epoch=initial_epoch,
+        )
+
+        return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
+
+    @classmethod
+    def simple_fit_with_generator(
+            cls,
+            input_shape,
+            train_data_raw,
+            labels_raw,
+            hyperparameters,
+    ):
+        """Fit the training data to the network and save the network model as a HDF file.
+
+        Arguments:
+            input_shape {tuple} -- A shape tuple (integers), not including the batch size.
+            train_data_raw {list} -- The HDF5 raw training data.
+            labels_raw {list} -- The HDF5 raw training labels.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+        Returns:
+            tuple -- A tuple contains validation losses and validation accuracies.
+        """
+
+        network = cls(cls.__secret, input_shape, hyperparameters)
+        initial_epoch = 0
+        batch_size = hyperparameters.batch_size
+        validation_split = hyperparameters.validation_split
+        Optimizer = getattr(tf_optimizers, hyperparameters.optimizer)
+        network.__model.compile(
+            loss=hyperparameters.loss,
+            optimizer=Optimizer(learning_rate=hyperparameters.learning_rate),
+            metrics=hyperparameters.metrics,
+        )
+
+        train_generator = cls.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=False)
+        test_generator = cls.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=True)
+        steps_per_epoch = math.ceil(float(train_data_raw.shape[0]) * (1 - validation_split) / batch_size)
+        validation_steps = math.ceil(float(train_data_raw.shape[0]) * validation_split / batch_size)
+
+        hist = network.__model.fit(
+            train_generator,
+            steps_per_epoch=steps_per_epoch,
+            validation_data=test_generator,
+            validation_steps=validation_steps,
+            epochs=hyperparameters.epochs,
+            shuffle=False,
+            initial_epoch=initial_epoch,
+        )
 
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
@@ -535,3 +557,32 @@ class Network(object):
                 raise ValueError("Multi-backend is not supported")
         else:
             raise ValueError("Unknown backend: {}".format(backend))
+
+    @staticmethod
+    def __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation):
+        while True:
+            total_size = train_data_raw.shape[0]
+            for i in range(0, total_size, batch_size):
+                real_batch_size = total_size - i - 1 if total_size - i - 1 < batch_size else batch_size
+                train_range_right = i + int(real_batch_size * (1 - validation_split))
+                if is_validation:
+                    batched_train_data = train_data_raw[train_range_right:i + real_batch_size]
+                    batched_labels = labels_raw[train_range_right:i + real_batch_size]
+                else:
+                    batched_train_data = train_data_raw[i:train_range_right]
+                    batched_labels = labels_raw[i:train_range_right]
+
+                np_batched_train_data = np.array(batched_train_data)
+                np_batched_labels = np.array(batched_labels)
+
+                rand = np.random.permutation(np.arange(len(np_batched_labels)))
+                np_batched_random_train_data = np_batched_train_data[rand]
+                np_batched_random_labels = np_batched_labels[rand]
+
+                np_batched_random_train_data = np.array(
+                    [np.rot90(m=val, k=1, axes=(0, 1)) for val in np_batched_random_train_data]
+                )
+                np_batched_random_train_data = np_batched_random_train_data - np.mean(np_batched_random_train_data,
+                                                                                      axis=0)
+
+                yield np_batched_random_train_data, np_batched_random_labels

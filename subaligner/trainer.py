@@ -8,6 +8,7 @@ import multiprocessing as mp
 
 from .network import Network
 from .media_helper import MediaHelper
+from .hyperparameters import Hyperparameters
 from .exception import UnsupportedFormatException, TerminalException
 from .logger import Logger
 from .utils import Utils
@@ -46,6 +47,7 @@ class Trainer(object):
         subtitle_file_paths,
         model_dir,
         weights_dir,
+        config_dir,
         logs_dir,
         training_dump_dir,
         hyperparameters,
@@ -59,6 +61,7 @@ class Trainer(object):
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
             model_dir {string} -- The directory of the model file.
             weights_dir {string} -- The directory of the weights file.
+            config_dir {string} -- The directory of the hyper parameter file where hyper parameters will be saved.
             logs_dir {string} -- The directory of the log file.
             training_dump_dir {string} --  The directory of the training data dump file.
             hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
@@ -69,6 +72,7 @@ class Trainer(object):
         training_start = datetime.datetime.now()
         model_filepath = "{0}/{1}".format(model_dir, "model.hdf5")
         weights_filepath = "{0}/{1}".format(weights_dir, "weights.hdf5")
+        hyperparams_filepath = "{0}/{1}".format(config_dir, "hyperparameters.json")
 
         if av_file_paths is None or subtitle_file_paths is None:
             # Load the data and labels dump from the disk
@@ -83,11 +87,17 @@ class Trainer(object):
                 labels_raw = hf["labels"]
 
                 if resume:
+                    # Load hyper parameters from previous training
+                    hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
+
                     network = Network.load_model_and_weights(model_filepath, weights_filepath, hyperparameters)
                 else:
+                    # Save hyper parameters before each new training
+                    hyperparameters.to_file(hyperparams_filepath)
+
                     input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
                     Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
-                    network = Network.get_lstm(input_shape, hyperparameters)
+                    network = Network.get_network(input_shape, hyperparameters)
 
                 val_loss, val_acc = network.fit_with_generator(
                     train_data_raw,
@@ -109,28 +119,31 @@ class Trainer(object):
                 hf.create_dataset("train_data", data=train_data)
                 hf.create_dataset("labels", data=labels)
 
-                rand = np.random.permutation(np.arange(len(labels)))
-                train_data = train_data[rand]
-                labels = labels[rand]
+            rand = np.random.permutation(np.arange(len(labels)))
+            train_data = train_data[rand]
+            labels = labels[rand]
 
-                train_data = np.array(
-                    [np.rot90(m=val, k=1, axes=(0, 1)) for val in train_data]
-                )
-                train_data = train_data - np.mean(train_data, axis=0)
+            train_data = np.array(
+                [np.rot90(m=val, k=1, axes=(0, 1)) for val in train_data]
+            )
+            train_data = train_data - np.mean(train_data, axis=0)
 
-                input_shape = (train_data.shape[1], train_data.shape[2])
-                Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+            input_shape = (train_data.shape[1], train_data.shape[2])
+            Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
 
-                network = Network.get_lstm(input_shape, hyperparameters)
-                val_loss, val_acc = network.fit_and_get_history(
-                    train_data,
-                    labels,
-                    model_filepath,
-                    weights_filepath,
-                    logs_dir,
-                    training_log,
-                    False,
-                )
+            # Save hyper parameters before each new training
+            hyperparameters.to_file(hyperparams_filepath)
+
+            network = Network.get_network(input_shape, hyperparameters)
+            val_loss, val_acc = network.fit_and_get_history(
+                train_data,
+                labels,
+                model_filepath,
+                weights_filepath,
+                logs_dir,
+                training_log,
+                False,
+            )
 
         Trainer.__LOGGER.debug("val_loss: {}".format(min(val_loss)))
         Trainer.__LOGGER.debug("val_acc: {}".format(max(val_acc)))
@@ -145,6 +158,66 @@ class Trainer(object):
         network.save_model_and_weights(
             model_filepath, weights_filepath, combined_filepath
         )
+
+    def pre_train(
+        self,
+        av_file_paths,
+        subtitle_file_paths,
+        training_dump_dir,
+        hyperparameters
+    ):
+        """Trigger the training process.
+
+        Arguments:
+            av_file_paths {list} -- A list of paths to the input audio/video files.
+            subtitle_file_paths {list} -- A list of paths to the subtitle files.
+            training_dump_dir {string} --  The directory of the training data dump file.
+            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+        """
+
+        # Dump extracted data and labels to files for re-training
+        training_dump = training_dump_dir + "/training_dump.hdf5"
+        if os.path.exists(training_dump):
+            with h5py.File(training_dump, "r") as hf:
+                train_data_raw = hf["train_data"]
+                labels_raw = hf["labels"]
+
+                input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
+                Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+
+                val_loss, val_acc = Network.simple_fit_with_generator(
+                    input_shape,
+                    train_data_raw,
+                    labels_raw,
+                    hyperparameters
+                )
+        else:
+            train_data, labels = Trainer.__extract_data_and_label_from_avs(
+                self, av_file_paths, subtitle_file_paths
+            )
+            with h5py.File(training_dump, "w") as hf:
+                hf.create_dataset("train_data", data=train_data)
+                hf.create_dataset("labels", data=labels)
+
+            rand = np.random.permutation(np.arange(len(labels)))
+            train_data = train_data[rand]
+            labels = labels[rand]
+
+            train_data = np.array(
+                [np.rot90(m=val, k=1, axes=(0, 1)) for val in train_data]
+            )
+            train_data = train_data - np.mean(train_data, axis=0)
+
+            input_shape = (train_data.shape[1], train_data.shape[2])
+            Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+
+            val_loss, val_acc = Network.simple_fit(
+                input_shape,
+                train_data,
+                labels,
+                hyperparameters
+            )
+        return val_loss, val_loss
 
     def __extract_data_and_label_from_avs(
         self, av_file_paths, subtitle_file_paths

@@ -23,6 +23,7 @@ class Hyperparameters(object):
         self.__es_mode = "min"
         self.__es_min_delta = 0.00001
         self.__es_patience = sys.maxsize
+        self.__network_type = "lstm"
 
     def __eq__(self, other):
         if isinstance(other, Hyperparameters):
@@ -41,6 +42,7 @@ class Hyperparameters(object):
                 self.__es_mode == other.es_mode,
                 self.__es_min_delta == other.es_min_delta,
                 self.__es_patience == other.es_patience,
+                self.__network_type == other.network_type
             ])
         return False
 
@@ -92,11 +94,11 @@ class Hyperparameters(object):
     def optimizer(self, value):
         if value.lower() == "adam":
             self.__optimizer = "Adam"
-        elif value.lower == "adagrad":
+        elif value.lower() == "adagrad":
             self.__optimizer = "Adagrad"
-        elif value.lower == "rms":
+        elif value.lower() == "rms":
             self.__optimizer = "RMSprop"
-        elif value.lower == "sgd":
+        elif value.lower() == "sgd":
             self.__optimizer = "SGD"
         else:
             raise ValueError("Optimizer {} is not supported".format(value))
@@ -161,12 +163,23 @@ class Hyperparameters(object):
     def es_patience(self, value):
         self.__es_patience = value
 
+    @property
+    def network_type(self):
+        return self.__network_type
+
+    @network_type.setter
+    def network_type(self, value):
+        self.__network_type = value
+
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
     def to_file(self, file_path):
         with open(file_path, "w", encoding="utf8") as file:
             file.write(self.to_json())
+
+    def clone(self):
+        return self.from_json(self.to_json())
 
     @classmethod
     def from_json(cls, json_str):
