@@ -47,6 +47,7 @@ class TrainerTests(unittest.TestCase):
             [self.__srt_file_path, self.__srt_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
@@ -56,6 +57,8 @@ class TrainerTests(unittest.TestCase):
         self.assertEqual(
             4, len(model_files)
         )  # one model file, one weights file, one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_train_with_ttml(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
@@ -63,6 +66,7 @@ class TrainerTests(unittest.TestCase):
             [self.__ttml_file_path, self.__ttml_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
@@ -72,6 +76,8 @@ class TrainerTests(unittest.TestCase):
         self.assertEqual(
             4, len(model_files)
         )  # one model file, one weights file, one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_train_with_vtt(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
@@ -79,6 +85,7 @@ class TrainerTests(unittest.TestCase):
             [self.__vtt_file_path, self.__vtt_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
@@ -88,6 +95,8 @@ class TrainerTests(unittest.TestCase):
         self.assertEqual(
             4, len(model_files)
         )  # one model file, one weights file, one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_train_with_data_dump(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
@@ -95,6 +104,7 @@ class TrainerTests(unittest.TestCase):
             None,
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__training_dump_dir,
             hyperparameters=self.__hyperparameters,
@@ -105,6 +115,8 @@ class TrainerTests(unittest.TestCase):
         self.assertEqual(
             3, len(model_files)
         )  # one model file, one weights file and one combined file
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_resume_training(self):
         underTest = Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05))
@@ -113,27 +125,63 @@ class TrainerTests(unittest.TestCase):
             [self.__srt_file_path, self.__srt_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
         )
-        self.__hyperparameters.epochs = 2
+
+        # increase the maximum epoch
+        hyperparams_file = "{}/hyperparameters.json".format(self.__resource_tmp)
+        hyperparameters = Hyperparameters.from_file(hyperparams_file)
+        hyperparameters.epochs = 2
+        hyperparameters.to_file(hyperparams_file)
+
         underTest.train(
             None,
             None,
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__training_dump_dir,
-            hyperparameters=self.__hyperparameters,
+            training_dump_dir=self.__resource_tmp,
+            hyperparameters=None,
             resume=True,
         )
-        output_files = os.listdir(self.__model_dir)
-        model_files = [file for file in output_files if file.endswith(".hdf5")]
+        output_files = os.listdir(self.__resource_tmp)
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
 
         self.assertEqual(
-            2, len(model_files)
-        )  # one model file, one combined file
+            4, len(outputs)
+        )  # one model file,,one model file, one combined file and one training dump file
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
+
+    def test_pre_train(self):
+        val_loss, val_acc = Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).pre_train(
+            [self.__video_file_path, self.__video_file_path],
+            [self.__srt_file_path, self.__vtt_file_path],
+            training_dump_dir=self.__resource_tmp,
+            hyperparameters=self.__hyperparameters,
+        )
+        output_files = os.listdir(self.__resource_tmp)
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
+        self.assertEqual(1, len(outputs))  # one training dump file
+        self.assertEqual(self.__hyperparameters.epochs, len(val_loss))
+        self.assertEqual(self.__hyperparameters.epochs, len(val_acc))
+
+    def test_pre_train_with_training_dump(self):
+        val_loss, val_acc = Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).pre_train(
+            None,
+            None,
+            training_dump_dir=self.__training_dump_dir,
+            hyperparameters=self.__hyperparameters,
+        )
+        output_files = os.listdir(self.__resource_tmp)
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
+        self.assertEqual(0, len(outputs))
+        self.assertEqual(self.__hyperparameters.epochs, len(val_loss))
+        self.assertEqual(self.__hyperparameters.epochs, len(val_acc))
 
     def test_train_with_mixed_audio_and_video(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
@@ -141,15 +189,18 @@ class TrainerTests(unittest.TestCase):
             [self.__srt_file_path, self.__srt_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
-        model_files = [file for file in output_files if file.endswith(".hdf5")]
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(
-            4, len(model_files)
+            4, len(outputs)
         )  # one model file, one weights file and one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_train_with_mixed_subtitle_formats(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
@@ -157,15 +208,18 @@ class TrainerTests(unittest.TestCase):
             [self.__srt_file_path, self.__vtt_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
-        model_files = [file for file in output_files if file.endswith(".hdf5")]
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(
-            4, len(model_files)
+            4, len(outputs)
         )  # one model file, one weights file and one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_no_exception_caused_by_bad_media(self):
         not_a_video = self.__srt_file_path
@@ -174,15 +228,18 @@ class TrainerTests(unittest.TestCase):
             [self.__srt_file_path, self.__srt_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
+            config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
             hyperparameters=self.__hyperparameters,
         )
         output_files = os.listdir(self.__resource_tmp)
-        model_files = [file for file in output_files if file.endswith(".hdf5")]
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(
-            4, len(model_files)
+            4, len(outputs)
         )  # one model file, one weights file and one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
 
     def test_convert_to_pb_model(self):
         pass

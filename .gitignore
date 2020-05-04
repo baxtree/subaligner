@@ -17,6 +17,8 @@ site/build
 site/source/subaligner.rst
 site/source/modules.rst
 *subaligner.egg-info*
+examples/tmp
+docs/*.html
 
 # Unit test / coverage reports
 htmlcov/

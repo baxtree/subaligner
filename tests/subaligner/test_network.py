@@ -65,19 +65,23 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual((2, 20), Undertest.get_from_model(model_filepath, self.__hyperparameters).input_shape)
 
     def test_input_shape(self):
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         self.assertEqual((2, 20), network.input_shape)
 
     def test_create_lstm_network(self):
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         self.assertEqual("lstm", network.n_type)
 
     def test_create_bi_lstm_network(self):
-        network = Undertest.get_bi_lstm((2, 20), self.__hyperparameters)
+        self.__hyperparameters.network_type = "bi_lstm"
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         self.assertEqual("bi_lstm", network.n_type)
 
+    def test_create_conv_1d_network(self):
+        pass
+
     def test_summary(self):
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         self.assertTrue(network.summary is None)  # Why this is None
 
     def test_get_predictions(self):
@@ -87,7 +91,7 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual((11431, 1), network.get_predictions(train_data, "{}/weights.hdf5".format(self.__weights_dir)).shape)
 
     def test_load_model_and_weights(self):
-        network_old = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network_old = Undertest.get_network((2, 20), self.__hyperparameters)
         weights_old = network_old._Network__model.get_weights()
         network_new = Undertest.load_model_and_weights("{}/model.hdf5".format(self.__model_dir), "{}/weights.hdf5".format(self.__weights_dir),
                                                        self.__hyperparameters)
@@ -95,7 +99,7 @@ class NetworkTests(unittest.TestCase):
         self.assertFalse(np.array_equal(weights_old, weights_new))
 
     def test_fit_lstm_and_get_history(self):
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with open(self.__train_data, "rb") as file:
@@ -115,7 +119,8 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(list, type(val_acc))
 
     def test_fit_bi_lstm_and_get_history(self):
-        network = Undertest.get_bi_lstm((2, 20), self.__hyperparameters)
+        self.__hyperparameters.network_type = "bi_lstm"
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with open(self.__train_data, "rb") as file:
@@ -136,7 +141,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_resume_and_get_history(self):
         self.__hyperparameters.epochs = 2
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with open(self.__train_data, "rb") as file:
@@ -167,7 +172,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_exception_on_resume_with_no_extra_epochs(self):
         self.__hyperparameters.epochs = 2
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with open(self.__train_data, "rb") as file:
@@ -201,7 +206,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_exception_on_resume_with_no_previous_training_log(self):
         self.__hyperparameters.epochs = 2
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with open(self.__train_data, "rb") as file:
@@ -235,7 +240,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_fit_with_generator(self):
         self.__hyperparameters.epochs = 3
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with h5py.File(self.__training_dump, "r") as hf:
@@ -256,7 +261,7 @@ class NetworkTests(unittest.TestCase):
     def test_early_stop_with_patience(self):
         self.__hyperparameters.epochs = 3
         self.__hyperparameters.es_patience = 0
-        network = Undertest.get_lstm((2, 20), self.__hyperparameters)
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.__resource_tmp)
         weights_filepath = "{}/weights.hdf5".format(self.__resource_tmp)
         with h5py.File(self.__training_dump, "r") as hf:
@@ -273,6 +278,34 @@ class NetworkTests(unittest.TestCase):
             self.assertEqual(list, type(val_acc))
             self.assertTrue(len(val_loss) < self.__hyperparameters.epochs)
             self.assertTrue(len(val_acc) < self.__hyperparameters.epochs)
+
+    def test_simple_fit(self):
+        with open(self.__train_data, "rb") as file:
+            train_data = pickle.load(file)
+        with open(self.__labels, "rb") as file:
+            labels = pickle.load(file)
+        val_loss, val_acc = Undertest.simple_fit(
+            (2, 20),
+            train_data,
+            labels,
+            self.__hyperparameters,
+        )
+        self.assertEqual(list, type(val_loss))
+        self.assertEqual(list, type(val_acc))
+
+    def test_simple_fit_with_generator(self):
+        self.__hyperparameters.epochs = 3
+        with h5py.File(self.__training_dump, "r") as hf:
+            val_loss, val_acc = Undertest.simple_fit_with_generator(
+                (2, 20),
+                hf["train_data"],
+                hf["labels"],
+                self.__hyperparameters,
+            )
+            self.assertEqual(list, type(val_loss))
+            self.assertEqual(list, type(val_acc))
+            self.assertTrue(len(val_loss) == self.__hyperparameters.epochs)
+            self.assertTrue(len(val_acc) == self.__hyperparameters.epochs)
 
 
 if __name__ == "__main__":

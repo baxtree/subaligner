@@ -40,7 +40,7 @@ test: ## run tests quickly with the default Python
 	cat requirements.txt | xargs -L 1 .venv/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .venv/bin/pip install
 	PYTHONPATH=. .venv/bin/python -m unittest discover
-	-.venv/bin/pycodestyle subaligner tests --ignore=E203,E501,W503
+	-.venv/bin/pycodestyle subaligner tests examples --ignore=E203,E501,W503
 
 test-all: ## run tests on every Python version with tox
 	if [ ! -e ".venv" ]; then pip3 install virtualenv; virtualenv -p python3 .venv; fi
