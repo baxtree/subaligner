@@ -7,6 +7,8 @@ class Hyperparameters(object):
     """
 
     def __init__(self):
+        """Hyper parameters initialiser setting default values"""
+
         self.__learning_rate = 0.001
         self.__hidden_size = {
             "front_layers": [64],
@@ -26,6 +28,8 @@ class Hyperparameters(object):
         self.__network_type = "lstm"
 
     def __eq__(self, other):
+        """Comparator for Hyperparameters objects"""
+
         if isinstance(other, Hyperparameters):
             return all([
                 self.__learning_rate == other.learning_rate,
@@ -172,22 +176,53 @@ class Hyperparameters(object):
         self.__network_type = value
 
     def to_json(self):
+        """Serialise hyper parameters into JSON string
+
+        Returns:
+            string -- The serialised hyper parameters in JSON
+        """
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
     def to_file(self, file_path):
+        """Serialise hyper parameters into JSON and save the content to a file
+
+        Arguments:
+            file_path {string} -- The path to the file containing saved hyper parameters.
+        """
         with open(file_path, "w", encoding="utf8") as file:
             file.write(self.to_json())
 
     def clone(self):
+        """Make a cloned hyper parameters object
+
+        Returns:
+            Hyperparameters -- The cloned Hyperparameters object.
+        """
         return self.from_json(self.to_json())
 
     @classmethod
     def from_json(cls, json_str):
+        """Deserialise JSON string into a Hyperparameters object
+
+        Arguments:
+            json_str {string} -- Hyper parameters in JSON.
+
+        Returns:
+            Hyperparameters -- The deserialised Hyperparameters object.
+        """
         hp = cls()
         hp.__dict__ = json.loads(json_str)
         return hp
 
     @classmethod
     def from_file(cls, file_path):
+        """Deserialise a file content into a Hyperparameters object
+
+        Arguments:
+            file_path {string} -- The path to the file containing hyper parameters.
+
+        Returns:
+            Hyperparameters -- The deserialised Hyperparameters object.
+        """
         with open(file_path, "r", encoding="utf8") as file:
             return cls.from_json(file.read())

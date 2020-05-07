@@ -8,6 +8,7 @@ from .hyperparameters import Hyperparameters
 
 
 class HyperParameterTuner(object):
+    """Hyper parameter tuning using the Bayesian Optimizer"""
 
     SEARCH_SPACE = {
         "learning_rate": hp.loguniform("learning_rate", np.log(0.00001), np.log(0.1)),
@@ -25,6 +26,17 @@ class HyperParameterTuner(object):
                  training_dump_dir,
                  num_of_trials=5,
                  tuning_epochs=5):
+        """Hyper parameter tuner initialiser
+
+        Arguments:
+            av_file_paths {list} -- A list of paths to the input audio/video files.
+            subtitle_file_paths {list} -- A list of paths to the subtitle files.
+            training_dump_dir {string} --  The directory of the training data dump file.
+
+        Keyword Arguments:
+            num_of_trials {int} -- The number of trials for tuning (default: {5}).
+            tuning_epochs {int} -- The number of training epochs for each trial (default: {5}).
+        """
         self.__trainer = Trainer(FeatureEmbedder())
         self.__av_file_paths = av_file_paths
         self.__subtitle_file_paths = subtitle_file_paths
@@ -40,6 +52,8 @@ class HyperParameterTuner(object):
         return self.__hyperparameters.clone()
 
     def tune_hyperparameters(self):
+        """Tune the hyper parameters"""
+
         trials = hyperopt.Trials()
         minimised = hyperopt.fmin(fn=self.__get_val_loss,
                                   space=self.SEARCH_SPACE,

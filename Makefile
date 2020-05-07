@@ -54,6 +54,7 @@ pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 	cat requirements.txt | xargs -L 1 .venv/bin/pip install; \
 	.venv/bin/python -m pydoc -w subaligner; mv subaligner.html docs/index.html
 	.venv/bin/python -m pydoc -w subaligner.embedder; mv subaligner.embedder.html docs
+	.venv/bin/python -m pydoc -w subaligner.hparam_tuner; mv subaligner.hparam_tuner.html docs
 	.venv/bin/python -m pydoc -w subaligner.hyperparameters; mv subaligner.hyperparameters.html docs
 	.venv/bin/python -m pydoc -w subaligner.media_helper; mv subaligner.media_helper.html docs
 	.venv/bin/python -m pydoc -w subaligner.network; mv subaligner.network.html docs

@@ -1,1 +1,2 @@
+hyperopt==0.2.4
 psutil==5.6.6
