@@ -73,6 +73,7 @@ autodoc_mock_imports = [
     "librosa",
     "matplotlib",
     "numpy",
+    "psutil",
     "pycaption",
     "pysrt",
     "sklearn",
