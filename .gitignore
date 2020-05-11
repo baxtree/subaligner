@@ -4,6 +4,7 @@ build*
 dist*
 *.pyc
 .vscode
+.idea
 *.DS_Store*
 .eggs
 tests/subaligner/resource/test.mp4.aac

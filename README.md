@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.com/baxtree/subaligner.svg?branch=master)](https://travis-ci.com/baxtree/subaligner) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![Python 3.5](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-350/) [![Python 3.4](https://img.shields.io/badge/python-3.4-blue.svg)](https://www.python.org/downloads/release/python-340/) 
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
+[![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
 
 ## Dependencies
 [FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
@@ -15,6 +16,16 @@ brew install ffmpeg espeak
 
 ## Installation
 ```
+# Install from PyPI
+
+pip install subaligner
+```
+or
+```
+# Install from source
+
+git clone git@github.com:baxtree/subaligner.git
+cd subaligner
 make install && source .venv/bin/activate
 ```
 
@@ -22,13 +33,13 @@ make install && source .venv/bin/activate
 ```
 # Single-stage alignment (high-level shift with lower latency)
 
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt
+$ subaligner_1pass -v video.mp4 -s subtitle.srt
 ```
 
 ```
 # Dual-stage alignment (low-level shift with higher latency)
 
-(.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt
+$ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
 
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help` or `subaligner_2pass --help`.

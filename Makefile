@@ -1,4 +1,4 @@
-.PHONY: install uninstall build-gzip build-rpm test test-all pydoc coverage manual clean clean-gzip clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
+.PHONY: install uninstall build-gzip build-rpm test test-all pydoc coverage manual clean clean-dist clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -35,12 +35,9 @@ build-rpm:
 	tar -czf SOURCES/subligner.tar.gz subaligner bin requirements.txt setup.py README.md LICENCE
 
 test: ## run tests quickly with the default Python
-	if [ ! -e ".venv" ]; then pip3 install virtualenv; virtualenv -p python3 .venv; fi
-	.venv/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .venv/bin/pip install; \
-	cat requirements-dev.txt | xargs -L 1 .venv/bin/pip install
-	PYTHONPATH=. .venv/bin/python -m unittest discover
-	-.venv/bin/pycodestyle subaligner tests examples --ignore=E203,E501,W503
+	cat requirements.txt | xargs -L 1 pip install; \
+	cat requirements-dev.txt | xargs -L 1 pip install
+	PYTHONPATH=. python -m unittest discover
 
 test-all: ## run tests on every Python version with tox
 	if [ ! -e ".venv" ]; then pip3 install virtualenv; virtualenv -p python3 .venv; fi
@@ -89,9 +86,16 @@ manual: clean-manual ## generate manual pages
 	SPHINXAPIDOC=../.venv/bin/sphinx-apidoc SPHINXBUILD=../.venv/bin/sphinx-build make -C ./site html
 	$(BROWSER) ./site/build/html/index.html
 
-clean: clean-build clean-pyc clean-test clean-rpm clean-doc clean-manual ## remove all build, test, coverage and Python artifacts
+release: clean-dist
+	if [ ! -e ".venv" ]; then pip3 install virtualenv; virtualenv -p python3 .venv; fi
+	.venv/bin/pip install --upgrade pip setuptools wheel; \
+	cat requirements-dev.txt | xargs -L 1 .venv/bin/pip install; \
+	.venv/bin/python setup.py sdist bdist_wheel
+	twine upload dist/*
 
-clean-gzip:
+clean: clean-build clean-pyc clean-test clean-rpm clean-doc clean-manual clean-dist ## remove all build, test, coverage and Python artifacts
+
+clean-dist:
 	rm -rf dist
 
 clean-doc: ## remove documents
@@ -120,3 +124,4 @@ clean-test: ## remove test and coverage artifacts
 
 clean-rpm:
 	rm -rf BUILD RPMS SRPMS SOURCES BUILDROOT
+

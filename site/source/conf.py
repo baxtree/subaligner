@@ -71,14 +71,12 @@ autodoc_mock_imports = [
     "aeneas",
     "h5py",
     "librosa",
-    "matplotlib",
     "numpy",
     "psutil",
     "pycaption",
     "pysrt",
     "sklearn",
     "tensorflow",
-    "matplotlib",
 ]
 
 def setup(app):
