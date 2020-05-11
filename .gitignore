@@ -4,6 +4,7 @@ build*
 dist*
 *.pyc
 .vscode
+.idea
 *.DS_Store*
 .eggs
 tests/subaligner/resource/test.mp4.aac
@@ -19,6 +20,7 @@ site/source/modules.rst
 *subaligner.egg-info*
 examples/tmp
 docs/*.html
+scripts*
 
 # Unit test / coverage reports
 htmlcov/

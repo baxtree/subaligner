@@ -2,10 +2,6 @@
 Installation
 ########################
 
-Subaligner is not available on PyPi's repo yet. To quickly get it installed and running, you can download the latest
-release on `GitHub <https://github.com/baxtree/subaligner>`_ and follow the steps down below
-to create a virtual environment and set up all the dependencies:
-
 **Install necessary dependencies**::
 
     $ apt-get install ffmpeg
@@ -15,8 +11,18 @@ to create a virtual environment and set up all the dependencies:
 
     $ brew install ffmpeg espeak
 
-**Install dependencies and activate the virtual environment**::
+**Install Subaligner via PyPI (pre-emptive NumPy)**::
+    $ pip install numpy
+    $ pip install subaligner
 
+You can also download the latest
+release on `GitHub <https://github.com/baxtree/subaligner>`_ and follow the steps down below
+to create a virtual environment and set up all the dependencies:
+
+**Install Subaligner from source**::
+
+    $ git clone git@github.com:baxtree/subaligner.git
+    $ cd subaligner
     $ make install && source .venv/bin/activate
 
 **subaligner_1pass and subaligner_2pass should be on your PATH now**::

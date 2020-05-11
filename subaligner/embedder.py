@@ -1,5 +1,4 @@
 import librosa
-import librosa.display
 import numpy as np
 from datetime import datetime, timedelta
 from .singleton import Singleton

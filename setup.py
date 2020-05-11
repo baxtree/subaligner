@@ -14,37 +14,35 @@ with open("README.md") as readme_file:
 with open("requirements.txt") as requirements_file:
     requirements = requirements_file.read().splitlines()[::-1]
 
-with open("requirements-dev.txt") as requirements_dev_file:
-    requirements_dev = requirements_dev_file.read().splitlines()[::-1]
-
 setup(name="subaligner",
       version=__version__,
       author="Xi Bai",
       author_email="xi.bai.ed@gmail.com",
       classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8"
       ],
       license="MIT",
-      url="git@github.com:baxtree/subaligner.git",
+      url="https://subaligner.readthedocs.io/en/latest/",
       description="Automatically aligns an out-of-sync subtitle file to its companion video/audio using Deep Neural Network and Forced Alignment.",
       long_description=readme + "\n\n",
-      python_requires=">=3.4",
+      long_description_content_type='text/markdown',
+      python_requires=">=3.7",
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",
           "subaligner.models.training.model",
           "subaligner.models.training.weights",
+          "subaligner.models.training.config",
       ],
       package_data={
           "subaligner.models.training.model": ["model.hdf5"],
-          "subaligner.models.training.weights": ["weights.hdf5"]
+          "subaligner.models.training.weights": ["weights.hdf5"],
+          "subaligner.models.training.config": ["hyperparameters.json"],
       },
       install_requires=requirements,
       test_suite="tests.subaligner",
-      tests_require=requirements_dev,
       setup_requires=["numpy>=1.14.1,<1.18.0"],
       scripts=["bin/subaligner_1pass", "bin/subaligner_2pass"],
 )
