@@ -96,6 +96,10 @@ release: clean-dist
 	.venv/bin/python setup.py sdist bdist_wheel
 	twine upload dist/*
 
+pipenv-install:
+	pipenv install
+	pipenv shell
+
 clean: clean-build clean-pyc clean-test clean-rpm clean-doc clean-manual clean-dist ## remove all build, test, coverage and Python artifacts
 
 clean-dist:

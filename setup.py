@@ -20,6 +20,7 @@ setup(name="subaligner",
       author_email="xi.bai.ed@gmail.com",
       classifiers=[
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8"
       ],
@@ -28,7 +29,7 @@ setup(name="subaligner",
       description="Automatically aligns an out-of-sync subtitle file to its companion video/audio using Deep Neural Network and Forced Alignment.",
       long_description=readme + "\n\n",
       long_description_content_type='text/markdown',
-      python_requires=">=3.7",
+      python_requires=">=3.6",
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",
