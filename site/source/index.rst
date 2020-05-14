@@ -25,6 +25,7 @@ The source code can be found on GitHub: `subaligner <https://github.com/baxtree/
    test
    acknowledgement
    license
+   api
 
 
 Indices and tables
@@ -32,4 +33,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

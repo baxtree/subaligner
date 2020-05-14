@@ -70,6 +70,7 @@ autodoc_mock_imports = [
     "absl-py",
     "aeneas",
     "h5py",
+    "hyperopt",
     "librosa",
     "numpy",
     "psutil",
