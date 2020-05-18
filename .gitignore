@@ -13,7 +13,8 @@ tests/subaligner/training.log
 tests/subaligner/output.log
 *training.log*
 *output.log*
-*program.prof*
+*.prof
+*.lprof
 site/build
 site/source/subaligner.rst
 site/source/modules.rst
@@ -21,6 +22,7 @@ site/source/modules.rst
 examples/tmp
 docs/*.html
 scripts*
+misc/tmp
 
 # Unit test / coverage reports
 htmlcov/

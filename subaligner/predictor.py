@@ -67,11 +67,12 @@ class Predictor(Singleton):
                 tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
-        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
+        self.__initialise_network(weights_dir)
+        weights_file_path = self.__get_weights_path(weights_dir)
         audio_file_path = ""
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(
-                video_file_path, subtitle_file_path, weights_dir
+                video_file_path, subtitle_file_path, weights_file_path
             )
         except Exception:
             raise
@@ -103,14 +104,15 @@ class Predictor(Singleton):
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
-        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
+        self.__initialise_network(weights_dir)
+        weights_file_path = self.__get_weights_path(weights_dir)
         audio_file_path = ""
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(
-                video_file_path, subtitle_file_path, weights_dir
+                video_file_path, subtitle_file_path, weights_file_path
             )
             new_subs = self.__predict_2nd_pass(
-                audio_file_path, subs, weights_dir=weights_dir, stretch=stretch
+                audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch
             )
         except Exception:
             raise
@@ -214,21 +216,21 @@ class Predictor(Singleton):
             return None, 0
 
     def __predict(
-        self,
-        video_file_path,
-        subtitle_file_path,
-        model_weights_dir,
-        audio_file_path=None,
-        subtitles=None,
-        max_shift_secs=None,
-        previous_gap=None,
+            self,
+            video_file_path,
+            subtitle_file_path,
+            weights_file_path,
+            audio_file_path=None,
+            subtitles=None,
+            max_shift_secs=None,
+            previous_gap=None,
     ):
         """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
 
         Arguments:
             video_file_path {string} -- The file path of the original video.
             subtitle_file_path {string} -- The file path of the out-of-sync subtitles.
-            model_weights_dir {string} -- The directory of the model and weights.
+            weights_file_path {string} -- The file path of the weights file.
 
         Keyword Arguments:
             audio_file_path {string} -- The file path of the original audio (default: {None}).
@@ -239,46 +241,6 @@ class Predictor(Singleton):
         Returns:
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
-
-        model_dir = model_weights_dir.replace("/weights", "/model")
-        config_dir = model_weights_dir.replace("/weights", "/config")
-        files = os.listdir(model_dir)
-        model_files = [
-            file
-            for file in files
-            if file.startswith("model")
-        ]
-        files = os.listdir(model_weights_dir)
-        weights_files = [
-            file
-            for file in files
-            if file.startswith("weights")
-        ]
-
-        files = os.listdir(config_dir)
-        hyperparams_files = [
-            file
-            for file in files
-            if file.startswith("hyperparameters")
-        ]
-
-        if not model_files:
-            raise TerminalException(
-                "Cannot find model files at {}".format(model_weights_dir)
-            )
-        if not weights_files:
-            raise TerminalException(
-                "Cannot find weights files at {}".format(model_weights_dir)
-            )
-
-        Predictor.__LOGGER.debug("model files: {}".format(model_files))
-        Predictor.__LOGGER.debug("weigths files: {}".format(weights_files))
-        Predictor.__LOGGER.debug("config files: {}".format(hyperparams_files))
-
-        # Get the first file from the file lists
-        model_path = "{}/{}".format(model_dir, model_files[0])
-        weights_path = "{}/{}".format(model_weights_dir, weights_files[0])
-        hyperparams_path = "{}/{}".format(config_dir, hyperparams_files[0])
 
         result = {}
         pred_start = datetime.datetime.now()
@@ -329,11 +291,9 @@ class Predictor(Singleton):
         # Network class is not thread safe so a new graph is created for each thread
         self.__lock.acquire()
         try:
-            hyperparams = Hyperparameters.from_file(hyperparams_path)
-            network = Network.get_from_model(model_path, hyperparams)
             Predictor.__LOGGER.debug("Start predicting...")
             pred_start = datetime.datetime.now()
-            voice_probabilities = network.get_predictions(train_data, weights_path)
+            voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
         finally:
             self.__lock.release()
 
@@ -408,13 +368,13 @@ class Predictor(Singleton):
             shifted_subs.shift(seconds=seconds_to_shift)
         return shifted_subs, audio_file_path, voice_probabilities
 
-    def __predict_2nd_pass(self, audio_file_path, subs, weights_dir, stretch):
+    def __predict_2nd_pass(self, audio_file_path, subs, weights_file_path, stretch):
         """This function uses divide and conquer to align partial subtitle with partial video.
 
         Arguments:
             audio_file_path {string} -- The file path of the original audio.
             subs {list} -- A list of SubRip files.
-            weights_dir {string} --  The directory of the model weights.
+            weights_file_path {string} --  The file path of the weights file.
             stretch {bool} -- True to stretch the subtitle segments (default: {False})
         """
 
@@ -441,7 +401,7 @@ class Predictor(Singleton):
 
         max_workers = int(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=max_workers
+                max_workers=max_workers
         ) as executor:
             futures = [
                 executor.submit(
@@ -450,7 +410,7 @@ class Predictor(Singleton):
                     i,
                     segment_starts,
                     segment_ends,
-                    weights_dir,
+                    weights_file_path,
                     audio_file_path,
                     subs,
                     subs_copy,
@@ -477,20 +437,16 @@ class Predictor(Singleton):
         ]  # flatten the subs_list
         return subs_list
 
-    def __normalise_seconds_to_shift(seconds_to_shift, step_sample):
-        # Make sure each cue starts right on the beginning of a frame
-        return round(seconds_to_shift / step_sample) * step_sample
-
     def __predict_in_multithreads(
-        self,
-        segment_index,
-        segment_starts,
-        segment_ends,
-        weights_dir,
-        audio_file_path,
-        subs,
-        subs_copy,
-        stretch,
+            self,
+            segment_index,
+            segment_starts,
+            segment_ends,
+            weights_file_path,
+            audio_file_path,
+            subs,
+            subs_copy,
+            stretch,
     ):
         segment_path = ""
         try:
@@ -515,18 +471,14 @@ class Predictor(Singleton):
             if segment_index == 0:
                 previous_gap = 0.0
             else:
-                previous_gap = FeatureEmbedder.time_to_sec(
-                    subs[segment_index][0].start
-                ) - FeatureEmbedder.time_to_sec(
-                    subs[segment_index - 1][
-                        len(subs[segment_index - 1]) - 1
-                    ].end
+                previous_gap = FeatureEmbedder.time_to_sec(subs[segment_index][0].start) - FeatureEmbedder.time_to_sec(
+                    subs[segment_index - 1][len(subs[segment_index - 1]) - 1].end
                 )
 
             subs_new, _, _ = self.__predict(
                 video_file_path=None,
                 subtitle_file_path=None,
-                model_weights_dir=weights_dir,
+                weights_file_path=weights_file_path,
                 audio_file_path=segment_path,
                 subtitles=subs_copy[segment_index],
                 max_shift_secs=max_shift_secs,
@@ -553,7 +505,78 @@ class Predictor(Singleton):
                     subtitle_mask[i] = 1
         return subtitle_mask
 
-    def __adjust_durations(self, subs, audio_file_path):
+    def __on_frame_timecodes(self, subs):
+        for sub in subs:
+            millis_per_frame = self.__feature_embedder.step_sample * 1000
+            new_start_millis = round(int(str(sub.start).split(",")[1]) / millis_per_frame + 0.5) * millis_per_frame
+            new_start = str(sub.start).split(",")[0] + "," + str(int(new_start_millis)).zfill(3)
+            new_end_millis = round(int(str(sub.end).split(",")[1]) / millis_per_frame - 0.5) * millis_per_frame
+            new_end = str(sub.end).split(",")[0] + "," + str(int(new_end_millis)).zfill(3)
+            sub.start = SubRipTime.coerce(new_start)
+            sub.end = SubRipTime.coerce(new_end)
+
+    def __initialise_network(self, weights_dir):
+        model_dir = os.path.join(os.path.dirname(__file__), weights_dir.replace("/weights", "/model"))
+        config_dir = os.path.join(os.path.dirname(__file__), weights_dir.replace("/weights", "/config"))
+        files = os.listdir(model_dir)
+        model_files = [
+            file
+            for file in files
+            if file.startswith("model")
+        ]
+        files = os.listdir(config_dir)
+        hyperparams_files = [
+            file
+            for file in files
+            if file.startswith("hyperparameters")
+        ]
+
+        if not model_files:
+            raise TerminalException(
+                "Cannot find model files at {}".format(weights_dir)
+            )
+
+        Predictor.__LOGGER.debug("model files: {}".format(model_files))
+        Predictor.__LOGGER.debug("config files: {}".format(hyperparams_files))
+
+        # Get the first file from the file lists
+        model_path = "{}/{}".format(model_dir, model_files[0])
+        hyperparams_path = "{}/{}".format(config_dir, hyperparams_files[0])
+
+        # Only initialise the network once
+        if not hasattr(self, "__network"):
+            hyperparams = Hyperparameters.from_file(hyperparams_path)
+            self.__network = Network.get_from_model(model_path, hyperparams)
+
+    @staticmethod
+    def __get_weights_path(weights_dir):
+        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
+        files = os.listdir(weights_dir)
+        weights_files = [
+            file
+            for file in files
+            if file.startswith("weights")
+        ]
+
+        if not weights_files:
+            raise TerminalException(
+                "Cannot find weights files at {}".format(weights_dir)
+            )
+
+        Predictor.__LOGGER.debug("weights files: {}".format(weights_files))
+
+        # Get the first file from the file lists
+        weights_path = "{}/{}".format(weights_dir, weights_files[0])
+
+        return os.path.join(os.path.dirname(__file__), weights_path)
+
+    @staticmethod
+    def __normalise_seconds_to_shift(seconds_to_shift, step_sample):
+        # Make sure each cue starts right on the beginning of a frame
+        return round(seconds_to_shift / step_sample) * step_sample
+
+    @staticmethod
+    def __adjust_durations(subs, audio_file_path):
 
         # Initialise a DTW alignment task
         task_config_string = (
@@ -608,22 +631,12 @@ class Predictor(Singleton):
         finally:
             # Housekeep intermediate files
             if task.audio_file_path_absolute is not None and os.path.exists(
-                task.audio_file_path_absolute
+                    task.audio_file_path_absolute
             ):
                 os.remove(task.audio_file_path_absolute)
             if task.text_file_path_absolute is not None and os.path.exists(
-                task.text_file_path_absolute
+                    task.text_file_path_absolute
             ):
                 os.remove(task.text_file_path_absolute)
             if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
                 os.remove(task.sync_map_file_path_absolute)
-
-    def __on_frame_timecodes(self, subs):
-        for sub in subs:
-            millis_per_frame = self.__feature_embedder.step_sample * 1000
-            new_start_millis = round(int(str(sub.start).split(",")[1]) / millis_per_frame + 0.5) * millis_per_frame
-            new_start = str(sub.start).split(",")[0] + "," + str(int(new_start_millis)).zfill(3)
-            new_end_millis = round(int(str(sub.end).split(",")[1]) / millis_per_frame - 0.5) * millis_per_frame
-            new_end = str(sub.end).split(",")[0] + "," + str(int(new_end_millis)).zfill(3)
-            sub.start = SubRipTime.coerce(new_start)
-            sub.end = SubRipTime.coerce(new_end)
