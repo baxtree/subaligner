@@ -37,6 +37,12 @@ git clone git@github.com:baxtree/subaligner.git
 cd subaligner
 make install && source .venv/bin/activate
 ```
+or
+```
+# Use dockerised installation
+
+docker run -it baxtree/subaligner bash
+```
 
 ## Usage
 ```

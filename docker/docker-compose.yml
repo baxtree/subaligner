@@ -1,0 +1,14 @@
+version: "3"
+services:
+
+  subaligner:
+    build:
+      context: ./
+      dockerfile: Dockerfile-Ubuntu
+    image: baxtree/subaligner:${VERSION}
+
+  subaligner-centos7:
+    build:
+      context: ./
+      dockerfile: Dockerfile-CentOS7
+    image: baxtree/subaligner:${VERSION}.el7

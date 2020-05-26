@@ -26,6 +26,10 @@ Installation
     subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "v0.0.7"}
     ...
 
+**Use dockerised installation**::
+
+    $ docker run -it baxtree/subaligner bash
+
 You can also download the latest
 release on `GitHub <https://github.com/baxtree/subaligner>`_ and follow the steps down below
 to create a virtual environment and set up all the dependencies:
