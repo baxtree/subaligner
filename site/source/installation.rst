@@ -28,7 +28,7 @@ Installation
 
 **Use dockerised installation**::
 
-    $ docker run -it baxtree/subaligner bash
+    $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 
 You can also download the latest
 release on `GitHub <https://github.com/baxtree/subaligner>`_ and follow the steps down below

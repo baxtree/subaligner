@@ -18,6 +18,12 @@ Make sure you have got the virtual environment activated upfront.
 
 Currently the stretching is experimental and only works for speech and subtitles in English.
 
+**Run alignments with the docker image**::
+
+    docker pull baxtree/subaligner
+    docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
+    docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
+
 **Use flag "-so" to switch off stretching when aligning subtitles not in English**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -so
