@@ -1,7 +1,9 @@
 ifdef PYTHON
 PYTHON := $(PYTHON)
+SUBALIGNER_VERSION := $(SUBALIGNER_VERSION)
 else
 PYTHON := python3.6
+SUBALIGNER_VERSION := 0.0.7
 endif
 
 define BROWSER_PYSCRIPT
@@ -111,6 +113,9 @@ profile:
 	.$(PYTHON)/bin/python -c "import misc.profiler; misc.profiler.generate_profiles()"
 	.$(PYTHON)/bin/kernprof -v -l ./misc/profiler.py
 
+docker-images:
+	SUBALIGNER_VERSION=$(SUBALIGNER_VERSION) docker-compose -f ./docker/docker-compose.yml build
+
 clean: clean-build clean-pyc clean-test clean-rpm clean-doc clean-manual clean-dist ## remove all build, test, coverage and Python artifacts
 
 clean-dist:
@@ -143,3 +148,5 @@ clean-test: ## remove test and coverage artifacts
 clean-rpm:
 	rm -rf BUILD RPMS SRPMS SOURCES BUILDROOT
 
+clean-docker-images:
+	docker rmi -f $(docker images --filter=reference='*/subaligner' -qa)

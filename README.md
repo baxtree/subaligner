@@ -41,7 +41,7 @@ or
 ```
 # Use dockerised installation
 
-docker run -it baxtree/subaligner bash
+docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
 
 ## Usage
@@ -57,6 +57,13 @@ $ subaligner_1pass -v video.mp4 -s subtitle.srt
 $ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
 
+```
+# Run alignments with the docker image
+
+docker pull baxtree/subaligner
+docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
+docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
+```
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help` or `subaligner_2pass --help`.
 
 ## Supported Formats

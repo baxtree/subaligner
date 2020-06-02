@@ -1,4 +1,4 @@
-# Subaligner Ubuntu Docker Image
+# Subaligner Ubuntu 19 Docker Image
 FROM ubuntu:19.10
 
 RUN apt-get -y update &&\
