@@ -1,10 +1,10 @@
 ifdef PYTHON
 PYTHON := $(PYTHON)
-SUBALIGNER_VERSION := $(SUBALIGNER_VERSION)
 else
-PYTHON := python3.6
-SUBALIGNER_VERSION := 0.0.7
+PYTHON := 3.7.7
 endif
+
+SUBALIGNER_VERSION := $(SUBALIGNER_VERSION)
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -22,7 +22,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 ## The versions of pycaption depended by pycaption and aeneas have no overlapping.
 ## That will fail setup.py so pip install on requirements.txt is needed.
 install:
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p $(PYTHON) .$(PYTHON); fi
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
@@ -43,7 +43,7 @@ build-rpm:
 	tar -czf SOURCES/subligner.tar.gz subaligner bin requirements.txt setup.py README.md LICENCE
 
 test: ## run tests quickly with the default Python
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p python3 .$(PYTHON); fi
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
@@ -54,7 +54,7 @@ test-all: ## run tests on every Python version with tox
 	.$(PYTHON)/bin/tox
 
 pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p python3 .$(PYTHON); fi
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/python -m pydoc -w subaligner; mv subaligner.html docs/index.html
@@ -78,7 +78,7 @@ pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 	$(BROWSER) docs/index.html
 
 coverage: ## check code coverage quickly with the default Python
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p python3 .$(PYTHON); fi
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
@@ -88,25 +88,30 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 manual: clean-manual ## generate manual pages
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p python3 .$(PYTHON); fi
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements-docs.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-site.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	SPHINXAPIDOC=../.$(PYTHON)/bin/sphinx-apidoc SPHINXBUILD=../.$(PYTHON)/bin/sphinx-build make -C ./site html
 	$(BROWSER) ./site/build/html/index.html
 
-release: clean-dist
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p python3 .$(PYTHON); fi
+dist: clean-dist
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	.$(PYTHON)/bin/python setup.py sdist bdist_wheel
-	twine upload dist/*
+	.$(PYTHON)/bin/python setup.py sdist bdist_wheel bdist_egg
+
+release:
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
+	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
+	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	.$(PYTHON)/bin/twine upload dist/*
 
 pipenv-install:
 	pipenv install
 	pipenv shell
 
 profile:
-	if [ ! -e ".$(PYTHON)" ]; then pip3 install virtualenv; virtualenv -p python3 .$(PYTHON); fi
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
