@@ -21,6 +21,11 @@ import argparse
 import sys
 import traceback
 
+from subaligner.logger import Logger
+from subaligner.predictor import Predictor
+from subaligner.subtitle import Subtitle
+from subaligner.exception import UnsupportedFormatException
+from subaligner.exception import TerminalException
 
 if __name__ == "__main__":
 
@@ -67,12 +72,7 @@ if __name__ == "__main__":
     verbose = FLAGS.debug
 
     try:
-        from subaligner.logger import Logger
         Logger.VERBOSE = verbose
-        from subaligner.predictor import Predictor
-        from subaligner.subtitle import Subtitle
-        from subaligner.exception import UnsupportedFormatException
-        from subaligner.exception import TerminalException
 
         predictor = Predictor()
         subs, audio_file_path, voice_probabilities = predictor.predict_single_pass(

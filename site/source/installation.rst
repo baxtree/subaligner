@@ -23,7 +23,7 @@ Installation
     ...
     [packages]
     numpy = "*"
-    subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "v0.0.7"}
+    subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "v0.0.9"}
     ...
 
 **Use dockerised installation**::
