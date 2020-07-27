@@ -1,3 +1,2 @@
 sphinx==2.3.1
 sphinx-rtd-theme==0.4.3
-hyperopt==0.2.4
