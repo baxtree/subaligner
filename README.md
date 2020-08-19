@@ -27,7 +27,7 @@ or
 ...
 [packages]
 numpy = "*"
-subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "v0.0.9"}
+subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
 ...
 ```
 or

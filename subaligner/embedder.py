@@ -1,4 +1,5 @@
 import librosa
+import threading
 import numpy as np
 from datetime import datetime, timedelta
 from .singleton import Singleton
@@ -31,6 +32,7 @@ class FeatureEmbedder(Singleton):
             len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
         """
 
+        self.__mfcc_extraction_lock = threading.RLock()
         self.__n_mfcc = n_mfcc  # number of MFCC components
         self.__frequency = frequency  # sample rate
         self.__hop_len = hop_len  # number of samples per frame
@@ -293,26 +295,22 @@ class FeatureEmbedder(Singleton):
         t = datetime.now()
 
         # Load audio file
-        audio_time_series, sample_rate = librosa.load(
-            audio_file_path, sr=self.frequency
-        )
-        FeatureEmbedder.__LOGGER.debug(
-            "Audio file loaded with sample rate {}: {}".format(
-                sample_rate, audio_file_path
+        with self.__mfcc_extraction_lock:
+            audio_time_series, sample_rate = librosa.load(
+                audio_file_path, sr=self.frequency
             )
-        )
-
-        audio_load_time = datetime.now() - t
-
-        t = datetime.now()
-
-        # Get MFCC features
-        mfcc = librosa.feature.mfcc(
-            y=audio_time_series,
-            sr=sample_rate,
-            hop_length=int(self.__hop_len),
-            n_mfcc=self.__n_mfcc,
-        )
+            # Get MFCC features
+            mfcc = librosa.feature.mfcc(
+                y=audio_time_series,
+                sr=sample_rate,
+                hop_length=int(self.__hop_len),
+                n_mfcc=self.__n_mfcc,
+            )
+            FeatureEmbedder.__LOGGER.debug(
+                "Audio file loaded and embedded with sample rate {}: {}".format(
+                    sample_rate, audio_file_path
+                )
+            )
 
         # Group multiple MFCCs of 32 ms into a larger range for LSTM
         # and each stride will have an overlay with the previous one
@@ -349,9 +347,6 @@ class FeatureEmbedder(Singleton):
         )
         FeatureEmbedder.__LOGGER.debug(
             "| Subtitle file path: {}".format(subtitle_file_path)
-        )
-        FeatureEmbedder.__LOGGER.debug(
-            "| Audio load time: {}".format(str(audio_load_time))
         )
         FeatureEmbedder.__LOGGER.debug(
             "| MFCC extration time: {}".format(str(mfcc_extration_time))

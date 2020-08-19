@@ -256,6 +256,7 @@ class Trainer(object):
             ]
             done, not_done = concurrent.futures.wait(futures)
             for future in not_done:
+                # Log undone audio files and continue
                 try:
                     audio_file_path, subtitle_file_path = future.result()
                     Trainer.__LOGGER.error(
@@ -310,6 +311,7 @@ class Trainer(object):
             )
         # Some media are malformed and on occurring they will be logged but the expensive training process shall continue
         except (UnsupportedFormatException, TerminalException) as e:
+            # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
                 "Exception: {}; stacktrace: {}".format(
                     str(e), traceback.format_stack()
@@ -321,6 +323,7 @@ class Trainer(object):
                 )
             )
         except Exception as e:
+            # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
                 "Unexpected exception: {}; stacktrace: {}".format(
                     str(e), traceback.format_stack()
