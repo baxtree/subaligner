@@ -1,5 +1,7 @@
 import subprocess
 import os
+import threading
+import traceback
 
 from pysrt import SubRipFile
 from decimal import Decimal
@@ -20,7 +22,7 @@ class MediaHelper(object):
     __MIN_GAP_IN_SECS = (
         1  # minimum gap in seconds between consecutive subtitle during segmentation
     )
-    __CMD_TIME_OUT = 600  # time out for subprocess
+    __CMD_TIME_OUT = 180  # time out for subprocess
 
     @staticmethod
     def extract_audio(video_file_path, decompress=False, freq=16000):
@@ -58,22 +60,29 @@ class MediaHelper(object):
                 root, extension, audio_file_path
             )
         )
-        MediaHelper.__LOGGER.debug("Running: {}".format(command))
         with subprocess.Popen(
             command.split(),
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             close_fds=True,
+            universal_newlines=True,
+            bufsize=1,
         ) as process:
             try:
+                MediaHelper.__LOGGER.debug("[{}-{}] Running: {}".format(threading.current_thread().name, process.pid, command))
                 _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
-                MediaHelper.__LOGGER.debug(std_err.decode("utf-8").strip())
+                MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
                 if process.returncode != 0:
                     raise TerminalException(
                         "Cannot extract audio from video: {}".format(video_file_path)
                     )
+                MediaHelper.__LOGGER.info(
+                    "[{}-{}] Extracted audio file: {}".format(threading.current_thread().name, process.pid,
+                                                              audio_file_path))
+                return audio_file_path
             except subprocess.TimeoutExpired as te:
+                MediaHelper.__LOGGER.error("Timeout on extracting audio from video: {}".format(video_file_path))
                 process.kill()
                 process.wait()
                 if os.path.exists(audio_file_path):
@@ -94,8 +103,6 @@ class MediaHelper(object):
                     ) from e
             finally:
                 os.system("stty sane")
-        MediaHelper.__LOGGER.info("Extracted audio file:{}".format(audio_file_path))
-        return audio_file_path
 
     @staticmethod
     def get_duration_in_seconds(start, end):
@@ -137,7 +144,7 @@ class MediaHelper(object):
             tuple -- The file path to the extracted audio and its duration.
         """
 
-        segement_duration = MediaHelper.get_duration_in_seconds(start, end)
+        segment_duration = MediaHelper.get_duration_in_seconds(start, end)
         root, extension = os.path.splitext(audio_file_path)
         start = start.replace(",", ".")
         if end is not None:
@@ -152,44 +159,57 @@ class MediaHelper(object):
             command = "ffmpeg -y -xerror -i {0} -ss {1} -acodec copy {2}".format(
                 audio_file_path, start, segment_path
             )
-        MediaHelper.__LOGGER.debug("Running: {}".format(command))
-        with subprocess.Popen(
+        process = subprocess.Popen(
             command.split(),
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            close_fds=True,
-        ) as process:
-            try:
-                _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
-                MediaHelper.__LOGGER.debug(std_err.decode("utf-8").strip())
-                if process.returncode != 0:
-                    raise TerminalException(
-                        "Cannot extract audio from audio: {}".format(audio_file_path)
-                    )
-            except subprocess.TimeoutExpired as te:
-                process.kill()
-                process.wait()
-                if os.path.exists(segment_path):
-                    os.remove(segment_path)
+            universal_newlines=True,
+            bufsize=1,
+        )
+        MediaHelper.__LOGGER.debug("[{}-{}] Running: {}".format(threading.current_thread().name, process.pid, command))
+        try:
+            _, std_err = process.communicate(MediaHelper.__CMD_TIME_OUT)
+            MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
+            if process.returncode != 0:
                 raise TerminalException(
-                    "Timeout on extracting audio from audio: {}".format(audio_file_path)
-                ) from te
-            except Exception as e:
-                process.kill()
-                process.wait()
-                if os.path.exists(segment_path):
-                    os.remove(segment_path)
-                if isinstance(e, TerminalException):
-                    raise e
-                else:
-                    raise TerminalException(
-                        "Cannot extract audio from audio: {}".format(audio_file_path)
-                    ) from e
-            finally:
-                os.system("stty sane")
-        MediaHelper.__LOGGER.info("Extracted audio segment:{}".format(segment_path))
-        return segment_path, segement_duration
+                    "Cannot extract audio from audio: {} Return Code: {}".format(audio_file_path, process.returncode)
+                )
+            MediaHelper.__LOGGER.info(
+                "[{}-{}] Extracted audio segment: {}".format(threading.current_thread().name, process.pid,
+                                                             segment_path))
+            return segment_path, segment_duration
+        except subprocess.TimeoutExpired as te:
+            MediaHelper.__LOGGER.error(
+                "[{}-{}] Extracting {} timed out: {}\n{}".format(
+                    threading.current_thread().name, process.pid, segment_path, str(te), traceback.format_stack()
+                )
+            )
+            process.kill()
+            process.wait()
+            if os.path.exists(segment_path):
+                os.remove(segment_path)
+            raise TerminalException(
+                "Timeout on extracting audio from audio: {} after {} seconds".format(audio_file_path, MediaHelper.__CMD_TIME_OUT)
+            ) from te
+        except Exception as e:
+            MediaHelper.__LOGGER.error(
+                "[{}-{}] Extracting {} failed: {}\n{}".format(
+                    threading.current_thread().name, process.pid, segment_path, str(e), traceback.format_stack()
+                )
+            )
+            process.kill()
+            process.wait()
+            if os.path.exists(segment_path):
+                os.remove(segment_path)
+            if isinstance(e, TerminalException):
+                raise e
+            else:
+                raise TerminalException(
+                    "Cannot extract audio from audio: {}".format(audio_file_path)
+                ) from e
+        finally:
+            os.system("stty sane")
 
     @staticmethod
     def get_audio_segment_starts_and_ends(subs):
@@ -257,9 +277,12 @@ class MediaHelper(object):
         """
 
         with subprocess.Popen(
-                "ffmpeg -i {} -f null /dev/null".format(video_file_path).split(),
+                "ffmpeg -i {} -t 00:00:10 -f null /dev/null".format(video_file_path).split(),
                 shell=False,
                 stderr=subprocess.PIPE,
+                close_fds=True,
+                universal_newlines=True,
+                bufsize=1,
         ) as proc:
             with subprocess.Popen(
                     ['sed', '-n', "s/" + r".*, \(.*\) fp.*" + "/\\1/p"],
@@ -267,14 +290,19 @@ class MediaHelper(object):
                     stdin=proc.stderr,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
+                    close_fds=True,
+                    universal_newlines=True,
+                    bufsize=1,
             ) as process:
                 try:
-                    std_out, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
+                    std_out, _ = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                     if process.returncode != 0:
                         raise TerminalException(
                             "Cannot extract the frame rate from video: {}".format(video_file_path)
                         )
-                    fps = float(std_out.decode("utf-8").split("\n")[0])
+                    fps = float(std_out.split("\n")[0])
+                    MediaHelper.__LOGGER.info("[{}-{}] Extracted frame rate: {} fps".format(threading.current_thread().name, process.pid, fps))
+                    return fps
                 except subprocess.TimeoutExpired as te:
                     proc.kill()
                     proc.wait()
@@ -296,6 +324,3 @@ class MediaHelper(object):
                         ) from e
                 finally:
                     os.system("stty sane")
-
-        MediaHelper.__LOGGER.info("Extracted frame rate:{} fps".format(fps))
-        return fps

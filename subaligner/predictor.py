@@ -36,6 +36,8 @@ class Predictor(Singleton):
     )  # Average 0.3 word per sec multiplies average 6 characters per word
     __MAX_HEAD_ROOM = 20000  # Maximum duration without subtitle (10 minutes)
 
+    __SEGMENT_PREDICTION_TIMEOUT = 60  # Maximum waiting time in seconds when predicting each segment
+
     def __init__(self, **kwargs):
         """Feature predictor initialiser.
 
@@ -48,7 +50,7 @@ class Predictor(Singleton):
         """
 
         self.__feature_embedder = FeatureEmbedder(**kwargs)
-        self.__lock = threading.Lock()
+        self.__lock = threading.RLock()
 
     def predict_single_pass(
             self,
@@ -114,12 +116,18 @@ class Predictor(Singleton):
             new_subs = self.__predict_2nd_pass(
                 audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch
             )
-        except Exception:
+        except Exception as e:
+            Predictor.__LOGGER.error(
+                "Exception on the second stage alignment: {}\n{}".format(
+                    str(e), traceback.format_stack()
+                )
+            )
             raise
         else:
             frame_rate = MediaHelper.get_frame_rate(video_file_path)
             self.__feature_embedder.step_sample = 1 / frame_rate
             self.__on_frame_timecodes(new_subs)
+            Predictor.__LOGGER.debug("Aligned segments generated")
             return new_subs, subs, voice_probabilities
         finally:
             if os.path.exists(audio_file_path):
@@ -242,6 +250,7 @@ class Predictor(Singleton):
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
+        thread_name = threading.current_thread().name
         result = {}
         pred_start = datetime.datetime.now()
         if audio_file_path is not None:
@@ -252,8 +261,8 @@ class Predictor(Singleton):
                 video_file_path, True, 16000
             )
             Predictor.__LOGGER.debug(
-                "Audio extracted after {}".format(
-                    str(datetime.datetime.now() - t)
+                "[{}] Audio extracted after {}".format(
+                    thread_name, str(datetime.datetime.now() - t)
                 )
             )
             result["video_file_path"] = video_file_path
@@ -286,16 +295,17 @@ class Predictor(Singleton):
 
         # Load neural network
         input_shape = (train_data.shape[1], train_data.shape[2])
-        Predictor.__LOGGER.debug("input shape: {}".format(input_shape))
+        Predictor.__LOGGER.debug("[{}] input shape: {}".format(thread_name, input_shape))
 
         # Network class is not thread safe so a new graph is created for each thread
-        self.__lock.acquire()
-        try:
-            Predictor.__LOGGER.debug("Start predicting...")
-            pred_start = datetime.datetime.now()
-            voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
-        finally:
-            self.__lock.release()
+        pred_start = datetime.datetime.now()
+        with self.__lock:
+            try:
+                Predictor.__LOGGER.debug("[{}] Start predicting...".format(thread_name))
+                voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
+            except Exception as e:
+                Predictor.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(thread_name, str(e), traceback.format_stack()))
+                raise
 
         if len(voice_probabilities) <= 0:
             if os.path.exists(audio_file_path):
@@ -310,20 +320,20 @@ class Predictor(Singleton):
         # Predictor.__LOGGER.debug("predictions: {}".format(voice_probabilities))
 
         original_start = FeatureEmbedder.time_to_sec(subs[0].start)
-        Predictor.__LOGGER.debug("Start {}".format(original_start))
         shifted_subs = deepcopy(subs)
         subs.shift(seconds=-original_start)
 
-        Predictor.__LOGGER.info("Aligning subtitle with video...")
+        Predictor.__LOGGER.info("[{}] Aligning subtitle with video...".format(thread_name))
 
-        min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-            voice_probabilities, subs
-        )
+        with self.__lock:
+            min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
+                voice_probabilities, subs
+            )
 
         pos_to_delay = min_log_loss_pos
         result["loss"] = min_log_loss
 
-        Predictor.__LOGGER.info("Subtitle aligned")
+        Predictor.__LOGGER.info("[{}] Subtitle aligned".format(thread_name))
 
         if subtitle_file_path is not None:  # for the first pass
             seconds_to_shift = (
@@ -349,11 +359,11 @@ class Predictor(Singleton):
         result["original_start"] = original_start
         total_elapsed_time = str(datetime.datetime.now() - pred_start)
         result["time_sync"] = total_elapsed_time
-        Predictor.__LOGGER.debug("Statistics: {}".format(result))
+        Predictor.__LOGGER.debug("[{}] Statistics: {}".format(thread_name, result))
 
-        Predictor.__LOGGER.debug("Total Time: {}".format(total_elapsed_time))
+        Predictor.__LOGGER.debug("[{}] Total Time: {}".format(thread_name, total_elapsed_time))
         Predictor.__LOGGER.debug(
-            "Seconds to shift: {}".format(seconds_to_shift)
+            "[{}] Seconds to shift: {}".format(thread_name, seconds_to_shift)
         )
 
         # For each subtitle chunk, its end time should not be later than the end time of the audio segment
@@ -361,11 +371,12 @@ class Predictor(Singleton):
             shifted_subs.shift(seconds=seconds_to_shift)
         elif max_shift_secs is not None and seconds_to_shift > max_shift_secs:
             Predictor.__LOGGER.warning(
-                "Maximum {} seconds shift has reached".format(max_shift_secs)
+                "[{}] Maximum {} seconds shift has reached".format(thread_name, max_shift_secs)
             )
             shifted_subs.shift(seconds=max_shift_secs)
         else:
             shifted_subs.shift(seconds=seconds_to_shift)
+        Predictor.__LOGGER.debug("[{}] Subtitle shifted".format(thread_name))
         return shifted_subs, audio_file_path, voice_probabilities
 
     def __predict_2nd_pass(self, audio_file_path, subs, weights_file_path, stretch):
@@ -378,9 +389,7 @@ class Predictor(Singleton):
             stretch {bool} -- True to stretch the subtitle segments (default: {False})
         """
 
-        segment_starts, segment_ends, subs = MediaHelper.get_audio_segment_starts_and_ends(
-            subs
-        )
+        segment_starts, segment_ends, subs = MediaHelper.get_audio_segment_starts_and_ends(subs)
         subs_copy = deepcopy(subs)
 
         for index, sub in enumerate(subs):
@@ -400,6 +409,8 @@ class Predictor(Singleton):
         subs_list = []
 
         max_workers = int(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
+        Predictor.__LOGGER.debug("Number of workers: {}".format(max_workers))
+
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers
         ) as executor:
@@ -418,23 +429,25 @@ class Predictor(Singleton):
                 )
                 for i in range(len(segment_starts))
             ]
-            concurrent.futures.wait(futures)
             for future in futures:
                 try:
-                    new_subs = future.result()
+                    new_subs = future.result(timeout=Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                except concurrent.futures.TimeoutError as e:
+                    message = "Segment alignment timed out after {} seconds".format(Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    Predictor.__LOGGER.error(message)
+                    raise TerminalException(message) from e
                 except Exception as e:
-                    Predictor.__LOGGER.error(
-                        "Exception: {}\n{}".format(
-                            str(e), traceback.format_stack()
-                        )
-                    )
-                    raise
+                    message = "Exception on segment alignment: {}\n{}".format(str(e), traceback.format_stack())
+                    Predictor.__LOGGER.error(message)
+                    raise TerminalException(message) from e
                 else:
+                    Predictor.__LOGGER.debug("Segment aligned")
                     subs_list.append(new_subs)
 
         subs_list = [
             sub_item for subs in subs_list for sub_item in subs
         ]  # flatten the subs_list
+        Predictor.__LOGGER.debug("All segments aligned")
         return subs_list
 
     def __predict_in_multithreads(
@@ -484,10 +497,16 @@ class Predictor(Singleton):
                 max_shift_secs=max_shift_secs,
                 previous_gap=previous_gap,
             )
-
             if stretch:
                 subs_new = self.__adjust_durations(subs_new, audio_file_path)
             return subs_new
+        except Exception as e:
+            Predictor.__LOGGER.error(
+                "Alignment failed for segment {}: {}\n{}".format(
+                    segment_index, str(e), traceback.format_stack()
+                )
+            )
+            return subs[segment_index]
         finally:
             # Housekeep intermediate files
             if os.path.exists(segment_path):
