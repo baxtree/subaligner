@@ -5,6 +5,7 @@ PYTHON := 3.7.7
 endif
 
 SUBALIGNER_VERSION := $(SUBALIGNER_VERSION)
+TRIGGER_URL := ${TRIGGER_URL}
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -120,6 +121,9 @@ profile:
 
 docker-images:
 	SUBALIGNER_VERSION=$(SUBALIGNER_VERSION) docker-compose -f ./docker/docker-compose.yml build
+
+docker-push:
+    curl -H "Content-Type: application/json" --data '{"source_type": "Tag", "source_name": "v$(SUBALIGNER_VERSION)"}' -X POST $(TRIGGER_URL)
 
 clean: clean-build clean-pyc clean-test clean-rpm clean-doc clean-manual clean-dist ## remove all build, test, coverage and Python artifacts
 
