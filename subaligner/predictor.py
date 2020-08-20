@@ -76,9 +76,6 @@ class Predictor(Singleton):
             subs, audio_file_path, voice_probabilities = self.__predict(
                 video_file_path, subtitle_file_path, weights_file_path
             )
-        except Exception:
-            raise
-        else:
             frame_rate = MediaHelper.get_frame_rate(video_file_path)
             self.__feature_embedder.step_sample = 1 / frame_rate
             self.__on_frame_timecodes(subs)
@@ -116,14 +113,6 @@ class Predictor(Singleton):
             new_subs = self.__predict_2nd_pass(
                 audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch
             )
-        except Exception as e:
-            Predictor.__LOGGER.error(
-                "Exception on the second stage alignment: {}\n{}".format(
-                    str(e), traceback.format_stack()
-                )
-            )
-            raise
-        else:
             frame_rate = MediaHelper.get_frame_rate(video_file_path)
             self.__feature_embedder.step_sample = 1 / frame_rate
             self.__on_frame_timecodes(new_subs)
@@ -305,7 +294,7 @@ class Predictor(Singleton):
                 voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
             except Exception as e:
                 Predictor.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(thread_name, str(e), traceback.format_stack()))
-                raise
+                raise TerminalException("Prediction failed") from e
 
         if len(voice_probabilities) <= 0:
             if os.path.exists(audio_file_path):

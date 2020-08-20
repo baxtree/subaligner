@@ -5,7 +5,7 @@ import subprocess
 
 from subaligner.exception import TerminalException
 from subaligner.media_helper import MediaHelper as Undertest
-from mock import patch
+from mock import patch, Mock
 
 
 class MediaHelperTests(unittest.TestCase):
@@ -96,12 +96,15 @@ class MediaHelperTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("subprocess.Popen.communicate", return_value=1)
-    def test_throw_exception_on_extract_audio_with_error_code(self, mock_communicate):
+    @patch("subprocess.Popen")
+    def test_throw_exception_on_extract_audio_with_error_code(self, mock_popen):
+        mock_popen.returncode.return_value = 1
+        mock_popen.communicate = Mock()
+        mock_popen.communicate.return_value = 1
         try:
             Undertest.extract_audio(self.__video_file_path)
         except Exception as e:
-            self.assertTrue(mock_communicate.called)
+            self.assertTrue(mock_popen.communicate.called_with(180))
             self.assertTrue(isinstance(e, TerminalException))
             self.assertTrue("Cannot extract audio from video:" in str(e))
         else:
