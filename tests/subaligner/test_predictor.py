@@ -1,6 +1,8 @@
 import unittest
 import os
 import sys
+
+from mock import patch
 from subaligner.predictor import Predictor as Undertest
 from subaligner.exception import TerminalException
 
@@ -150,6 +152,17 @@ class PredictorTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
+    @patch("subaligner.media_helper.MediaHelper.extract_audio_from_start_to_end", side_effect=Exception("exception"))
+    def test_not_throw_exception_on_segment_alignment_failure(self, mock_time_to_sec):
+        undertest_obj = Undertest(n_mfcc=20)
+        new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
+            self.__video_file_path, self.__srt_file_path, self.__weights_dir
+        )
+        self.assertGreater(len(new_subs), 0)
+        self.assertEqual(len(new_subs), len(subs))
+        self.assertGreater(len(voice_probabilities), 0)
+        self.assertTrue(mock_time_to_sec.called)
+
     def test_throw_terminal_exception_on_missing_subtitle(self):
         try:
             subs, audio_file_path, _ = Undertest(n_mfcc=20).predict_single_pass(self.__video_file_path, None, self.__weights_dir)
@@ -158,6 +171,19 @@ class PredictorTests(unittest.TestCase):
             self.assertTrue(isinstance(e, TerminalException))
         else:
             self.fail("Should have thrown exception")
+
+    def test_throw_terminal_exception_on_timeout(self):
+        backup = Undertest._Predictor__SEGMENT_PREDICTION_TIMEOUT
+        Undertest._Predictor__SEGMENT_PREDICTION_TIMEOUT = 0.05
+        try:
+            undertest_obj = Undertest(n_mfcc=20)
+            undertest_obj.predict_dual_pass(self.__video_file_path, self.__srt_file_path, self.__weights_dir)
+        except Exception as e:
+            self.assertTrue(isinstance(e, TerminalException))
+        else:
+            self.fail("Should have thrown exception")
+        finally:
+            Undertest._Predictor__SEGMENT_PREDICTION_TIMEOUT = backup
 
 
 if __name__ == "__main__":

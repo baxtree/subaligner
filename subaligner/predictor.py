@@ -76,9 +76,6 @@ class Predictor(Singleton):
             subs, audio_file_path, voice_probabilities = self.__predict(
                 video_file_path, subtitle_file_path, weights_file_path
             )
-        except Exception:
-            raise
-        else:
             frame_rate = MediaHelper.get_frame_rate(video_file_path)
             self.__feature_embedder.step_sample = 1 / frame_rate
             self.__on_frame_timecodes(subs)
@@ -116,14 +113,6 @@ class Predictor(Singleton):
             new_subs = self.__predict_2nd_pass(
                 audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch
             )
-        except Exception as e:
-            Predictor.__LOGGER.error(
-                "Exception on the second stage alignment: {}\n{}".format(
-                    str(e), traceback.format_stack()
-                )
-            )
-            raise
-        else:
             frame_rate = MediaHelper.get_frame_rate(video_file_path)
             self.__feature_embedder.step_sample = 1 / frame_rate
             self.__on_frame_timecodes(new_subs)
@@ -305,7 +294,7 @@ class Predictor(Singleton):
                 voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
             except Exception as e:
                 Predictor.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(thread_name, str(e), traceback.format_stack()))
-                raise
+                raise TerminalException("Prediction failed") from e
 
         if len(voice_probabilities) <= 0:
             if os.path.exists(audio_file_path):
@@ -499,6 +488,7 @@ class Predictor(Singleton):
             )
             if stretch:
                 subs_new = self.__adjust_durations(subs_new, audio_file_path)
+                Predictor.__LOGGER.debug("Segment {} stretched".format(segment_index))
             return subs_new
         except Exception as e:
             Predictor.__LOGGER.error(
@@ -567,35 +557,7 @@ class Predictor(Singleton):
             hyperparams = Hyperparameters.from_file(hyperparams_path)
             self.__network = Network.get_from_model(model_path, hyperparams)
 
-    @staticmethod
-    def __get_weights_path(weights_dir):
-        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
-        files = os.listdir(weights_dir)
-        weights_files = [
-            file
-            for file in files
-            if file.startswith("weights")
-        ]
-
-        if not weights_files:
-            raise TerminalException(
-                "Cannot find weights files at {}".format(weights_dir)
-            )
-
-        Predictor.__LOGGER.debug("weights files: {}".format(weights_files))
-
-        # Get the first file from the file lists
-        weights_path = "{}/{}".format(weights_dir, weights_files[0])
-
-        return os.path.join(os.path.dirname(__file__), weights_path)
-
-    @staticmethod
-    def __normalise_seconds_to_shift(seconds_to_shift, step_sample):
-        # Make sure each cue starts right on the beginning of a frame
-        return round(seconds_to_shift / step_sample) * step_sample
-
-    @staticmethod
-    def __adjust_durations(subs, audio_file_path):
+    def __adjust_durations(self, subs, audio_file_path):
 
         # Initialise a DTW alignment task
         task_config_string = (
@@ -624,15 +586,16 @@ class Predictor(Singleton):
             task.text_file_path_absolute = text_file_path
             task.sync_map_file_path_absolute = "{}.srt".format(root)
 
-            # Execute the task
-            ExecuteTask(
-                task=task,
-                rconf=RuntimeConfiguration(config_string=runtime_config_string),
-                logger=AeneasLogger(tee=Logger.VERBOSE),
-            ).execute()
+            with self.__lock:
+                # Execute the task
+                ExecuteTask(
+                    task=task,
+                    rconf=RuntimeConfiguration(config_string=runtime_config_string),
+                    logger=AeneasLogger(tee=Logger.VERBOSE),
+                ).execute()
 
-            # Output new subtitle segment to a file
-            task.output_sync_map_file()
+                # Output new subtitle segment to a file
+                task.output_sync_map_file()
 
             # Load the above subtitle segment
             adjusted_subs = Subtitle.load(
@@ -659,3 +622,30 @@ class Predictor(Singleton):
                 os.remove(task.text_file_path_absolute)
             if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
                 os.remove(task.sync_map_file_path_absolute)
+
+    @staticmethod
+    def __get_weights_path(weights_dir):
+        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
+        files = os.listdir(weights_dir)
+        weights_files = [
+            file
+            for file in files
+            if file.startswith("weights")
+        ]
+
+        if not weights_files:
+            raise TerminalException(
+                "Cannot find weights files at {}".format(weights_dir)
+            )
+
+        Predictor.__LOGGER.debug("weights files: {}".format(weights_files))
+
+        # Get the first file from the file lists
+        weights_path = "{}/{}".format(weights_dir, weights_files[0])
+
+        return os.path.join(os.path.dirname(__file__), weights_path)
+
+    @staticmethod
+    def __normalise_seconds_to_shift(seconds_to_shift, step_sample):
+        # Make sure each cue starts right on the beginning of a frame
+        return round(seconds_to_shift / step_sample) * step_sample
