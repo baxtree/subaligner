@@ -159,57 +159,57 @@ class MediaHelper(object):
             command = "ffmpeg -y -xerror -i {0} -ss {1} -acodec copy {2}".format(
                 audio_file_path, start, segment_path
             )
-        process = subprocess.Popen(
-            command.split(),
-            shell=False,
+        with subprocess.Popen(
+            command,
+            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
             bufsize=1,
-        )
-        MediaHelper.__LOGGER.debug("[{}-{}] Running: {}".format(threading.current_thread().name, process.pid, command))
-        try:
-            _, std_err = process.communicate(MediaHelper.__CMD_TIME_OUT)
-            MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
-            if process.returncode != 0:
+        ) as process:
+            MediaHelper.__LOGGER.debug("[{}-{}] Running: {}".format(threading.current_thread().name, process.pid, command))
+            try:
+                _, std_err = process.communicate(MediaHelper.__CMD_TIME_OUT)
+                MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
+                if process.returncode != 0:
+                    raise TerminalException(
+                        "Cannot extract audio from audio: {} Return Code: {}".format(audio_file_path, process.returncode)
+                    )
+                MediaHelper.__LOGGER.info(
+                    "[{}-{}] Extracted audio segment: {}".format(threading.current_thread().name, process.pid,
+                                                                 segment_path))
+                return segment_path, segment_duration
+            except subprocess.TimeoutExpired as te:
+                MediaHelper.__LOGGER.error(
+                    "[{}-{}] Extracting {} timed out: {}\n{}".format(
+                        threading.current_thread().name, process.pid, segment_path, str(te), traceback.format_stack()
+                    )
+                )
+                process.kill()
+                process.wait()
+                if os.path.exists(segment_path):
+                    os.remove(segment_path)
                 raise TerminalException(
-                    "Cannot extract audio from audio: {} Return Code: {}".format(audio_file_path, process.returncode)
+                    "Timeout on extracting audio from audio: {} after {} seconds".format(audio_file_path, MediaHelper.__CMD_TIME_OUT)
+                ) from te
+            except Exception as e:
+                MediaHelper.__LOGGER.error(
+                    "[{}-{}] Extracting {} failed: {}\n{}".format(
+                        threading.current_thread().name, process.pid, segment_path, str(e), traceback.format_stack()
+                    )
                 )
-            MediaHelper.__LOGGER.info(
-                "[{}-{}] Extracted audio segment: {}".format(threading.current_thread().name, process.pid,
-                                                             segment_path))
-            return segment_path, segment_duration
-        except subprocess.TimeoutExpired as te:
-            MediaHelper.__LOGGER.error(
-                "[{}-{}] Extracting {} timed out: {}\n{}".format(
-                    threading.current_thread().name, process.pid, segment_path, str(te), traceback.format_stack()
-                )
-            )
-            process.kill()
-            process.wait()
-            if os.path.exists(segment_path):
-                os.remove(segment_path)
-            raise TerminalException(
-                "Timeout on extracting audio from audio: {} after {} seconds".format(audio_file_path, MediaHelper.__CMD_TIME_OUT)
-            ) from te
-        except Exception as e:
-            MediaHelper.__LOGGER.error(
-                "[{}-{}] Extracting {} failed: {}\n{}".format(
-                    threading.current_thread().name, process.pid, segment_path, str(e), traceback.format_stack()
-                )
-            )
-            process.kill()
-            process.wait()
-            if os.path.exists(segment_path):
-                os.remove(segment_path)
-            if isinstance(e, TerminalException):
-                raise e
-            else:
-                raise TerminalException(
-                    "Cannot extract audio from audio: {}".format(audio_file_path)
-                ) from e
-        finally:
-            os.system("stty sane")
+                process.kill()
+                process.wait()
+                if os.path.exists(segment_path):
+                    os.remove(segment_path)
+                if isinstance(e, TerminalException):
+                    raise e
+                else:
+                    raise TerminalException(
+                        "Cannot extract audio from audio: {}".format(audio_file_path)
+                    ) from e
+            finally:
+                os.system("stty sane")
 
     @staticmethod
     def get_audio_segment_starts_and_ends(subs):

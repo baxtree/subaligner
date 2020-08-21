@@ -32,7 +32,6 @@ class FeatureEmbedder(Singleton):
             len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
         """
 
-        self.__mfcc_extraction_lock = threading.RLock()
         self.__n_mfcc = n_mfcc  # number of MFCC components
         self.__frequency = frequency  # sample rate
         self.__hop_len = hop_len  # number of samples per frame
@@ -295,22 +294,23 @@ class FeatureEmbedder(Singleton):
         t = datetime.now()
 
         # Load audio file
-        with self.__mfcc_extraction_lock:
-            audio_time_series, sample_rate = librosa.load(
-                audio_file_path, sr=self.frequency
+        audio_time_series, sample_rate = librosa.load(
+            audio_file_path, sr=self.frequency
+        )
+
+        # Get MFCC features
+        mfcc = librosa.feature.mfcc(
+            y=audio_time_series,
+            sr=sample_rate,
+            hop_length=int(self.__hop_len),
+            n_mfcc=self.__n_mfcc,
+        )
+
+        FeatureEmbedder.__LOGGER.debug(
+            "Audio file loaded and embedded with sample rate {}: {}".format(
+                sample_rate, audio_file_path
             )
-            # Get MFCC features
-            mfcc = librosa.feature.mfcc(
-                y=audio_time_series,
-                sr=sample_rate,
-                hop_length=int(self.__hop_len),
-                n_mfcc=self.__n_mfcc,
-            )
-            FeatureEmbedder.__LOGGER.debug(
-                "Audio file loaded and embedded with sample rate {}: {}".format(
-                    sample_rate, audio_file_path
-                )
-            )
+        )
 
         # Group multiple MFCCs of 32 ms into a larger range for LSTM
         # and each stride will have an overlay with the previous one
