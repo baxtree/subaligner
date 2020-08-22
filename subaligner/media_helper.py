@@ -84,7 +84,6 @@ class MediaHelper(object):
             except subprocess.TimeoutExpired as te:
                 MediaHelper.__LOGGER.error("Timeout on extracting audio from video: {}".format(video_file_path))
                 process.kill()
-                process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 raise TerminalException(
@@ -92,7 +91,6 @@ class MediaHelper(object):
                 ) from te
             except Exception as e:
                 process.kill()
-                process.wait()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 if isinstance(e, TerminalException):
@@ -186,7 +184,6 @@ class MediaHelper(object):
                     )
                 )
                 process.kill()
-                process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
@@ -199,7 +196,6 @@ class MediaHelper(object):
                     )
                 )
                 process.kill()
-                process.wait()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 if isinstance(e, TerminalException):
@@ -305,17 +301,13 @@ class MediaHelper(object):
                     return fps
                 except subprocess.TimeoutExpired as te:
                     proc.kill()
-                    proc.wait()
                     process.kill()
-                    process.wait()
                     raise TerminalException(
                         "Timeout on extracting the frame rate from video: {}".format(video_file_path)
                     ) from te
                 except Exception as e:
                     proc.kill()
-                    proc.wait()
                     process.kill()
-                    process.wait()
                     if isinstance(e, TerminalException):
                         raise e
                     else:

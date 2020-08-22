@@ -21,12 +21,6 @@ import argparse
 import sys
 import traceback
 
-from subaligner.logger import Logger
-from subaligner.predictor import Predictor
-from subaligner.subtitle import Subtitle
-from subaligner.exception import UnsupportedFormatException
-from subaligner.exception import TerminalException
-
 if __name__ == "__main__":
 
     if sys.version_info.major != 3:
@@ -69,11 +63,14 @@ if __name__ == "__main__":
         print("--subtitle_path was not passed in")
         sys.exit(21)
 
-    verbose = FLAGS.debug
+    from subaligner.logger import Logger
+    Logger.VERBOSE = FLAGS.debug
+    from subaligner.predictor import Predictor
+    from subaligner.subtitle import Subtitle
+    from subaligner.exception import UnsupportedFormatException
+    from subaligner.exception import TerminalException
 
     try:
-        Logger.VERBOSE = verbose
-
         predictor = Predictor()
         subs, audio_file_path, voice_probabilities = predictor.predict_single_pass(
             video_file_path=FLAGS.video_path, subtitle_file_path=FLAGS.subtitle_path
@@ -91,17 +88,17 @@ if __name__ == "__main__":
             exit(22)
     except UnsupportedFormatException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "{}\n{}".format(str(e), traceback.format_stack() if FLAGS.debug else "")
         )
         sys.exit(23)
     except TerminalException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "{}\n{}".format(str(e), traceback.format_stack() if FLAGS.debug else "")
         )
         sys.exit(24)
     except Exception as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "{}\n{}".format(str(e), traceback.format_stack() if FLAGS.debug else "")
         )
         sys.exit(1)
     else:
