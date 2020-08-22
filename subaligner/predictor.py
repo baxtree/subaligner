@@ -267,15 +267,15 @@ class Predictor(Singleton):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
             raise TerminalException("Error: No subtitles passed in")
-
-        try:
-            train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
-                audio_file_path, None, subtitles=subs
-            )
-        except TerminalException:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise
+        with self.__lock:
+            try:
+                train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
+                    audio_file_path, None, subtitles=subs
+                )
+            except TerminalException:
+                if os.path.exists(audio_file_path):
+                    os.remove(audio_file_path)
+                raise
 
         train_data = np.array([np.rot90(val) for val in train_data])
         train_data = train_data - np.mean(train_data, axis=0)

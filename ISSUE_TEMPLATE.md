@@ -11,7 +11,7 @@ Steps to reproduce the behavior.
 A clear and concise description of what you expected to happen.
 
 ###Screenshots and logs
-If applicable, add screenshots and/or logs to help explain your problem.
+If applicable, add screenshots and/or logs to help explain your problem. You can obtain detailed logs by passing in the `--debug` or `-d` flag when running the `subaligner_1pass` or `subaligner_2pass` CLI.
 
 ###Desktop (please complete the following information):
  - Operating System
