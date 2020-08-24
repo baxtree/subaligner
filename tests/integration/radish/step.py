@@ -23,7 +23,8 @@ def run_subaligner_1pass(step):
     process = subprocess.Popen([
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_1pass"),
         "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path], shell=False)
+        "-s", step.context.subtitle_file_path,
+        "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
@@ -32,7 +33,8 @@ def run_subaligner_2pass(step):
     process = subprocess.Popen([
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
         "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path], shell=False)
+        "-s", step.context.subtitle_file_path,
+        "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
@@ -42,7 +44,7 @@ def run_subaligner_2pass_without_stretch(step):
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
         "-v", step.context.video_file_path,
         "-s", step.context.subtitle_file_path,
-        "-so"], shell=False)
+        "-so", "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 

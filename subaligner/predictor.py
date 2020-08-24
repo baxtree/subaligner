@@ -587,12 +587,17 @@ class Predictor(Singleton):
             task.text_file_path_absolute = text_file_path
             task.sync_map_file_path_absolute = "{}.srt".format(root)
 
+            tee = False
+            if Logger.VERBOSE:
+                tee = True
+            if Logger.QUIET:
+                tee = False
             with self.__lock:
                 # Execute the task
                 ExecuteTask(
                     task=task,
                     rconf=RuntimeConfiguration(config_string=runtime_config_string),
-                    logger=AeneasLogger(tee=Logger.VERBOSE),
+                    logger=AeneasLogger(tee=tee),
                 ).execute()
 
                 # Output new subtitle segment to a file

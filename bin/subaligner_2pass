@@ -11,6 +11,7 @@ optional arguments:
   -so, --stretch_off    Switch off stretch on non-English speech and
                         subtitles)
   -d, --debug           Print out debugging information
+  -q, --quiet           Switch off logging information
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
@@ -58,6 +59,8 @@ if __name__ == "__main__":
                         help="Switch off stretch on non-English speech and subtitles)")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="Switch off logging information")
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.video_path == "":
@@ -71,6 +74,7 @@ if __name__ == "__main__":
 
     from subaligner.logger import Logger
     Logger.VERBOSE = FLAGS.debug
+    Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
     from subaligner.subtitle import Subtitle
     from subaligner.exception import UnsupportedFormatException

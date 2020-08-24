@@ -8,6 +8,7 @@ class Logger(Singleton):
     """Common logging."""
 
     VERBOSE = True
+    QUIET = False
 
     def __init__(self, output_log="output.log"):
         self.__loggers = {}
@@ -19,7 +20,11 @@ class Logger(Singleton):
             return self.__loggers.get(name)
         else:
             logger = logging.getLogger(name)
-            logger.setLevel(logging.DEBUG if Logger.VERBOSE else logging.INFO)
+            logger.setLevel(logging.INFO)
+            if Logger.VERBOSE:
+                logger.setLevel(logging.DEBUG)
+            if Logger.QUIET:
+                logger.setLevel(logging.ERROR)
             formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
