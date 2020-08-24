@@ -20,8 +20,6 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 .PHONY: install uninstall build-gzip build-rpm test test-all pydoc coverage manual clean clean-dist clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
 
-## The versions of pycaption depended by pycaption and aeneas have no overlapping.
-## That will fail setup.py so pip install on requirements.txt is needed.
 install:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
@@ -43,7 +41,7 @@ build-rpm:
 	mkdir -p BUILD RPMS SRPMS SOURCES BUILDROOT
 	tar -czf SOURCES/subligner.tar.gz subaligner bin requirements.txt setup.py README.md LICENCE
 
-test: ## run tests quickly with the default Python
+test:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
@@ -53,6 +51,17 @@ test: ## run tests quickly with the default Python
 
 test-all: ## run tests on every Python version with tox
 	.$(PYTHON)/bin/tox
+
+test-int: ## integration test
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
+	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
+	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	( \
+		source .$(PYTHON)/bin/activate; \
+		radish -b tests/integration/radish tests/integration/feature; \
+	)
 
 pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
@@ -123,7 +132,7 @@ docker-images:
 	SUBALIGNER_VERSION=$(SUBALIGNER_VERSION) docker-compose -f ./docker/docker-compose.yml build
 
 docker-push:
-    curl -H "Content-Type: application/json" --data '{"source_type": "Tag", "source_name": "v$(SUBALIGNER_VERSION)"}' -X POST $(TRIGGER_URL)
+	curl -H "Content-Type: application/json" --data '{"source_type": "Tag", "source_name": "v$(SUBALIGNER_VERSION)"}' -X POST $(TRIGGER_URL)
 
 clean: clean-build clean-pyc clean-test clean-rpm clean-doc clean-manual clean-dist ## remove all build, test, coverage and Python artifacts
 

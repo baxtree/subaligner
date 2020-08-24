@@ -27,9 +27,11 @@ install:
   - sudo apt-get -y install python3-pip
   - cat requirements.txt | xargs -L 1 pip install
   - cat requirements-dev.txt | xargs -L 1 pip install
+  - pip install -e . --ignore-installed
 
 script:
   - coverage run --source subaligner -m unittest discover
+  - radish -b tests/integration/radish tests/integration/feature
 
 after_success:
   - "bash <(curl -s https://codecov.io/bash)"

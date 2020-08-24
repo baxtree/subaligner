@@ -450,6 +450,7 @@ class Predictor(Singleton):
             subs_copy,
             stretch,
     ):
+        thread_name = threading.current_thread().name
         segment_path = ""
         try:
             if segment_index == (len(segment_starts) - 1):
@@ -488,12 +489,12 @@ class Predictor(Singleton):
             )
             if stretch:
                 subs_new = self.__adjust_durations(subs_new, audio_file_path)
-                Predictor.__LOGGER.debug("Segment {} stretched".format(segment_index))
+                Predictor.__LOGGER.info("[{}] Segment {} stretched".format(thread_name, segment_index))
             return subs_new
         except Exception as e:
             Predictor.__LOGGER.error(
-                "Alignment failed for segment {}: {}\n{}".format(
-                    segment_index, str(e), traceback.format_stack()
+                "[{}] Alignment failed for segment {}: {}\n{}".format(
+                    thread_name, segment_index, str(e), traceback.format_stack()
                 )
             )
             return subs[segment_index]
