@@ -2,12 +2,22 @@ import subprocess
 import os
 import threading
 import traceback
+import tempfile
+import shutil
+import atexit
+import signal
 
 from pysrt import SubRipFile
 from decimal import Decimal
 from .embedder import FeatureEmbedder
 from .exception import TerminalException
 from .logger import Logger
+
+TEMP_DIR_PATH = tempfile.mkdtemp()
+
+def clear_temp():
+    if os.path.isdir(TEMP_DIR_PATH):
+        shutil.rmtree(TEMP_DIR_PATH)
 
 
 class MediaHelper(object):
@@ -24,6 +34,10 @@ class MediaHelper(object):
     )
     __CMD_TIME_OUT = 180  # time out for subprocess
 
+    atexit.register(clear_temp)
+    signal.signal(signal.SIGTERM, clear_temp)
+    signal.signal(signal.SIGINT, clear_temp)
+
     @staticmethod
     def extract_audio(video_file_path, decompress=False, freq=16000):
         """Extract audio track from the video file and save it to a WAV file.
@@ -37,27 +51,27 @@ class MediaHelper(object):
             string -- The file path of the extracted audio.
         """
 
-        root, extension = os.path.splitext(video_file_path)
+        basename = os.path.basename(video_file_path)
 
         # Using WAV for training or prediction is faster than using AAC.
         # However the former will result in large temporary audio files saved on the disk.
         if decompress:
             assert freq is not None, "Frequency is needed for decompression"
-            audio_file_path = "{0}{1}{2}".format(
-                root, extension, MediaHelper.AUDIO_FILE_EXTENSION[0]
+            audio_file_path = "{0}/{1}{2}".format(
+                TEMP_DIR_PATH, basename, MediaHelper.AUDIO_FILE_EXTENSION[0]
             )
         else:
-            audio_file_path = "{0}{1}{2}".format(
-                root, extension, MediaHelper.AUDIO_FILE_EXTENSION[1]
+            audio_file_path = "{0}/{1}{2}".format(
+                TEMP_DIR_PATH, basename, MediaHelper.AUDIO_FILE_EXTENSION[1]
             )
 
         command = (
-            "ffmpeg -y -xerror -i {0}{1} -ac 2 -ar {2} -vn {3}".format(
-                root, extension, freq, audio_file_path
+            "ffmpeg -y -xerror -i {0} -ac 2 -ar {1} -vn {2}".format(
+                video_file_path, freq, audio_file_path
             )
             if decompress
-            else "ffmpeg -y -xerror -i {0}{1} -vn -acodec copy {2}".format(
-                root, extension, audio_file_path
+            else "ffmpeg -y -xerror -i {0} -vn -acodec copy {1}".format(
+                video_file_path, audio_file_path
             )
         )
         with subprocess.Popen(
@@ -143,11 +157,12 @@ class MediaHelper(object):
         """
 
         segment_duration = MediaHelper.get_duration_in_seconds(start, end)
-        root, extension = os.path.splitext(audio_file_path)
+        basename = os.path.basename(audio_file_path)
+        filename, extension = os.path.splitext(basename)
         start = start.replace(",", ".")
         if end is not None:
             end = end.replace(",", ".")
-        segment_path = "{0}_{1}_{2}{3}".format(root, str(start), str(end), extension)
+        segment_path = "{0}/{1}_{2}_{3}{4}".format(TEMP_DIR_PATH, filename, str(start), str(end), extension)
 
         if end is not None:
             command = "ffmpeg -y -xerror -i {0} -ss {1} -to {2} -acodec copy {3}".format(
@@ -316,3 +331,4 @@ class MediaHelper(object):
                         ) from e
                 finally:
                     os.system("stty sane")
+
