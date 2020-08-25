@@ -10,6 +10,7 @@ optional arguments:
                         Max global log loss for alignment
   -so, --stretch_off    Switch off stretch on non-English speech and
                         subtitles)
+  -o, --output          Path to the output subtitle file
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
 
@@ -55,8 +56,19 @@ if __name__ == "__main__":
         default=float("inf"),
         help="Max global log loss for alignment",
     )
-    parser.add_argument("-so", "--stretch_off", action="store_true",
-                        help="Switch off stretch on non-English speech and subtitles)")
+    parser.add_argument(
+        "-so",
+        "--stretch_off",
+        action="store_true",
+        help="Switch off stretch on non-English speech and subtitles)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default="",
+        help="Path to the output subtitle file",
+    )
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
@@ -88,11 +100,11 @@ if __name__ == "__main__":
             stretch=stretch
         )
 
-        aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1))
+        aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
         Subtitle.export_subtitle(
             FLAGS.subtitle_path,
             subs_list,
-            "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1))
+            aligned_subtitle_path
         )
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
 

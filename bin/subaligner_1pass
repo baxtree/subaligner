@@ -8,6 +8,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
+  -o, --output          Path to the output subtitle file
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
 
@@ -53,6 +54,13 @@ if __name__ == "__main__":
         default=float("inf"),
         help="Max global log loss for alignment",
     )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default="",
+        help="Path to the output subtitle file",
+    )
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
@@ -80,7 +88,7 @@ if __name__ == "__main__":
             video_file_path=FLAGS.video_path, subtitle_file_path=FLAGS.subtitle_path
         )
 
-        aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1))
+        aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
         Subtitle.export_subtitle(FLAGS.subtitle_path, subs, aligned_subtitle_path)
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
 

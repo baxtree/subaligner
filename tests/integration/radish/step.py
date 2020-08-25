@@ -27,6 +27,15 @@ def run_subaligner_1pass(step):
         "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
+@when('I run the single-stage alignment on them with output "{file_name:S}"')
+def run_subaligner_1pass_with_output(step, file_name):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_1pass"),
+        "-v", step.context.video_file_path,
+        "-s", step.context.subtitle_file_path,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 @when("I run the dual-stage alignment on them")
 def run_subaligner_2pass(step):
@@ -37,6 +46,15 @@ def run_subaligner_2pass(step):
         "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
+@when('I run the dual-stage alignment on them with output "{file_name:S}"')
+def run_subaligner_2pass_with_output(step, file_name):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
+        "-v", step.context.video_file_path,
+        "-s", step.context.subtitle_file_path,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 @when("I run the dual-stage alignment on them without stretch")
 def run_subaligner_2pass_without_stretch(step):
@@ -44,9 +62,9 @@ def run_subaligner_2pass_without_stretch(step):
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
         "-v", step.context.video_file_path,
         "-s", step.context.subtitle_file_path,
-        "-so", "-q"], shell=False)
+        "-so",
+        "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
-
 
 @then('a new subtitle file "{file_name:S}" is generated')
 def expect_result(step, file_name):
