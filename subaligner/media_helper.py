@@ -15,6 +15,7 @@ from .logger import Logger
 
 TEMP_DIR_PATH = tempfile.mkdtemp()
 
+
 def clear_temp():
     if os.path.isdir(TEMP_DIR_PATH):
         shutil.rmtree(TEMP_DIR_PATH)
@@ -331,4 +332,3 @@ class MediaHelper(object):
                         ) from e
                 finally:
                     os.system("stty sane")
-

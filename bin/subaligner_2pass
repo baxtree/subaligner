@@ -6,8 +6,7 @@ Run two-stage alignment
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
-                        Max global log loss for alignment
+  -l, --max_logloss     Max global log loss for alignment
   -so, --stretch_off    Switch off stretch on non-English speech and
                         subtitles)
   -o, --output          Path to the output subtitle file

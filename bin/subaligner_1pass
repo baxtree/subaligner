@@ -6,8 +6,7 @@ Run single-stage alignment
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
-                        Max global log loss for alignment
+  -l, --max_logloss     Max global log loss for alignment
   -o, --output          Path to the output subtitle file
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
