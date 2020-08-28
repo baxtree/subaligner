@@ -136,3 +136,13 @@ def run_subaligner_1pass_with_help(step):
 @then("the dual-stage help information is displayed")
 def expect_help_information(step):
     assert "usage: subaligner_2pass" in step.context.stdout
+
+
+@given("I have an unsupported subtitle file")
+def unsupported_subtitle(step):
+    step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported")
+
+
+@given("I have an unsupported video file")
+def unsupported_video(step):
+    step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported")

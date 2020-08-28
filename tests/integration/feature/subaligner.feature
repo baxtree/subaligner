@@ -60,3 +60,31 @@ Feature: Subaligner CLI
     Scenario: Test subaligner dual-stage help
         When I run the dual-stage command with help
         Then the dual-stage help information is displayed
+
+    @exception
+    Scenario: Test errors out on UnsupportedFormatException during single-stage alignment
+        Given I have a video file "test.mp4"
+        And I have an unsupported subtitle file
+        When I run the single-stage alignment on them
+        Then it exits with code "23"
+
+    @exception
+    Scenario: Test errors out on TerminalException during single-stage alignment
+        Given I have an unsupported video file
+        And I have a subtitle file "test.srt"
+        When I run the single-stage alignment on them
+        Then it exits with code "24"
+
+    @exception
+    Scenario: Test errors out on UnsupportedFormatException during dual-stage alignment
+        Given I have a video file "test.mp4"
+        And I have an unsupported subtitle file
+        When I run the dual-stage alignment on them
+        Then it exits with code "23"
+
+    @exception
+    Scenario: Test errors out on TerminalException during dual-stage alignment
+        Given I have an unsupported video file
+        And I have a subtitle file "test.srt"
+        When I run the dual-stage alignment on them
+        Then it exits with code "24"
