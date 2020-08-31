@@ -169,11 +169,9 @@ class Predictor(Singleton):
     def get_min_log_loss_and_index(self, voice_probabilities, subs):
         """Returns the minimum loss value and its shift position
         after going through all possible shifts.
-
             Arguments:
                 voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
                 subs {list} -- A list of subtitle segments.
-
             Returns:
                 tuple -- The minimum loss value and its position.
         """
@@ -196,10 +194,9 @@ class Predictor(Singleton):
                     [np.zeros(voice_probabilities.shape[1])] * (-head_room * 5),
                 ]
             )
-            head_room = len(local_vp) - len(subtitle_mask)
         else:
-            head_room = len(voice_probabilities) - len(subtitle_mask)
-
+            local_vp = voice_probabilities
+        head_room = len(local_vp) - len(subtitle_mask)
         if head_room > Predictor.__MAX_HEAD_ROOM:
             Predictor.__LOGGER.error("head room: {}".format(head_room))
             raise TerminalException(
@@ -214,15 +211,23 @@ class Predictor(Singleton):
             log_losses.append(
                 log_loss(
                     subtitle_mask,
-                    local_vp[i:i + len(subtitle_mask)] if head_room < 0 else voice_probabilities[i:i + len(subtitle_mask)],
+                    local_vp[i:i + len(subtitle_mask)],
                     labels=[0, 1],
                 )
             )
         if log_losses:
             min_log_loss = min(log_losses)
-            return min_log_loss, log_losses.index(min_log_loss)
+            min_log_loss_idx = log_losses.index(min_log_loss)
         else:
-            return None, 0
+            min_log_loss = None
+            min_log_loss_idx = 0
+
+        del local_vp
+        del log_losses
+        gc.collect()
+
+        return min_log_loss, min_log_loss_idx
+
 
     def __predict(
             self,
@@ -531,7 +536,7 @@ class Predictor(Singleton):
     def __cancel_futures(self, futures, timeout):
         for future in futures:
             future.cancel()
-            future.wait(timeout=timeout)
+        concurrent.futures.wait(futures, timeout=timeout)
 
     def __get_subtitle_mask(self, subs):
         pos = self.__feature_embedder.time_to_pos(subs[len(subs) - 1].end) - 1
