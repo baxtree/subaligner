@@ -20,6 +20,7 @@ from .singleton import Singleton
 from .subtitle import Subtitle
 from .hyperparameters import Hyperparameters
 from .exception import TerminalException
+from .exception import NoFrameRateException
 from .logger import Logger
 
 
@@ -76,9 +77,12 @@ class Predictor(Singleton):
             subs, audio_file_path, voice_probabilities = self.__predict(
                 video_file_path, subtitle_file_path, weights_file_path
             )
-            frame_rate = MediaHelper.get_frame_rate(video_file_path)
-            self.__feature_embedder.step_sample = 1 / frame_rate
-            self.__on_frame_timecodes(subs)
+            try:
+                frame_rate = MediaHelper.get_frame_rate(video_file_path)
+                self.__feature_embedder.step_sample = 1 / frame_rate
+                self.__on_frame_timecodes(subs)
+            except NoFrameRateException:
+                Predictor.__LOGGER.warn("Cannot find frame rate for %s" % video_file_path)
             return subs, audio_file_path, voice_probabilities
         finally:
             if os.path.exists(audio_file_path):
@@ -113,9 +117,12 @@ class Predictor(Singleton):
             new_subs = self.__predict_2nd_pass(
                 audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch
             )
-            frame_rate = MediaHelper.get_frame_rate(video_file_path)
-            self.__feature_embedder.step_sample = 1 / frame_rate
-            self.__on_frame_timecodes(new_subs)
+            try:
+                frame_rate = MediaHelper.get_frame_rate(video_file_path)
+                self.__feature_embedder.step_sample = 1 / frame_rate
+                self.__on_frame_timecodes(new_subs)
+            except NoFrameRateException:
+                Predictor.__LOGGER.warn("Cannot find frame rate for %s" % video_file_path)
             Predictor.__LOGGER.debug("Aligned segments generated")
             return new_subs, subs, voice_probabilities
         finally:

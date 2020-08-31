@@ -11,6 +11,7 @@ from pysrt import SubRipFile
 from decimal import Decimal
 from .embedder import FeatureEmbedder
 from .exception import TerminalException
+from .exception import NoFrameRateException
 from .logger import Logger
 
 TEMP_DIR_PATH = tempfile.mkdtemp()
@@ -279,17 +280,17 @@ class MediaHelper(object):
         return segment_starts, segment_ends, new_subs
 
     @staticmethod
-    def get_frame_rate(video_file_path):
-        """Extract audio track from the video file and save it to a WAV file.
+    def get_frame_rate(file_path):
+        """Extract the video frame rate. Will return 25 when input is audio
 
         Arguments:
-            video_file_path {string} -- The input video file path.
+            file_path {string} -- The input audiovisual file path.
         Returns:
             float -- The frame rate
         """
 
         with subprocess.Popen(
-                "ffmpeg -i {} -t 00:00:10 -f null /dev/null".format(video_file_path).split(),
+                "ffmpeg -i {} -t 00:00:10 -f null /dev/null".format(file_path).split(),
                 shell=False,
                 stderr=subprocess.PIPE,
                 close_fds=True,
@@ -309,8 +310,8 @@ class MediaHelper(object):
                 try:
                     std_out, _ = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                     if process.returncode != 0:
-                        raise TerminalException(
-                            "Cannot extract the frame rate from video: {}".format(video_file_path)
+                        raise NoFrameRateException(
+                            "Cannot extract the frame rate from video: {}".format(file_path)
                         )
                     fps = float(std_out.split("\n")[0])
                     MediaHelper.__LOGGER.info("[{}-{}] Extracted frame rate: {} fps".format(threading.current_thread().name, process.pid, fps))
@@ -318,8 +319,8 @@ class MediaHelper(object):
                 except subprocess.TimeoutExpired as te:
                     proc.kill()
                     process.kill()
-                    raise TerminalException(
-                        "Timeout on extracting the frame rate from video: {}".format(video_file_path)
+                    raise NoFrameRateException(
+                        "Timeout on extracting the frame rate from video: {}".format(file_path)
                     ) from te
                 except Exception as e:
                     proc.kill()
@@ -327,8 +328,8 @@ class MediaHelper(object):
                     if isinstance(e, TerminalException):
                         raise e
                     else:
-                        raise TerminalException(
-                            "Cannot extract the frame rate from video: {}".format(video_file_path)
+                        raise NoFrameRateException(
+                            "Cannot extract the frame rate from video: {}".format(file_path)
                         ) from e
                 finally:
                     os.system("stty sane")

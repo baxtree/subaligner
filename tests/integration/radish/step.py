@@ -18,6 +18,16 @@ def subtitle_file(step, file_name):
     step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
+@when("I run the alignment with {aligner:S} on them")
+def run_subaligner(step, aligner):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", aligner),
+        "-v", step.context.video_file_path,
+        "-s", step.context.subtitle_file_path,
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when("I run the single-stage alignment on them")
 def run_subaligner_1pass(step):
     process = subprocess.Popen([
@@ -28,10 +38,10 @@ def run_subaligner_1pass(step):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@when('I run the single-stage alignment on them with output "{file_name:S}"')
-def run_subaligner_1pass_with_output(step, file_name):
+@when('I run the alignment with {aligner:S} on them with output "{file_name:S}"')
+def run_subaligner_1pass_with_output(step, aligner, file_name):
     process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_1pass"),
+        os.path.join(PWD, "..", "..", "..", "bin", aligner),
         "-v", step.context.video_file_path,
         "-s", step.context.subtitle_file_path,
         "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
@@ -83,10 +93,10 @@ def set_max_log_loss(step, max):
     step.context.max_log_loss = max
 
 
-@when("I run the single-stage alignment on them with max loss")
-def run_subaligner_1pass(step):
+@when("I run the alignment with {alginer:S} on them with max loss")
+def run_subaligner_1pass(step, alginer):
     process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_1pass"),
+        os.path.join(PWD, "..", "..", "..", "bin", alginer),
         "-v", step.context.video_file_path,
         "-s", step.context.subtitle_file_path,
         "-l", str(step.context.max_log_loss),
@@ -110,27 +120,18 @@ def assert_exit_code(step, exit_code):
     assert step.context.exit_code == exit_code
 
 
-@when("I run the single-stage command with help")
-def run_subaligner_1pass_with_help(step):
+@when("I run the {aligner:S} command with help")
+def run_subaligner_with_help(step, aligner):
     process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_1pass"),
+        os.path.join(PWD, "..", "..", "..", "bin", aligner),
         "-h"], shell=False, stdout=subprocess.PIPE)
     stdout, _ = process.communicate(timeout=WAIT_TIMEOUT_IN_SECONDS)
     step.context.stdout = stdout.decode("utf-8")
 
 
-@then("the single-stage help information is displayed")
-def expect_help_information(step):
-    assert "usage: subaligner_1pass" in step.context.stdout
-
-
-@when("I run the dual-stage command with help")
-def run_subaligner_1pass_with_help(step):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
-        "-h"], shell=False, stdout=subprocess.PIPE)
-    stdout, _ = process.communicate(timeout=WAIT_TIMEOUT_IN_SECONDS)
-    step.context.stdout = stdout.decode("utf-8")
+@then("{aligner:S} help information is displayed")
+def expect_help_information(step, aligner):
+    assert "usage: %s" % aligner in step.context.stdout
 
 
 @then("the dual-stage help information is displayed")

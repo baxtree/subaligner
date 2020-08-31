@@ -16,6 +16,9 @@ class PredictorTests(unittest.TestCase):
         self.__video_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mp4"
         )
+        self.__audio_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
+        )
         self.__srt_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
@@ -34,9 +37,19 @@ class PredictorTests(unittest.TestCase):
         for file in self.__audio_file_paths:
             os.remove(file) if os.path.isfile(file) else None
 
-    def test_predict_single_pass(self):
+    def test_predict_single_pass_on_video(self):
         subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20).predict_single_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
+        )
+        self.__audio_file_paths.append(audio_file_path)
+
+        self.assertGreater(len(subs), 0)
+        self.assertIsNotNone(audio_file_path)
+        self.assertGreater(len(voice_probabilities), 0)
+
+    def test_predict_single_pass_on_audio(self):
+        subs, audio_file_path, voice_probabilities = Undertest(n_mfcc=20).predict_single_pass(
+            self.__audio_file_path, self.__srt_file_path, self.__weights_dir
         )
         self.__audio_file_paths.append(audio_file_path)
 
@@ -92,10 +105,20 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(subs), 0)
         self.assertIsNotNone(audio_file_path)
 
-    def test_predict_dual_pass(self):
+    def test_predict_dual_pass_on_video(self):
         undertest_obj = Undertest(n_mfcc=20)
         new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
             self.__video_file_path, self.__srt_file_path, self.__weights_dir
+        )
+
+        self.assertGreater(len(new_subs), 0)
+        self.assertEqual(len(new_subs), len(subs))
+        self.assertGreater(len(voice_probabilities), 0)
+
+    def test_predict_dual_pass_on_audio(self):
+        undertest_obj = Undertest(n_mfcc=20)
+        new_subs, subs, voice_probabilities = undertest_obj.predict_dual_pass(
+            self.__audio_file_path, self.__srt_file_path, self.__weights_dir
         )
 
         self.assertGreater(len(new_subs), 0)
