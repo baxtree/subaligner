@@ -60,19 +60,24 @@ class Utils(object):
             vtt_file_path = srt_file_path.replace(".srt", ".vtt")
         command = "ffmpeg -y -i {0} -f webvtt {1}".format(srt_file_path, vtt_file_path)
         with subprocess.Popen(
-            command.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+            command.split(),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=True,
+            universal_newlines=True,
+            bufsize=1,
         ) as process:
             try:
-                _, std_err = process.communicate(timeout_secs)
+                _, std_err = process.communicate(timeout=timeout_secs)
                 if process.returncode != 0:
                     raise TerminalException(
-                        "Cannot convert SubRip to WebVTT: {}".format(
-                            srt_file_path
+                        "Cannot convert SubRip to WebVTT: {} with error {}".format(
+                            srt_file_path, std_err
                         )
                     )
             except subprocess.TimeoutExpired as te:
                 process.kill()
-                process.wait()
                 raise TerminalException(
                     "Timeout on converting SubRip to WebVTT: {}".format(
                         srt_file_path
@@ -80,7 +85,6 @@ class Utils(object):
                 ) from te
             except Exception as e:
                 process.kill()
-                process.wait()
                 if isinstance(e, TerminalException):
                     raise e
                 else:
@@ -104,14 +108,20 @@ class Utils(object):
             srt_file_path = vtt_file_path.replace(".vtt", ".srt")
         command = "ffmpeg -y -i {0} -f srt {1}".format(vtt_file_path, srt_file_path)
         with subprocess.Popen(
-                command.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+            command.split(),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=True,
+            universal_newlines=True,
+            bufsize=1,
         ) as process:
             try:
-                _, std_err = process.communicate(timeout_secs)
+                _, std_err = process.communicate(timeout=timeout_secs)
                 if process.returncode != 0:
                     raise TerminalException(
-                        "Cannot convert WebVTT to SubRip: {}".format(
-                            vtt_file_path
+                        "Cannot convert WebVTT to SubRip: {} with error {}".format(
+                            vtt_file_path, std_err
                         )
                     )
             except subprocess.TimeoutExpired as te:

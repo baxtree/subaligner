@@ -99,14 +99,12 @@ class MediaHelper(object):
                 return audio_file_path
             except subprocess.TimeoutExpired as te:
                 MediaHelper.__LOGGER.error("Timeout on extracting audio from video: {}".format(video_file_path))
-                process.kill()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 raise TerminalException(
                     "Timeout on extracting audio from video: {}".format(video_file_path)
                 ) from te
             except Exception as e:
-                process.kill()
                 if os.path.exists(audio_file_path):
                     os.remove(audio_file_path)
                 if isinstance(e, TerminalException):
@@ -116,6 +114,7 @@ class MediaHelper(object):
                         "Cannot extract audio from video: {}".format(video_file_path)
                     ) from e
             finally:
+                process.kill()
                 os.system("stty sane")
 
     @staticmethod
@@ -184,7 +183,7 @@ class MediaHelper(object):
         ) as process:
             MediaHelper.__LOGGER.debug("[{}-{}] Running: {}".format(threading.current_thread().name, process.pid, command))
             try:
-                _, std_err = process.communicate(MediaHelper.__CMD_TIME_OUT)
+                _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                 MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
                 if process.returncode != 0:
                     raise TerminalException(
@@ -200,7 +199,6 @@ class MediaHelper(object):
                         threading.current_thread().name, process.pid, segment_path, str(te), traceback.format_stack()
                     )
                 )
-                process.kill()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
@@ -212,7 +210,6 @@ class MediaHelper(object):
                         threading.current_thread().name, process.pid, segment_path, str(e), traceback.format_stack()
                     )
                 )
-                process.kill()
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 if isinstance(e, TerminalException):
@@ -222,6 +219,7 @@ class MediaHelper(object):
                         "Cannot extract audio from audio: {}".format(audio_file_path)
                     ) from e
             finally:
+                process.kill()
                 os.system("stty sane")
 
     @staticmethod
@@ -317,14 +315,10 @@ class MediaHelper(object):
                     MediaHelper.__LOGGER.info("[{}-{}] Extracted frame rate: {} fps".format(threading.current_thread().name, process.pid, fps))
                     return fps
                 except subprocess.TimeoutExpired as te:
-                    proc.kill()
-                    process.kill()
                     raise NoFrameRateException(
                         "Timeout on extracting the frame rate from video: {}".format(file_path)
                     ) from te
                 except Exception as e:
-                    proc.kill()
-                    process.kill()
                     if isinstance(e, TerminalException):
                         raise e
                     else:
@@ -332,4 +326,6 @@ class MediaHelper(object):
                             "Cannot extract the frame rate from video: {}".format(file_path)
                         ) from e
                 finally:
+                    process.kill()
+                    proc.kill()
                     os.system("stty sane")
