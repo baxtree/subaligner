@@ -287,7 +287,7 @@ class Trainer(object):
     def __extract_in_multithreads(
         self, index, av_file_path, subtitle_file_path, train_data, labels
     ):
-        file_name, file_ext = os.path.splitext(av_file_path)
+        _, file_ext = os.path.splitext(av_file_path)
 
         try:
             if file_ext not in MediaHelper.AUDIO_FILE_EXTENSION:

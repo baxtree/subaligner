@@ -46,7 +46,7 @@ class Subtitle(object):
         self.__subtitle_file_path = subtitle_file_path
 
         if subtitle_format == "subrip":
-            self.__subs = pysrt.open(subtitle_file_path, encoding="utf-8")
+            self.__subs = self.__load_subrip(subtitle_file_path)
         elif subtitle_format == "ttml":
             self.__subs = self.__convert_ttml_to_subs(subtitle_file_path)
         elif subtitle_format == "webvtt":
@@ -54,6 +54,10 @@ class Subtitle(object):
         else:
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
+            )
+        if not self.__subs:
+            raise UnsupportedFormatException(
+                "No subtitle found in file: {}".format(subtitle_file_path)
             )
 
         # freeze the object after creation
@@ -306,6 +310,21 @@ class Subtitle(object):
         return self.__subs
 
     @staticmethod
+    def __load_subrip(subrip_file_path):
+        """Load a subtitle file in the SubRip format
+
+                Arguments:
+                    subrip_file_path {string} -- The path to the SubRip subtitle file.
+
+                Returns:
+                    {list} -- A list of SubRipItems.
+                """
+        try:
+            return pysrt.open(subrip_file_path, encoding="utf-8")
+        except Exception as e:
+            raise UnsupportedFormatException("Error occurred when loading subtitle from %s" % subrip_file_path) from e
+
+    @staticmethod
     def __convert_ttml_to_subs(ttml_file_path):
         """Convert a subtitle file from the TTML format to the SubRip format
 
@@ -321,6 +340,8 @@ class Subtitle(object):
 
         try:
             subs = pysrt.open(path, encoding="utf-8")
+        except Exception as e:
+            raise UnsupportedFormatException("Error occurred when loading subtitle from %s" % ttml_file_path) from e
         finally:
             os.remove(path)
         return subs
@@ -341,6 +362,8 @@ class Subtitle(object):
 
         try:
             subs = pysrt.open(path, encoding="utf-8")
+        except Exception as e:
+            raise UnsupportedFormatException("Error occurred when loading subtitle from %s" % vtt_file_path) from e
         finally:
             os.remove(path)
         return subs

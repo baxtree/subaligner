@@ -27,3 +27,7 @@ Currently the stretching is experimental and only works for speech and subtitles
 **Use flag "-so" to switch off stretching when aligning subtitles not in English**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -so
+
+**Use flag "-o" to save the aligned subtitle to a specific location**::
+
+    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt

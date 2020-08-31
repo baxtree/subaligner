@@ -3,7 +3,7 @@ import os
 import pysrt
 import subprocess
 
-from subaligner.exception import TerminalException
+from subaligner.exception import TerminalException, NoFrameRateException
 from subaligner.media_helper import MediaHelper as Undertest
 from mock import patch, Mock
 
@@ -171,13 +171,21 @@ class MediaHelperTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
+    def test_throw_no_frame_rate_exception_on_audio(self):
+        try:
+            Undertest.get_frame_rate(self.__test_audio_path)
+        except Exception as e:
+            self.assertTrue(isinstance(e, NoFrameRateException))
+        else:
+            self.fail("Should have thrown exception")
+
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_get_frame_rate(self, mock_communicate):
         try:
             Undertest.get_frame_rate(self.__video_file_path)
         except Exception as e:
             self.assertTrue(mock_communicate.called)
-            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue(isinstance(e, NoFrameRateException))
             self.assertTrue("Cannot extract the frame rate from video:" in str(e))
         else:
             self.fail("Should have thrown exception")
@@ -188,7 +196,7 @@ class MediaHelperTests(unittest.TestCase):
             Undertest.get_frame_rate(self.__video_file_path)
         except Exception as e:
             self.assertTrue(mock_communicate.called)
-            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue(isinstance(e, NoFrameRateException))
             self.assertTrue("Timeout on extracting the frame rate from video:" in str(e))
         else:
             self.fail("Should have thrown exception")
@@ -199,7 +207,7 @@ class MediaHelperTests(unittest.TestCase):
             Undertest.get_frame_rate(self.__video_file_path)
         except Exception as e:
             self.assertTrue(mock_communicate.called)
-            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue(isinstance(e, NoFrameRateException))
             self.assertTrue("Cannot extract the frame rate from video:" in str(e))
         else:
             self.fail("Should have thrown exception")

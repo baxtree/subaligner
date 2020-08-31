@@ -1,4 +1,5 @@
 import librosa
+import gc
 import numpy as np
 from datetime import datetime, timedelta
 from .singleton import Singleton
@@ -304,6 +305,8 @@ class FeatureEmbedder(Singleton):
             hop_length=int(self.__hop_len),
             n_mfcc=self.__n_mfcc,
         )
+        del audio_time_series
+        gc.collect()
 
         FeatureEmbedder.__LOGGER.debug(
             "Audio file loaded and embedded with sample rate {}: {}".format(
@@ -320,6 +323,8 @@ class FeatureEmbedder(Singleton):
         samples = samples[: int((mfcc.shape[1] - len_mfcc) / step_mfcc) + 1]
 
         train_data = np.stack(samples)
+        del samples
+        gc.collect()
 
         mfcc_extration_time = datetime.now() - t
 
