@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] [-d]
+usage: subaligner [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] [-o] [-d] [-q]
 
 Run two-stage alignment
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         print("--subtitle_path was not passed in")
         sys.exit(21)
 
-    stretch = not(FLAGS.stretch_off)
+    stretch = not FLAGS.stretch_off
 
     from subaligner.logger import Logger
     Logger.VERBOSE = FLAGS.debug

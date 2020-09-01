@@ -18,13 +18,21 @@ def subtitle_file(step, file_name):
     step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
-@when("I run the alignment with {aligner:S} on them")
-def run_subaligner(step, aligner):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", aligner),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-q"], shell=False)
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage")
+def run_subaligner(step, aligner, mode):
+    if mode == "null":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 

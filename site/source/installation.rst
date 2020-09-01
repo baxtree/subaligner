@@ -18,6 +18,10 @@ Installation
     $ pip install numpy
     $ pip install subaligner
 
+**Install Subaligner via pipx**::
+
+    $ pipx install subaligner
+
 **Install from GitHub via Pipenv**::
 
     ...
@@ -40,8 +44,9 @@ to create a virtual environment and set up all the dependencies:
     $ cd subaligner
     $ make install && source .venv/bin/activate
 
-**subaligner_1pass and subaligner_2pass should be on your PATH now**::
+**subaligner_1pass, subaligner_2pass and subaligner should be on your PATH now**::
 
     (.venv) $ subaligner_1pass --help
     (.venv) $ subaligner_2pass --help
+    (.venv) $ subaligner --help
 

@@ -28,10 +28,12 @@ install:
 	.$(PYTHON)/bin/pip install -e . --ignore-installed
 	cp ./bin/subaligner_1pass .$(PYTHON)/bin/subaligner_1pass
 	cp ./bin/subaligner_2pass .$(PYTHON)/bin/subaligner_2pass
+	cp ./bin/subaligner .$(PYTHON)/bin/subaligner
 
 uninstall:
 	rm -f .$(PYTHON)/bin/subaligner_1pass
 	rm -f .$(PYTHON)/bin/subaligner_2pass
+	rm -f .$(PYTHON)/bin/subaligner
 
 build-gzip:
 	mkdir -p dist
@@ -47,7 +49,7 @@ test:
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
 	PYTHONPATH=. .$(PYTHON)/bin/python -m unittest discover
-	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner_1pass bin/subaligner_2pass --ignore=E203,E501,W503
+	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner_1pass bin/subaligner_2pass bin/subaligner --ignore=E203,E501,W503
 
 test-all: ## run tests on every Python version with tox
 	.$(PYTHON)/bin/tox
