@@ -190,7 +190,7 @@ class PredictorTests(unittest.TestCase):
     def test_throw_exception_on_segment_alignment_failure_when_flag_on(self, mock_time_to_sec):
         try:
             undertest_obj = Undertest(n_mfcc=20)
-            undertest_obj.predict_dual_pass(self.__video_file_path, self.__srt_file_path, self.__weights_dir, fail_on_segment=True)
+            undertest_obj.predict_dual_pass(self.__video_file_path, self.__srt_file_path, self.__weights_dir, exit_segfail=True)
         except Exception as e:
             self.assertTrue(mock_time_to_sec.called)
             self.assertTrue(isinstance(e, TerminalException))

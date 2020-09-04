@@ -9,7 +9,7 @@ optional arguments:
   -l, --max_logloss         Max global log loss for alignment
   -so, --stretch_off        Switch off stretch on non-English speech and
                             subtitles)
-  -fos, --fail_on_segment   Exit on any segment alignment failures
+  -es, --exit_segfail       Exit on alignment failure on one or more segments
   -o, --output              Path to the output subtitle file
   -d, --debug               Print out debugging information
   -q, --quiet               Switch off logging information
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-fos",
-        "--fail_on_segment",
+        "--exit_segfail",
         action="store_true",
         help="Exit on any segment alignment failures",
     )
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         print("--subtitle_path was not passed in")
         sys.exit(21)
 
-    fail_on_segment = FLAGS.fail_on_segment
+    exit_segfail = FLAGS.exit_segfail
     stretch = not FLAGS.stretch_off
 
     from subaligner.logger import Logger
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             video_file_path=FLAGS.video_path,
             subtitle_file_path=FLAGS.subtitle_path,
             stretch=stretch,
-            fail_on_segment=fail_on_segment,
+            exit_segfail=exit_segfail,
         )
 
         aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output

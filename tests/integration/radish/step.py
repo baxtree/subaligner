@@ -56,6 +56,26 @@ def run_subaligner_with_output(step, aligner, mode, file_name):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and with exit_segfail")
+def run_subaligner_without_stretch(step, aligner, mode):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-es",
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-es",
+            "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and without stretch")
 def run_subaligner_without_stretch(step, aligner, mode):
     if mode == "<NULL>":

@@ -95,7 +95,7 @@ class Predictor(Singleton):
             subtitle_file_path,
             weights_dir="models/training/weights",
             stretch=False,
-            fail_on_segment=False,
+            exit_segfail=False,
     ):
         """Predict time to shift with single pass
 
@@ -104,7 +104,7 @@ class Predictor(Singleton):
             subtitle_file_path {string} -- The path to the subtitle file.
             weights_dir {string} -- The the model weights directory.
             stretch {bool} -- True to stretch the subtitle segments (default: {False})
-            fail_on_segment {bool} -- True to exit on any segment alignment failures (default: {False})
+            exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
@@ -118,7 +118,7 @@ class Predictor(Singleton):
                 video_file_path, subtitle_file_path, weights_file_path
             )
             new_subs = self.__predict_2nd_pass(
-                audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch, fail_on_segment=fail_on_segment
+                audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch, exit_segfail=exit_segfail
             )
             try:
                 frame_rate = MediaHelper.get_frame_rate(video_file_path)
@@ -390,7 +390,7 @@ class Predictor(Singleton):
         Predictor.__LOGGER.debug("[{}] Subtitle shifted".format(thread_name))
         return shifted_subs, audio_file_path, voice_probabilities
 
-    def __predict_2nd_pass(self, audio_file_path, subs, weights_file_path, stretch, fail_on_segment):
+    def __predict_2nd_pass(self, audio_file_path, subs, weights_file_path, stretch, exit_segfail):
         """This function uses divide and conquer to align partial subtitle with partial video.
 
         Arguments:
@@ -398,7 +398,7 @@ class Predictor(Singleton):
             subs {list} -- A list of SubRip files.
             weights_file_path {string} --  The file path of the weights file.
             stretch {bool} -- True to stretch the subtitle segments.
-            fail_on_segment {bool} -- True to exit on any segment alignment failures.
+            exit_segfail {bool} -- True to exit on any segment alignment failures.
         """
 
         segment_starts, segment_ends, subs = MediaHelper.get_audio_segment_starts_and_ends(subs)
@@ -439,7 +439,7 @@ class Predictor(Singleton):
                     subs,
                     subs_copy,
                     stretch,
-                    fail_on_segment
+                    exit_segfail
                 )
                 for i in range(len(segment_starts))
             ]
@@ -482,7 +482,7 @@ class Predictor(Singleton):
             subs,
             subs_copy,
             stretch,
-            fail_on_segment,
+            exit_segfail,
     ):
         thread_name = threading.current_thread().name
         segment_path = ""
@@ -534,7 +534,7 @@ class Predictor(Singleton):
                     thread_name, segment_index, str(e), "".join(traceback.format_stack())
                 )
             )
-            if fail_on_segment:
+            if exit_segfail:
                 raise TerminalException("At least one of the segments failed on alignment. Exiting...") from e
             return subs[segment_index]
         finally:

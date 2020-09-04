@@ -85,6 +85,17 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |
         |  subaligner       |  dual     |
 
+    @strict
+    Scenario Outline: Test dual-stage alignment with exiting on segment failures
+        Given I have a video file "test.mp4"
+        And I have a subtitle file "test.srt"
+        When I run the alignment with <aligner> on them with <mode> stage and with exit_segfail
+        Then a new subtitle file "test_aligned.srt" is generated
+    Examples:
+        |  aligner          |  mode     |
+        |  subaligner_2pass |  <NULL>   |
+        |  subaligner       |  dual     |
+
     @exception
     Scenario Outline: Test errors out on unsupported subtitle input
         Given I have a video file "test.mp4"
