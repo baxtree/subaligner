@@ -267,7 +267,7 @@ class Trainer(object):
                 except Exception as e:
                     Trainer.__LOGGER.error(
                         "Unexpected exception: {} stacktrace: {}".format(
-                            str(e), traceback.format_stack()
+                            str(e), "".join(traceback.format_stack())
                         )
                     )
 
@@ -314,7 +314,7 @@ class Trainer(object):
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
                 "Exception: {}; stacktrace: {}".format(
-                    str(e), traceback.format_stack()
+                    str(e), "".join(traceback.format_stack())
                 )
             )
             Trainer.__LOGGER.error(
@@ -326,7 +326,7 @@ class Trainer(object):
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
                 "Unexpected exception: {}; stacktrace: {}".format(
-                    str(e), traceback.format_stack()
+                    str(e), "".join(traceback.format_stack())
                 )
             )
             Trainer.__LOGGER.error(

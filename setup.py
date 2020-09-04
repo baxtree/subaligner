@@ -45,5 +45,5 @@ setup(name="subaligner",
       install_requires=requirements,
       test_suite="tests.subaligner",
       setup_requires=["numpy>=1.14.1,<1.18.0"],
-      scripts=["bin/subaligner_1pass", "bin/subaligner_2pass"],
+      scripts=["bin/subaligner_1pass", "bin/subaligner_2pass", "bin/subaligner"],
 )

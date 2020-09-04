@@ -186,6 +186,18 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
         self.assertTrue(mock_time_to_sec.called)
 
+    @patch("subaligner.media_helper.MediaHelper.extract_audio_from_start_to_end", side_effect=Exception("exception"))
+    def test_throw_exception_on_segment_alignment_failure_when_flag_on(self, mock_time_to_sec):
+        try:
+            undertest_obj = Undertest(n_mfcc=20)
+            undertest_obj.predict_dual_pass(self.__video_file_path, self.__srt_file_path, self.__weights_dir, exit_segfail=True)
+        except Exception as e:
+            self.assertTrue(mock_time_to_sec.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("At least one of the segments failed on alignment. Exiting..." in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
     def test_throw_terminal_exception_on_missing_subtitle(self):
         try:
             subs, audio_file_path, _ = Undertest(n_mfcc=20).predict_single_pass(self.__video_file_path, None, self.__weights_dir)
