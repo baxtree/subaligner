@@ -36,7 +36,7 @@ def run_subaligner(step, aligner, mode):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@when('I run the alignment with {aligner:S} on them with {mode:S} stage output "{file_name:S}"')
+@when('I run the alignment with {aligner:S} on them with {mode:S} stage and output "{file_name:S}"')
 def run_subaligner_with_output(step, aligner, mode, file_name):
     if mode == "<NULL>":
         process = subprocess.Popen([
