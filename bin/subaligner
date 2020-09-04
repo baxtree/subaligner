@@ -5,20 +5,21 @@ usage: subaligner [-h] -m -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] 
 Run two-stage alignment
 
 optional arguments:
-  -h, --help            Show this help message and exit
-  -m, --mode            Single-stage alignment or dual-stage alignment
-  -l, --max_logloss     Max global log loss for alignment
-  -so, --stretch_off    Switch off stretch on non-English speech and
-                        subtitles)
-  -o, --output          Path to the output subtitle file
-  -d, --debug           Print out debugging information
-  -q, --quiet           Switch off logging information
+  -h, --help                Show this help message and exit
+  -m, --mode                Single-stage alignment or dual-stage alignment
+  -l, --max_logloss         Max global log loss for alignment
+  -so, --stretch_off        Switch off stretch on non-English speech and
+                            subtitles)
+  -fos, --fail_on_segment   Exit on any segment alignment failures
+  -o, --output              Path to the output subtitle file
+  -d, --debug               Print out debugging information
+  -q, --quiet               Switch off logging information
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
-                        Path to the video file
+                            Path to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        Path to the subtitle file
+                            Path to the subtitle file
 """
 
 import argparse
@@ -72,6 +73,12 @@ if __name__ == "__main__":
         help="Switch off stretch on non-English speech and subtitles)",
     )
     parser.add_argument(
+        "-fos",
+        "--fail_on_segment",
+        action="store_true",
+        help="Exit on any segment alignment failures",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         type=str,
@@ -94,6 +101,7 @@ if __name__ == "__main__":
         print("--subtitle_path was not passed in")
         sys.exit(21)
 
+    fail_on_segment = FLAGS.fail_on_segment
     stretch = not FLAGS.stretch_off
 
     from subaligner.logger import Logger
@@ -114,7 +122,8 @@ if __name__ == "__main__":
             aligned_subs, subs, voice_probabilities = predictor.predict_dual_pass(
                 video_file_path=FLAGS.video_path,
                 subtitle_file_path=FLAGS.subtitle_path,
-                stretch=stretch
+                stretch=stretch,
+                fail_on_segment=fail_on_segment,
             )
         aligned_subtitle_path = "_aligned.".join(
             FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
@@ -133,17 +142,17 @@ if __name__ == "__main__":
             exit(22)
     except UnsupportedFormatException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if FLAGS.debug else "")
+            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         sys.exit(23)
     except TerminalException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if FLAGS.debug else "")
+            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         sys.exit(24)
     except Exception as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if FLAGS.debug else "")
+            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         sys.exit(1)
     else:
