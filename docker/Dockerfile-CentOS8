@@ -7,6 +7,7 @@ RUN dnf install -y epel-release dnf-utils &&\
     dnf install -y ffmpeg &&\
     dnf install -y espeak-ng &&\
     ln -s /usr/lib64/libespeak-ng.so.1 /usr/lib64/libespeak.so &&\
+    dnf install -y libsndfile-devel &&\
     dnf install -y python3 &&\
     dnf install -y gcc &&\
     dnf install -y python3-wheel &&\

@@ -77,6 +77,13 @@ $ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
 
 ```
 ```
+# Run the module as a script
+$ python -m subaligner -m single -v video.mp4 -s subtitle.srt
+$ python -m subaligner -m dual -v video.mp4 -s subtitle.srt
+$ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
+$ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
+```
+```
 # Run alignments with the docker image
 
 $ docker pull baxtree/subaligner

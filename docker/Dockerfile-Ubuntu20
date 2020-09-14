@@ -4,6 +4,7 @@ FROM ubuntu:20.04
 RUN apt-get -y update &&\
     apt-get -y install ffmpeg &&\
     apt-get -y install espeak libespeak1 libespeak-dev espeak-data &&\
+    apt-get -y install libsndfile-dev &&\
     apt-get -y install python3-dev &&\
     apt-get -y install python3-tk &&\
     apt-get -y install python3-pip &&\

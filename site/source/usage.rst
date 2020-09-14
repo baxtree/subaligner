@@ -34,6 +34,13 @@ Make sure you have got the virtual environment activated upfront.
     $ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
     $ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
 
+**Run the module as a script**::
+
+    $ python -m subaligner -m single -v video.mp4 -s subtitle.srt
+    $ python -m subaligner -m dual -v video.mp4 -s subtitle.srt
+    $ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
+    $ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
+
 Currently the stretching is experimental and only works for speech and subtitles in English.
 
 **Use flag "-so" to switch off stretching when aligning subtitles not in English**::

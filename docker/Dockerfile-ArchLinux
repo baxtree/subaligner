@@ -3,6 +3,7 @@ FROM archlinux:20200705
 
 RUN pacman --noconfirm -Syu &&\
     pacman --noconfirm -Syu gcc ffmpeg espeak &&\
+    pacman --noconfirm -Syu libsndfile &&\
     pacman --noconfirm -Syu python python-pip &&\
     python -m pip install numpy &&\
     python -m pip install subaligner

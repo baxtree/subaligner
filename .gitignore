@@ -25,6 +25,7 @@ examples/tmp
 docs/*.html
 scripts*
 misc/tmp
+wheels*
 
 # Unit test / coverage reports
 htmlcov/

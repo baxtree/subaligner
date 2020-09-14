@@ -4,6 +4,12 @@ else
 PYTHON := 3.7.7
 endif
 
+ifdef PLATFORM
+PLATFORM := $(PLATFORM)
+else
+PLATFORM := linux-x86_64-cp-37-cp37
+endif
+
 SUBALIGNER_VERSION := $(SUBALIGNER_VERSION)
 TRIGGER_URL := ${TRIGGER_URL}
 
@@ -130,6 +136,14 @@ profile:
 	.$(PYTHON)/bin/python -c "import misc.profiler; misc.profiler.generate_profiles()"
 	.$(PYTHON)/bin/kernprof -v -l ./misc/profiler.py
 
+app: clean-wheels
+	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
+	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
+	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	.$(PYTHON)/bin/pip wheel --no-cache-dir --wheel-dir=./wheels -r requirements-app.txt; \
+	STRETCH_OFF=True .$(PYTHON)/bin/python setup.py bdist_wheel -d ./wheels; \
+	.$(PYTHON)/bin/pex subaligner==$(SUBALIGNER_VERSION) --repo=./wheels --platform $(PLATFORM) --no-pypi --no-build --python-shebang="/usr/bin/env python3" -e subaligner -o subaligner-$(PLATFORM).app; \
+
 docker-images:
 	SUBALIGNER_VERSION=$(SUBALIGNER_VERSION) docker-compose -f ./docker/docker-compose.yml build
 
@@ -170,3 +184,6 @@ clean-rpm:
 
 clean-docker-images:
 	docker rmi -f $(docker images --filter=reference='*/subaligner' -qa)
+
+clean-wheels:
+	rm -rf wheels

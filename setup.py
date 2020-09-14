@@ -11,8 +11,12 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-with open("requirements.txt") as requirements_file:
-    requirements = requirements_file.read().splitlines()[::-1]
+if "STRETCH_OFF" not in os.environ:
+    with open("requirements.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
+else:
+    with open("requirements-app.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
 
 setup(name="subaligner",
       version=__version__,

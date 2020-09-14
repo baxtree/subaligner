@@ -10,10 +10,6 @@ import multiprocessing as mp
 from pysrt import SubRipTime
 from sklearn.metrics import log_loss
 from copy import deepcopy
-from aeneas.executetask import ExecuteTask
-from aeneas.task import Task
-from aeneas.runtimeconfiguration import RuntimeConfiguration
-from aeneas.logger import Logger as AeneasLogger
 from .network import Network
 from .embedder import FeatureEmbedder
 from .media_helper import MediaHelper
@@ -603,6 +599,10 @@ class Predictor(Singleton):
             self.__network = Network.get_from_model(model_path, hyperparams)
 
     def __adjust_durations(self, subs, audio_file_path):
+        from aeneas.executetask import ExecuteTask
+        from aeneas.task import Task
+        from aeneas.runtimeconfiguration import RuntimeConfiguration
+        from aeneas.logger import Logger as AeneasLogger
 
         # Initialise a DTW alignment task
         task_config_string = (
