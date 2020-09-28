@@ -8,18 +8,18 @@
 ## Dependencies
 [FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
 ```
-apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
+$ apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
 ```
 or
 ```
-brew install ffmpeg espeak
+$ brew install ffmpeg espeak
 ```
 
 ## Installation
 ```
 # Install from PyPI (pre-emptive NumPy)
-pip install numpy 
-pip install subaligner
+$ pip install numpy 
+$ pip install subaligner
 ```
 or
 ```
@@ -34,15 +34,15 @@ or
 ```
 # Install from source
 
-git clone git@github.com:baxtree/subaligner.git
-cd subaligner
-make install && source .venv/bin/activate
+$ git clone git@github.com:baxtree/subaligner.git
+$ cd subaligner
+$ make install && source .venv/bin/activate
 ```
 or
 ```
 # Use dockerised installation
 
-docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
+$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
 
 ## Usage
@@ -61,9 +61,9 @@ $ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
 # Run alignments with the docker image
 
-docker pull baxtree/subaligner
-docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
-docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
+$ docker pull baxtree/subaligner
+$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
+$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help` or `subaligner_2pass --help`.
 
