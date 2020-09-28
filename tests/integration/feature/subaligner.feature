@@ -2,22 +2,32 @@ Feature: Subaligner CLI
     As a user of Subaligner
     I want to align my subtitle file to its companion video using the command line interface
 
-    @mode
+    @video-input @with-mode
     Scenario Outline: Test alignments with modes
         Given I have a video file "test.mp4"
         And I have a subtitle file <subtitle-in>
         When I run the alignment with <aligner> on them with <mode> stage
         Then a new subtitle file <subtitle-out> is generated
     Examples:
-        |  aligner          |  mode     |  subtitle-in |  subtitle-out          |
-        |  subaligner       |  single   |  "test.srt"  |  "test_aligned.srt"    |
-        |  subaligner       |  single   |  "test.ttml" |  "test_aligned.ttml"   |
-        |  subaligner       |  single   |  "test.vtt"  |  "test_aligned.vtt"    |
-        |  subaligner       |  dual     |  "test.srt"  |  "test_aligned.srt"    |
-        |  subaligner       |  dual     |  "test.ttml" |  "test_aligned.ttml"   |
-        |  subaligner       |  dual     |  "test.vtt"  |  "test_aligned.vtt"    |
+        |  aligner          |  mode     |  subtitle-in      |  subtitle-out             |
+        |  subaligner       |  single   |  "test.srt"       |  "test_aligned.srt"       |
+        |  subaligner       |  single   |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner       |  single   |  "test.vtt"       |  "test_aligned.vtt"       |
+        |  subaligner       |  single   |  "test.ssa"       |  "test_aligned.ssa"       |
+        |  subaligner       |  single   |  "test.ass"       |  "test_aligned.ass"       |
+        |  subaligner       |  single   |  "test.sub"       |  "test_aligned.sub"       |
+        |  subaligner       |  single   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner       |  single   |  "test.tmp"       |  "test_aligned.tmp"       |
+        |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
+        |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner       |  dual     |  "test.vtt"       |  "test_aligned.vtt"       |
+        |  subaligner       |  dual     |  "test.ssa"       |  "test_aligned.ssa"       |
+        |  subaligner       |  dual     |  "test.ass"       |  "test_aligned.ass"       |
+        |  subaligner       |  dual     |  "test.sub"       |  "test_aligned.sub"       |
+        |  subaligner       |  dual     |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner       |  dual     |  "test.tmp"       |  "test_aligned.tmp"       |
 
-    @video-input
+    @video-input @without-mode
     Scenario Outline: Test alignments with video
         Given I have a video file "test.mp4"
         And I have a subtitle file <subtitle-in>
@@ -28,24 +38,26 @@ Feature: Subaligner CLI
         |  subaligner_1pass |  <NULL>   |  "test.srt"  |  "test_aligned.srt"    |
         |  subaligner_1pass |  <NULL>   |  "test.ttml" |  "test_aligned.ttml"   |
         |  subaligner_1pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
+        |  subaligner_1pass |  <NULL>   |  "test.ssa"  |  "test_aligned.ssa"    |
+        |  subaligner_1pass |  <NULL>   |  "test.ass"  |  "test_aligned.ass"    |
         |  subaligner_2pass |  <NULL>   |  "test.srt"  |  "test_aligned.srt"    |
         |  subaligner_2pass |  <NULL>   |  "test.ttml" |  "test_aligned.ttml"   |
         |  subaligner_2pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
+        |  subaligner_2pass |  <NULL>   |  "test.ssa"  |  "test_aligned.ssa"    |
+        |  subaligner_2pass |  <NULL>   |  "test.ass"  |  "test_aligned.ass"    |
 
     @audio-input
     Scenario Outline: Test alignments with audio
         Given I have a video file "test.wav"
-        And I have a subtitle file <subtitle-in>
+        And I have a subtitle file "test.srt"
         When I run the alignment with <aligner> on them with <mode> stage
-        Then a new subtitle file <subtitle-out> is generated
+        Then a new subtitle file "test_aligned.srt" is generated
     Examples:
-        |  aligner          |  mode     |  subtitle-in |  subtitle-out          |
-        |  subaligner_1pass |  <NULL>   |  "test.srt"  |  "test_aligned.srt"    |
-        |  subaligner_1pass |  <NULL>   |  "test.ttml" |  "test_aligned.ttml"   |
-        |  subaligner_1pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
-        |  subaligner_2pass |  <NULL>   |  "test.srt"  |  "test_aligned.srt"    |
-        |  subaligner_2pass |  <NULL>   |  "test.ttml" |  "test_aligned.ttml"   |
-        |  subaligner_2pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
+        |  aligner          |  mode     |
+        |  subaligner_1pass |  <NULL>   |
+        |  subaligner_2pass |  <NULL>   |
+        |  subaligner       |  single   |
+        |  subaligner       |  dual     |
 
     @custom-output
     Scenario Outline: Test alignments with custom output

@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     try:
         predictor = Predictor()
-        subs_list, subs, voice_probabilities = predictor.predict_dual_pass(
+        subs_list, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
             video_file_path=FLAGS.video_path,
             subtitle_file_path=FLAGS.subtitle_path,
             stretch=stretch,
@@ -109,11 +109,7 @@ if __name__ == "__main__":
         )
 
         aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(
-            FLAGS.subtitle_path,
-            subs_list,
-            aligned_subtitle_path
-        )
+        Subtitle.export_subtitle(FLAGS.subtitle_path, subs_list, aligned_subtitle_path, frame_rate)
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs_list)

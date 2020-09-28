@@ -83,12 +83,12 @@ if __name__ == "__main__":
 
     try:
         predictor = Predictor()
-        subs, audio_file_path, voice_probabilities = predictor.predict_single_pass(
+        subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
             video_file_path=FLAGS.video_path, subtitle_file_path=FLAGS.subtitle_path
         )
 
         aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(FLAGS.subtitle_path, subs, aligned_subtitle_path)
+        Subtitle.export_subtitle(FLAGS.subtitle_path, subs, aligned_subtitle_path, frame_rate)
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs)

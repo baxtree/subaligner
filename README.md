@@ -93,7 +93,7 @@ $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v 
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help`, `subaligner_2pass --help` or `subaligner --help`.
 
 ## Supported Formats
-Subtitle: SubRip, TTML and WebVTT
+Subtitle: SubRip, TTML, WebVTT and SubStation Alpha
 
 Video: MP4, WebM, Ogg, 3GP, FLV and MOV 
 

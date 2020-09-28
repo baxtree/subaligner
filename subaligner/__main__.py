@@ -32,7 +32,7 @@ if __name__ == "__main__":
         print("Cannot find Python 3")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Run two-stage alignment")
+    parser = argparse.ArgumentParser(description="Subaligner command line interface")
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-m",
@@ -115,11 +115,11 @@ if __name__ == "__main__":
     try:
         predictor = Predictor()
         if FLAGS.mode == "single":
-            aligned_subs, audio_file_path, voice_probabilities = predictor.predict_single_pass(
+            aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
                 video_file_path=FLAGS.video_path, subtitle_file_path=FLAGS.subtitle_path
             )
         else:
-            aligned_subs, subs, voice_probabilities = predictor.predict_dual_pass(
+            aligned_subs, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
                 video_file_path=FLAGS.video_path,
                 subtitle_file_path=FLAGS.subtitle_path,
                 stretch=stretch,
@@ -127,11 +127,7 @@ if __name__ == "__main__":
             )
         aligned_subtitle_path = "_aligned.".join(
             FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(
-            FLAGS.subtitle_path,
-            aligned_subs,
-            aligned_subtitle_path
-        )
+        Subtitle.export_subtitle(FLAGS.subtitle_path, aligned_subs, aligned_subtitle_path, frame_rate)
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
 
         log_loss = predictor.get_log_loss(voice_probabilities, aligned_subs)
