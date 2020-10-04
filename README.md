@@ -14,7 +14,6 @@ or
 ```
 brew install ffmpeg espeak
 ```
-
 ## Installation
 ```
 # Install from PyPI (pre-emptive NumPy)
@@ -92,6 +91,7 @@ $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v 
 ```
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help`, `subaligner_2pass --help` or `subaligner --help`.
 
+![](figures/screencast.gif)
 ## Supported Formats
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2 and TMP
 

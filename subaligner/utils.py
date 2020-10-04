@@ -272,8 +272,6 @@ class Utils(object):
         if target_file_path is None:
             target_file_path = source_file_path.replace(".%s" % source_ext, ".%s" % target_ext)
         if frame_rate is None:
-            print(">>>>>>>>>>>>>>>>{}".format(format))
             subs.save(target_file_path, encoding="utf-8", format_=format)
         else:
-            print("<<<<<<<<>>>>>>>>{}".format(format))
             subs.save(target_file_path, encoding="utf-8", format_=format, fps=frame_rate)

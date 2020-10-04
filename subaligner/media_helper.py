@@ -7,6 +7,7 @@ import shutil
 import atexit
 import signal
 
+from copy import deepcopy
 from pysrt import SubRipFile
 from decimal import Decimal
 from .embedder import FeatureEmbedder
@@ -259,46 +260,45 @@ class MediaHelper(object):
             tuple -- A list of start times, a list of end times and a list of grouped SubRip files.
         """
 
+        local_subs = MediaHelper.__preprocess_subs(subs)
+
         segment_starts = []
         segment_ends = []
         combined = []
         new_subs = []
-        current_start = str(subs[0].start)
-        for i in range(len(subs)):
-            # Ignore subsequent overlapped subtitles
-            # (But if this means the subtitle is malformed, an exception should be raised.)
-            if i != 0 and subs[i].start < subs[i - 1].end:
-                continue
-            if i == len(subs) - 1:
-                combined.append(subs[i])
+        current_start = str(local_subs[0].start)
+
+        for i in range(len(local_subs)):
+            if i == len(local_subs) - 1:
+                combined.append(local_subs[i])
                 segment_starts.append(current_start)
-                segment_ends.append(str(subs[i].end))
+                segment_ends.append(str(local_subs[i].end))
                 new_subs.append(SubRipFile(combined))
                 del combined[:]
             else:
                 # Do not segment when the subtitle is too short
                 duration = FeatureEmbedder.time_to_sec(
-                    subs[i].end
-                ) - FeatureEmbedder.time_to_sec(subs[i].start)
+                    local_subs[i].end
+                ) - FeatureEmbedder.time_to_sec(local_subs[i].start)
                 if duration < MediaHelper.__MIN_SECS_PER_WORD:
-                    combined.append(subs[i])
+                    combined.append(local_subs[i])
                     continue
                 # Do not segment consecutive subtitles having little or no gap.
                 gap = FeatureEmbedder.time_to_sec(
-                    subs[i + 1].start
-                ) - FeatureEmbedder.time_to_sec(subs[i].end)
+                    local_subs[i + 1].start
+                ) - FeatureEmbedder.time_to_sec(local_subs[i].end)
                 if (
-                    subs[i].end == subs[i + 1].start
+                    local_subs[i].end == local_subs[i + 1].start
                     or gap < MediaHelper.__MIN_GAP_IN_SECS
                 ):
-                    combined.append(subs[i])
+                    combined.append(local_subs[i])
                     continue
-                combined.append(subs[i])
+                combined.append(local_subs[i])
                 # The start time is set to last cue's end time
                 segment_starts.append(current_start)
                 # The end time cannot be set to next cue's start time due to possible overlay
-                segment_ends.append(str(subs[i].end))
-                current_start = str(subs[i].end)
+                segment_ends.append(str(local_subs[i].end))
+                current_start = str(local_subs[i].end)
                 new_subs.append(SubRipFile(combined))
                 del combined[:]
         return segment_starts, segment_ends, new_subs
@@ -366,3 +366,15 @@ class MediaHelper(object):
                     process.kill()
                     proc.kill()
                     os.system("stty sane")
+
+    @staticmethod
+    def __preprocess_subs(subs):
+        local_subs = deepcopy(subs)
+
+        # Preprocess overlapping subtitles
+        for i in range(len(local_subs)):
+            if i != 0 and local_subs[i].start < local_subs[i - 1].end:
+                MediaHelper.__LOGGER.warning("Found overlapping subtitle cues and the earlier one's duration will be shortened.")
+                local_subs[i - 1].end = local_subs[i].start
+
+        return local_subs

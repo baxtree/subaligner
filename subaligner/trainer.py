@@ -3,6 +3,7 @@ import os
 import h5py
 import traceback
 import concurrent.futures
+import math
 import numpy as np
 import multiprocessing as mp
 
@@ -238,7 +239,7 @@ class Trainer(object):
         )
 
         extraction_start = datetime.datetime.now()
-        max_workers = int(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
+        max_workers = math.ceil(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
         with concurrent.futures.ThreadPoolExecutor(
             max_workers=max_workers
         ) as executor:
