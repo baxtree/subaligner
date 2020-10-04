@@ -11,8 +11,12 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-with open("requirements.txt") as requirements_file:
-    requirements = requirements_file.read().splitlines()[::-1]
+if "STRETCH_OFF" not in os.environ:
+    with open("requirements.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
+else:
+    with open("requirements-app.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
 
 setup(name="subaligner",
       version=__version__,
@@ -26,7 +30,7 @@ setup(name="subaligner",
       ],
       license="MIT",
       url="https://subaligner.readthedocs.io/en/latest/",
-      description="Automatically aligns an out-of-sync subtitle file to its companion video/audio using Deep Neural Network and Forced Alignment.",
+      description="Automatically synchronise subtitles to companion audiovisual content with Deep Neural Network and Forced Alignment.",
       long_description=readme + "\n\n",
       long_description_content_type='text/markdown',
       python_requires=">=3.6",
@@ -45,5 +49,5 @@ setup(name="subaligner",
       install_requires=requirements,
       test_suite="tests.subaligner",
       setup_requires=["numpy>=1.14.1,<1.18.0"],
-      scripts=["bin/subaligner_1pass", "bin/subaligner_2pass"],
+      scripts=["bin/subaligner_1pass", "bin/subaligner_2pass", "bin/subaligner"],
 )

@@ -6,6 +6,7 @@ RUN yum update -y &&\
     rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm &&\
     yum install -y ffmpeg &&\
     yum install -y espeak espeak-devel &&\
+    yum install -y libsndfile-devel &&\
     yum install -y gcc &&\
     yum install -y python36 &&\
     yum install -y python36-devel &&\

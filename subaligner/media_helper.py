@@ -7,6 +7,7 @@ import shutil
 import atexit
 import signal
 
+from copy import deepcopy
 from pysrt import SubRipFile
 from decimal import Decimal
 from .embedder import FeatureEmbedder
@@ -17,7 +18,7 @@ from .logger import Logger
 TEMP_DIR_PATH = tempfile.mkdtemp()
 
 
-def clear_temp():
+def clear_temp(*_):
     if os.path.isdir(TEMP_DIR_PATH):
         shutil.rmtree(TEMP_DIR_PATH)
 
@@ -90,6 +91,8 @@ class MediaHelper(object):
                 _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                 MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
                 if process.returncode != 0:
+                    MediaHelper.__LOGGER.error("[{}-{}] Cannot extract audio from video: {}\n{}"
+                                               .format(threading.current_thread().name, process.pid, video_file_path, std_err))
                     raise TerminalException(
                         "Cannot extract audio from video: {}".format(video_file_path)
                     )
@@ -113,6 +116,18 @@ class MediaHelper(object):
                     raise TerminalException(
                         "Cannot extract audio from video: {}".format(video_file_path)
                     ) from e
+            except KeyboardInterrupt:
+                MediaHelper.__LOGGER.error(
+                    "[{}-{}] Extracting audio from video {} interrupted".format(
+                        threading.current_thread().name, process.pid, video_file_path
+                    )
+                )
+                if os.path.exists(audio_file_path):
+                    os.remove(audio_file_path)
+                process.send_signal(signal.SIGINT)
+                raise TerminalException(
+                    "Extracting audio from video {} interrupted".format(video_file_path)
+                )
             finally:
                 process.kill()
                 os.system("stty sane")
@@ -186,8 +201,10 @@ class MediaHelper(object):
                 _, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                 MediaHelper.__LOGGER.debug("[{}-{}] {}".format(threading.current_thread().name, process.pid, std_err))
                 if process.returncode != 0:
+                    MediaHelper.__LOGGER.error("[{}-{}] Cannot clip audio: {} Return Code: {}\n{}"
+                                               .format(threading.current_thread().name, process.pid, audio_file_path, process.returncode, std_err))
                     raise TerminalException(
-                        "Cannot extract audio from audio: {} Return Code: {}".format(audio_file_path, process.returncode)
+                        "Cannot clip audio: {} Return Code: {}".format(audio_file_path, process.returncode)
                     )
                 MediaHelper.__LOGGER.info(
                     "[{}-{}] Extracted audio segment: {}".format(threading.current_thread().name, process.pid,
@@ -196,7 +213,7 @@ class MediaHelper(object):
             except subprocess.TimeoutExpired as te:
                 MediaHelper.__LOGGER.error(
                     "[{}-{}] Extracting {} timed out: {}\n{}".format(
-                        threading.current_thread().name, process.pid, segment_path, str(te), traceback.format_stack()
+                        threading.current_thread().name, process.pid, segment_path, str(te), "".join(traceback.format_stack())
                     )
                 )
                 if os.path.exists(segment_path):
@@ -207,7 +224,7 @@ class MediaHelper(object):
             except Exception as e:
                 MediaHelper.__LOGGER.error(
                     "[{}-{}] Extracting {} failed: {}\n{}".format(
-                        threading.current_thread().name, process.pid, segment_path, str(e), traceback.format_stack()
+                        threading.current_thread().name, process.pid, segment_path, str(e), "".join(traceback.format_stack())
                     )
                 )
                 if os.path.exists(segment_path):
@@ -216,8 +233,18 @@ class MediaHelper(object):
                     raise e
                 else:
                     raise TerminalException(
-                        "Cannot extract audio from audio: {}".format(audio_file_path)
+                        "Cannot clip audio: {}".format(audio_file_path)
                     ) from e
+            except KeyboardInterrupt:
+                MediaHelper.__LOGGER.error(
+                    "[{}-{}] Extracting with start and end from {} interrupted".format(
+                        threading.current_thread().name, process.pid, segment_path
+                    )
+                )
+                if os.path.exists(segment_path):
+                    os.remove(segment_path)
+                process.send_signal(signal.SIGINT)
+                raise TerminalException("Extracting with start and end from {} interrupted".format(segment_path))
             finally:
                 process.kill()
                 os.system("stty sane")
@@ -233,46 +260,45 @@ class MediaHelper(object):
             tuple -- A list of start times, a list of end times and a list of grouped SubRip files.
         """
 
+        local_subs = MediaHelper.__preprocess_subs(subs)
+
         segment_starts = []
         segment_ends = []
         combined = []
         new_subs = []
-        current_start = str(subs[0].start)
-        for i in range(len(subs)):
-            # Ignore subsequent overlapped subtitles
-            # (But if this means the subtitle is malformed, an exception should be raised.)
-            if i != 0 and subs[i].start < subs[i - 1].end:
-                continue
-            if i == len(subs) - 1:
-                combined.append(subs[i])
+        current_start = str(local_subs[0].start)
+
+        for i in range(len(local_subs)):
+            if i == len(local_subs) - 1:
+                combined.append(local_subs[i])
                 segment_starts.append(current_start)
-                segment_ends.append(str(subs[i].end))
+                segment_ends.append(str(local_subs[i].end))
                 new_subs.append(SubRipFile(combined))
                 del combined[:]
             else:
                 # Do not segment when the subtitle is too short
                 duration = FeatureEmbedder.time_to_sec(
-                    subs[i].end
-                ) - FeatureEmbedder.time_to_sec(subs[i].start)
+                    local_subs[i].end
+                ) - FeatureEmbedder.time_to_sec(local_subs[i].start)
                 if duration < MediaHelper.__MIN_SECS_PER_WORD:
-                    combined.append(subs[i])
+                    combined.append(local_subs[i])
                     continue
                 # Do not segment consecutive subtitles having little or no gap.
                 gap = FeatureEmbedder.time_to_sec(
-                    subs[i + 1].start
-                ) - FeatureEmbedder.time_to_sec(subs[i].end)
+                    local_subs[i + 1].start
+                ) - FeatureEmbedder.time_to_sec(local_subs[i].end)
                 if (
-                    subs[i].end == subs[i + 1].start
+                    local_subs[i].end == local_subs[i + 1].start
                     or gap < MediaHelper.__MIN_GAP_IN_SECS
                 ):
-                    combined.append(subs[i])
+                    combined.append(local_subs[i])
                     continue
-                combined.append(subs[i])
+                combined.append(local_subs[i])
                 # The start time is set to last cue's end time
                 segment_starts.append(current_start)
                 # The end time cannot be set to next cue's start time due to possible overlay
-                segment_ends.append(str(subs[i].end))
-                current_start = str(subs[i].end)
+                segment_ends.append(str(local_subs[i].end))
+                current_start = str(local_subs[i].end)
                 new_subs.append(SubRipFile(combined))
                 del combined[:]
         return segment_starts, segment_ends, new_subs
@@ -306,8 +332,10 @@ class MediaHelper(object):
                     bufsize=1,
             ) as process:
                 try:
-                    std_out, _ = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
+                    std_out, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                     if process.returncode != 0:
+                        MediaHelper.__LOGGER.error("[{}-{}] Cannot extract the frame rate from video: {}\n{}"
+                                                   .format(threading.current_thread().name, process.pid, file_path, std_err))
                         raise NoFrameRateException(
                             "Cannot extract the frame rate from video: {}".format(file_path)
                         )
@@ -325,7 +353,28 @@ class MediaHelper(object):
                         raise NoFrameRateException(
                             "Cannot extract the frame rate from video: {}".format(file_path)
                         ) from e
+                except KeyboardInterrupt:
+                    MediaHelper.__LOGGER.error(
+                        "[{}-{}] Extracting frame rate from video {} interrupted".format(
+                            threading.current_thread().name, process.pid, file_path
+                        )
+                    )
+                    process.send_signal(signal.SIGINT)
+                    proc.send_signal(signal.SIGINT)
+                    raise TerminalException("Extracting frame rate from video {} interrupted".format(file_path))
                 finally:
                     process.kill()
                     proc.kill()
                     os.system("stty sane")
+
+    @staticmethod
+    def __preprocess_subs(subs):
+        local_subs = deepcopy(subs)
+
+        # Preprocess overlapping subtitles
+        for i in range(len(local_subs)):
+            if i != 0 and local_subs[i].start < local_subs[i - 1].end:
+                MediaHelper.__LOGGER.warning("Found overlapping subtitle cues and the earlier one's duration will be shortened.")
+                local_subs[i - 1].end = local_subs[i].start
+
+        return local_subs

@@ -121,6 +121,17 @@ class MediaHelperTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
+    @patch("subprocess.Popen.communicate", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_extract_audio_timeout(self, mock_communicate):
+        try:
+            Undertest.extract_audio(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("interrupted" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
     @patch("subprocess.Popen.communicate", side_effect=Exception())
     def test_throw_exception_on_vtt2srt_exception(self, mock_communicate):
         try:
@@ -141,7 +152,7 @@ class MediaHelperTests(unittest.TestCase):
         except Exception as e:
             self.assertTrue(mock_communicate.called)
             self.assertTrue(isinstance(e, TerminalException))
-            self.assertTrue("Cannot extract audio from audio:" in str(e))
+            self.assertTrue("Cannot clip audio:" in str(e))
         else:
             self.fail("Should have thrown exception")
 
@@ -167,7 +178,20 @@ class MediaHelperTests(unittest.TestCase):
         except Exception as e:
             self.assertTrue(mock_communicate.called)
             self.assertTrue(isinstance(e, TerminalException))
-            self.assertTrue("Cannot extract audio from audio:" in str(e))
+            self.assertTrue("Cannot clip audio:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_extract_partial_audio_interrupted(self, mock_communicate):
+        try:
+            Undertest.extract_audio_from_start_to_end(
+                self.__test_audio_path, "00:00:13,750", "00:00:16,150"
+            )
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("interrupted" in str(e))
         else:
             self.fail("Should have thrown exception")
 
@@ -209,6 +233,17 @@ class MediaHelperTests(unittest.TestCase):
             self.assertTrue(mock_communicate.called)
             self.assertTrue(isinstance(e, NoFrameRateException))
             self.assertTrue("Cannot extract the frame rate from video:" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("subprocess.Popen.communicate", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_get_frame_rate_interrupted(self, mock_communicate):
+        try:
+            Undertest.get_frame_rate(self.__video_file_path)
+        except Exception as e:
+            self.assertTrue(mock_communicate.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("interrupted" in str(e))
         else:
             self.fail("Should have thrown exception")
 

@@ -7,6 +7,7 @@ from pycaption import (
     DFXPReader,
     SRTWriter,
 )
+import pysubs2
 from .exception import TerminalException
 
 
@@ -147,9 +148,130 @@ class Utils(object):
                 os.system("stty sane")
 
     @staticmethod
+    def srt2ass(srt_file_path, ass_file_path=None):
+        """Convert SubRip subtitles to Advanced SubStation Alpha v4.0+ subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            ass_file_path {string} -- The path to the ASS file.
+        """
+
+        Utils.__convert_subtitle(srt_file_path, "srt", ass_file_path, "ass", "ass")
+
+    @staticmethod
+    def ass2srt(ass_file_path, srt_file_path=None):
+        """Convert Advanced SubStation Alpha v4.0+ subtitles to SubRip subtitles.
+
+        Arguments:
+            ass_file_path {string} -- The path to the ASS file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        Utils.__convert_subtitle(ass_file_path, "ass", srt_file_path, "srt", "srt")
+
+    @staticmethod
+    def srt2ssa(srt_file_path, ssa_file_path=None):
+        """Convert SubRip subtitles to SubStation Alpha v4.0 subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            ssa_file_path {string} -- The path to the SSA file.
+        """
+
+        Utils.__convert_subtitle(srt_file_path, "srt", ssa_file_path, "ssa", "ssa")
+
+    @staticmethod
+    def ssa2srt(ssa_file_path, srt_file_path=None):
+        """Convert SubStation Alpha v4.0 subtitles to SubRip subtitles.
+
+        Arguments:
+            ssa_file_path {string} -- The path to the SSA file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        Utils.__convert_subtitle(ssa_file_path, "ssa", srt_file_path, "srt", "srt")
+
+    @staticmethod
+    def srt2microdvd(srt_file_path, microdvd_file_path=None, frame_rate=25.0):
+        """Convert SubRip subtitles to MicroDVD subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            microdvd_file_path {string} -- The path to the MicroDVD file.
+            frame_rate {float} -- The frame rate for frame-based MicroDVD.
+        """
+
+        Utils.__convert_subtitle(srt_file_path, "srt", microdvd_file_path, "sub", "microdvd", frame_rate=frame_rate)
+
+    @staticmethod
+    def microdvd2srt(microdvd_file_path, srt_file_path=None):
+        """Convert MicroDVD subtitles to SubRip subtitles.
+
+        Arguments:
+            microdvd_file_path {string} -- The path to the MPL2 file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        Utils.__convert_subtitle(microdvd_file_path, "sub", srt_file_path, "srt", "srt")
+
+    @staticmethod
+    def srt2mpl2(srt_file_path, mpl2_file_path=None):
+        """Convert SubRip subtitles to MPL2 subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            mpl2_file_path {string} -- The path to the MPL2 file.
+        """
+
+        Utils.__convert_subtitle(srt_file_path, "srt", mpl2_file_path, "txt", "mpl2")
+
+    @staticmethod
+    def mpl22srt(mpl2_file_path, srt_file_path=None):
+        """Convert MPL2 subtitles to SubRip subtitles.
+
+        Arguments:
+            mpl2_file_path {string} -- The path to the MPL2 file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        Utils.__convert_subtitle(mpl2_file_path, "txt", srt_file_path, "srt", "srt")
+
+    @staticmethod
+    def srt2tmp(srt_file_path, tmp_file_path=None):
+        """Convert SubRip subtitles to TMP subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            tmp_file_path {string} -- The path to the TMP file.
+        """
+
+        Utils.__convert_subtitle(srt_file_path, "srt", tmp_file_path, "tmp", "tmp")
+
+    @staticmethod
+    def tmp2srt(tmp_file_path, srt_file_path=None):
+        """Convert TMP subtitles to SubRip subtitles.
+
+        Arguments:
+            mpl2_file_path {string} -- The path to the TMP file.
+            tmp_file_path {string} -- The path to the SubRip file.
+        """
+
+        Utils.__convert_subtitle(tmp_file_path, "tmp", srt_file_path, "srt", "srt")
+
+    @staticmethod
     def suppress_lib_logs():
         import os
         import logging
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
         os.environ["TF_CPP_MIN_VLOG_LEVEL"] = "2"
         logging.getLogger("tensorflow").disabled = True
+
+    @staticmethod
+    def __convert_subtitle(source_file_path, source_ext, target_file_path, target_ext, format, frame_rate=None):
+        subs = pysubs2.load(source_file_path, encoding="utf-8")
+        if target_file_path is None:
+            target_file_path = source_file_path.replace(".%s" % source_ext, ".%s" % target_ext)
+        if frame_rate is None:
+            subs.save(target_file_path, encoding="utf-8", format_=format)
+        else:
+            subs.save(target_file_path, encoding="utf-8", format_=format, fps=frame_rate)

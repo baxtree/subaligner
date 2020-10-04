@@ -26,7 +26,7 @@ class Logger(Singleton):
             if Logger.QUIET:
                 logger.setLevel(logging.ERROR)
             formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                "%(name)s - %(levelname)s - %(threadName)-9s - %(message)s"
             )
 
             file_handler = logging.FileHandler(self.__output_log, "w+")

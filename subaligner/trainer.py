@@ -3,6 +3,7 @@ import os
 import h5py
 import traceback
 import concurrent.futures
+import math
 import numpy as np
 import multiprocessing as mp
 
@@ -238,7 +239,7 @@ class Trainer(object):
         )
 
         extraction_start = datetime.datetime.now()
-        max_workers = int(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
+        max_workers = math.ceil(float(os.getenv("MAX_WORKERS", mp.cpu_count() / 2)))
         with concurrent.futures.ThreadPoolExecutor(
             max_workers=max_workers
         ) as executor:
@@ -267,7 +268,7 @@ class Trainer(object):
                 except Exception as e:
                     Trainer.__LOGGER.error(
                         "Unexpected exception: {} stacktrace: {}".format(
-                            str(e), traceback.format_stack()
+                            str(e), "".join(traceback.format_stack())
                         )
                     )
 
@@ -314,7 +315,7 @@ class Trainer(object):
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
                 "Exception: {}; stacktrace: {}".format(
-                    str(e), traceback.format_stack()
+                    str(e), "".join(traceback.format_stack())
                 )
             )
             Trainer.__LOGGER.error(
@@ -326,7 +327,7 @@ class Trainer(object):
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
                 "Unexpected exception: {}; stacktrace: {}".format(
-                    str(e), traceback.format_stack()
+                    str(e), "".join(traceback.format_stack())
                 )
             )
             Trainer.__LOGGER.error(

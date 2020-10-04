@@ -22,6 +22,21 @@ class UtilsTests(unittest.TestCase):
         self.__real_vtt_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.vtt"
         )
+        self.__real_ass_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ass"
+        )
+        self.__real_ssa_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ssa"
+        )
+        self.__real_mircodvd_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.sub"
+        )
+        self.__real_mpl2_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.mpl2.txt"
+        )
+        self.__real_tmp_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
+        )
         self.__resource_tmp = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/tmp"
         )
@@ -31,6 +46,7 @@ class UtilsTests(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.__resource_tmp)
+        pass
 
     @patch("pycaption.CaptionConverter.write", side_effect=lambda writer: "output")
     @patch("pycaption.CaptionConverter.read")
@@ -61,6 +77,76 @@ class UtilsTests(unittest.TestCase):
         Undertest.vtt2srt(self.__real_vtt_path, output_file_path)
 
         self.assertTrue(filecmp.cmp(self.__real_srt_path, output_file_path))
+
+    def test_srt2ass(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.ass")
+
+        Undertest.srt2ass(self.__real_srt_path, output_file_path)
+
+        self.assertTrue(filecmp.cmp(self.__real_ass_path, output_file_path))
+
+    def test_ass2srt(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.srt")
+
+        Undertest.ass2srt(self.__real_ass_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_srt2ssa(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.ssa")
+
+        Undertest.srt2ssa(self.__real_srt_path, output_file_path)
+
+        self.assertTrue(filecmp.cmp(self.__real_ssa_path, output_file_path))
+
+    def test_ssa2srt(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.ssa")
+
+        Undertest.ssa2srt(self.__real_ssa_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_srt2microdvd(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.sub")
+
+        Undertest.srt2microdvd(self.__real_srt_path, output_file_path)
+
+        self.assertTrue(filecmp.cmp(self.__real_mircodvd_path, output_file_path))
+
+    def test_microdvd2srt(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.sub")
+
+        Undertest.microdvd2srt(self.__real_mircodvd_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_srt2mpl2(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.mpl2.txt")
+
+        Undertest.srt2mpl2(self.__real_srt_path, output_file_path)
+
+        self.assertTrue(filecmp.cmp(self.__real_mpl2_path, output_file_path))
+
+    def test_mpl22srt(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.mpl2.txt")
+
+        Undertest.mpl22srt(self.__real_mpl2_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_srt2tmp(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.tmp.txt")
+
+        Undertest.srt2tmp(self.__real_srt_path, output_file_path)
+
+        self.assertTrue(filecmp.cmp(self.__real_tmp_path, output_file_path))
+
+    def test_tmp2srt(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.tmp.txt")
+
+        Undertest.mpl22srt(self.__real_mpl2_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
 
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):

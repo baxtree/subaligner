@@ -14,12 +14,16 @@ or
 ```
 $ brew install ffmpeg espeak
 ```
-
 ## Installation
 ```
 # Install from PyPI (pre-emptive NumPy)
 $ pip install numpy 
 $ pip install subaligner
+```
+or
+```
+# Install via pipx
+pipx install subaligner
 ```
 or
 ```
@@ -51,13 +55,33 @@ $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 
 $ subaligner_1pass -v video.mp4 -s subtitle.srt
 ```
-
 ```
 # Dual-stage alignment (low-level shift with higher latency)
 
 $ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
+or 
+```
+# Pass in single-stage or dual-stage as the alignment mode
 
+$ subaligner -m single -v video.mp4 -s subtitle.srt
+$ subaligner -m dual -v video.mp4 -s subtitle.srt
+
+```
+```
+# Run alignments with pipx
+
+$ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
+$ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
+
+```
+```
+# Run the module as a script
+$ python -m subaligner -m single -v video.mp4 -s subtitle.srt
+$ python -m subaligner -m dual -v video.mp4 -s subtitle.srt
+$ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
+$ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
+```
 ```
 # Run alignments with the docker image
 
@@ -65,10 +89,11 @@ $ docker pull baxtree/subaligner
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
-The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help` or `subaligner_2pass --help`.
+The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help`, `subaligner_2pass --help` or `subaligner --help`.
 
+![](figures/screencast.gif)
 ## Supported Formats
-Subtitle: SubRip, TTML and WebVTT
+Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2 and TMP
 
 Video: MP4, WebM, Ogg, 3GP, FLV and MOV 
 

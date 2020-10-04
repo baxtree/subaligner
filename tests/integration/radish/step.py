@@ -5,7 +5,7 @@ import os
 from radish import given, when, then
 
 PWD = os.path.dirname(os.path.realpath(__file__))
-WAIT_TIMEOUT_IN_SECONDS = 120
+WAIT_TIMEOUT_IN_SECONDS = 300
 
 
 @given('I have a video file "{file_name:S}"')
@@ -18,66 +18,81 @@ def subtitle_file(step, file_name):
     step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
-@when("I run the alignment with {aligner:S} on them")
-def run_subaligner(step, aligner):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", aligner),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-q"], shell=False)
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage")
+def run_subaligner(step, aligner, mode):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@when("I run the single-stage alignment on them")
-def run_subaligner_1pass(step):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_1pass"),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-q"], shell=False)
+@when('I run the alignment with {aligner:S} on them with {mode:S} stage and output "{file_name:S}"')
+def run_subaligner_with_output(step, aligner, mode, file_name):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
+            "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@when('I run the alignment with {aligner:S} on them with output "{file_name:S}"')
-def run_subaligner_1pass_with_output(step, aligner, file_name):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", aligner),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
-        "-q"], shell=False)
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and with exit_segfail")
+def run_subaligner_without_stretch(step, aligner, mode):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-es",
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-es",
+            "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@when("I run the dual-stage alignment on them")
-def run_subaligner_2pass(step):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-q"], shell=False)
-    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
-
-
-@when('I run the dual-stage alignment on them with output "{file_name:S}"')
-def run_subaligner_2pass_with_output(step, file_name):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
-        "-q"], shell=False)
-    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
-
-
-@when("I run the dual-stage alignment on them without stretch")
-def run_subaligner_2pass_without_stretch(step):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-so",
-        "-q"], shell=False)
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and without stretch")
+def run_subaligner_without_stretch(step, aligner, mode):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-so",
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-so",
+            "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
@@ -93,25 +108,23 @@ def set_max_log_loss(step, max):
     step.context.max_log_loss = max
 
 
-@when("I run the alignment with {alginer:S} on them with max loss")
-def run_subaligner_1pass(step, alginer):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", alginer),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-l", str(step.context.max_log_loss),
-        "-q"], shell=False)
-    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
-
-
-@when("I run the dual-stage alignment on them with max loss")
-def run_subaligner_1pass(step):
-    process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_2pass"),
-        "-v", step.context.video_file_path,
-        "-s", step.context.subtitle_file_path,
-        "-l", str(step.context.max_log_loss),
-        "-q"], shell=False)
+@when("I run the alignment with {alginer:S} on them with {mode:S} stage and max loss")
+def run_subaligner_with_max_loss(step, alginer, mode):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", alginer),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-l", str(step.context.max_log_loss),
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", alginer),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-l", str(step.context.max_log_loss),
+            "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
@@ -131,7 +144,7 @@ def run_subaligner_with_help(step, aligner):
 
 @then("{aligner:S} help information is displayed")
 def expect_help_information(step, aligner):
-    assert "usage: %s" % aligner in step.context.stdout
+    assert "usage: %s " % aligner in step.context.stdout
 
 
 @then("the dual-stage help information is displayed")
