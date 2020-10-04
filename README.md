@@ -8,17 +8,17 @@
 ## Dependencies
 [FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
 ```
-apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
+$ apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
 ```
 or
 ```
-brew install ffmpeg espeak
+$ brew install ffmpeg espeak
 ```
 ## Installation
 ```
 # Install from PyPI (pre-emptive NumPy)
-pip install numpy 
-pip install subaligner
+$ pip install numpy 
+$ pip install subaligner
 ```
 or
 ```
@@ -38,15 +38,15 @@ or
 ```
 # Install from source
 
-git clone git@github.com:baxtree/subaligner.git
-cd subaligner
-make install && source .venv/bin/activate
+$ git clone git@github.com:baxtree/subaligner.git
+$ cd subaligner
+$ make install && source .venv/bin/activate
 ```
 or
 ```
 # Use dockerised installation
 
-docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
+$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
 
 ## Usage

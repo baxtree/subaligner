@@ -54,4 +54,3 @@ Currently the stretching is experimental and only works for speech and subtitles
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
     or
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
-
