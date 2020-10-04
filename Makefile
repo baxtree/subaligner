@@ -24,7 +24,7 @@ endef
 export BROWSER_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
-.PHONY: install uninstall build-gzip build-rpm test test-all pydoc coverage manual clean clean-dist clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
+.PHONY: install uninstall build-gzip build-rpm test test-all pydoc coverage manual dist release clean clean-dist clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
 
 install:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
@@ -118,10 +118,7 @@ dist: clean-dist
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/python setup.py sdist bdist_wheel bdist_egg
 
-release:
-	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+release: dist
 	.$(PYTHON)/bin/twine upload dist/*
 
 pipenv-install:
