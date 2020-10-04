@@ -419,7 +419,7 @@ class Predictor(Singleton):
 
         subs_list = []
 
-        max_workers = math.ceil(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
+        max_workers = math.ceil(float(os.getenv("MAX_WORKERS", mp.cpu_count() / 2)))
         Predictor.__LOGGER.debug("Number of workers: {}".format(max_workers))
 
         with _ThreadPoolExecutorLocal(

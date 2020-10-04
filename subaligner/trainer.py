@@ -239,7 +239,7 @@ class Trainer(object):
         )
 
         extraction_start = datetime.datetime.now()
-        max_workers = math.ceil(os.getenv("MAX_WORKERS", mp.cpu_count() / 2))
+        max_workers = math.ceil(float(os.getenv("MAX_WORKERS", mp.cpu_count() / 2)))
         with concurrent.futures.ThreadPoolExecutor(
             max_workers=max_workers
         ) as executor:
