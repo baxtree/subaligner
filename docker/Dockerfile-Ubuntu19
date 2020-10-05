@@ -1,6 +1,8 @@
 # Subaligner Ubuntu 19 Docker Image
 FROM ubuntu:19.10
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
 RUN apt-get -y update &&\
     apt-get -y install ffmpeg &&\
     apt-get -y install espeak libespeak1 libespeak-dev espeak-data &&\

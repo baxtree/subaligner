@@ -18,10 +18,6 @@ Installation
     $ pip install numpy
     $ pip install subaligner
 
-**Install Subaligner via pipx**::
-
-    $ pipx install subaligner
-
 **Install from GitHub via Pipenv**::
 
     ...
