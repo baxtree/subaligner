@@ -50,4 +50,11 @@ setup(name="subaligner",
       test_suite="tests.subaligner",
       setup_requires=["numpy>=1.14.1,<1.18.0"],
       scripts=["bin/subaligner_1pass", "bin/subaligner_2pass", "bin/subaligner"],
+      entry_points= {
+          "console_scripts": [
+              "subaligner_1pass=subaligner.subaligner_1pass",
+              "subaligner_2pass=subaligner.subaligner_2pass",
+              "subaligner=subaligner.__main__:main",
+          ]
+      },
 )

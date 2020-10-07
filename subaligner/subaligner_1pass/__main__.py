@@ -22,8 +22,8 @@ import argparse
 import sys
 import traceback
 
-if __name__ == "__main__":
 
+def main():
     if sys.version_info.major != 3:
         print("Cannot find Python 3")
         sys.exit(20)
@@ -114,3 +114,7 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         exit(0)
+
+
+if __name__ == "__main__":
+    main()
