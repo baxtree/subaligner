@@ -22,6 +22,11 @@ $ pip install subaligner
 ```
 or
 ```
+# Install via pipx
+pipx install subaligner
+```
+or
+```
 # Install from GitHub via Pipenv
 ...
 [packages]
@@ -55,13 +60,18 @@ $ subaligner_1pass -v video.mp4 -s subtitle.srt
 
 $ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
-or 
+or
 ```
 # Pass in single-stage or dual-stage as the alignment mode
 
 $ subaligner -m single -v video.mp4 -s subtitle.srt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt
+```
+```
+# Run alignments with pipx
 
+$ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
+$ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
 ```
 ```
 # Run the module as a script
