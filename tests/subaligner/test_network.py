@@ -200,7 +200,7 @@ class NetworkTests(unittest.TestCase):
             )
         except Exception as e:
             self.assertTrue(isinstance(e, AssertionError))
-            self.assertEqual("Existing model has been trained for 2 epochs", str(e))
+            self.assertEqual("The existing model has been trained for 2 epochs. Make sure the total epochs are larger than 2", str(e))
         else:
             self.fail("Should have thrown exception")
 

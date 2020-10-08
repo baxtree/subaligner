@@ -145,7 +145,7 @@ class TrainerTests(unittest.TestCase):
             config_dir=self.__resource_tmp,
             logs_dir=self.__resource_tmp,
             training_dump_dir=self.__resource_tmp,
-            hyperparameters=None,
+            hyperparameters=hyperparameters,
             resume=True,
         )
         output_files = os.listdir(self.__resource_tmp)

@@ -96,11 +96,19 @@ class Hyperparameters(object):
 
     @optimizer.setter
     def optimizer(self, value):
-        if value.lower() == "adam":
-            self.__optimizer = "Adam"
+        if value.lower() == "adadelta":
+            self.__optimizer = "Adadelta"
         elif value.lower() == "adagrad":
             self.__optimizer = "Adagrad"
-        elif value.lower() == "rms":
+        elif value.lower() == "adam":
+            self.__optimizer = "Adam"
+        elif value.lower() == "adamax":
+            self.__optimizer = "Adamax"
+        elif value.lower() == "ftrl":
+            self.__optimizer = "Ftrl"
+        elif value.lower() == "nadam":
+            self.__optimizer = "Nadam"
+        elif value.lower() == "rmsprop":
             self.__optimizer = "RMSprop"
         elif value.lower() == "sgd":
             self.__optimizer = "SGD"

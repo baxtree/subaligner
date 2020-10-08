@@ -89,9 +89,13 @@ class Trainer(object):
 
                 if resume:
                     # Load hyper parameters from previous training
-                    hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
+                    loaded_hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
 
-                    network = Network.load_model_and_weights(model_filepath, weights_filepath, hyperparameters)
+                    # Update the total epochs and save hyper parameters
+                    loaded_hyperparameters.epochs = hyperparameters.epochs
+                    loaded_hyperparameters.to_file(hyperparams_filepath)
+
+                    network = Network.load_model_and_weights(model_filepath, weights_filepath, loaded_hyperparameters)
                 else:
                     # Save hyper parameters before each new training
                     hyperparameters.to_file(hyperparams_filepath)

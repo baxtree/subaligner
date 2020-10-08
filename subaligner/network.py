@@ -15,7 +15,6 @@ from tensorflow.keras.layers import (
     Activation,
     BatchNormalization,
     Bidirectional,
-    Flatten,
 )
 from tensorflow.keras.callbacks import (
     EarlyStopping,
@@ -282,7 +281,8 @@ class Network(object):
             training_log_file = open(training_log)
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
-            assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
+            assert self.hyperparameters.epochs > initial_epoch, \
+                "The existing model has been trained for {0} epochs. Make sure the total epochs are larger than {0}".format(initial_epoch)
 
         hist = self.__model.fit(
             train_data,
@@ -326,7 +326,11 @@ class Network(object):
         initial_epoch = 0
         batch_size = self.hyperparameters.batch_size
         validation_split = self.hyperparameters.validation_split
-        csv_logger = CSVLogger(training_log)
+        csv_logger = (
+            CSVLogger(training_log)
+            if not resume
+            else CSVLogger(training_log, append=True)
+        )
         checkpoint = ModelCheckpoint(
             filepath=weights_filepath,
             monitor=self.hyperparameters.monitor,
@@ -362,7 +366,8 @@ class Network(object):
             training_log_file = open(training_log)
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
-            assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
+            assert self.hyperparameters.epochs > initial_epoch, \
+                "The existing model has been trained for {0} epochs. Make sure the total epochs are larger than {0}".format(initial_epoch)
 
         train_generator = self.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=False)
         test_generator = self.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=True)
