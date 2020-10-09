@@ -55,7 +55,7 @@ test:
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
 	PYTHONPATH=. .$(PYTHON)/bin/python -m unittest discover
-	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner_1pass bin/subaligner_2pass bin/subaligner --ignore=E203,E501,W503
+	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner_1pass bin/subaligner_2pass bin/subaligner bin/subaligner_train --ignore=E203,E501,W503
 
 test-all: ## run tests on every Python version with tox
 	.$(PYTHON)/bin/tox

@@ -15,7 +15,7 @@ class HyperParameterTuner(object):
         "front_hidden_size": hp.choice("front_hidden_size", [[16], [32], [64]]),
         "back_hidden_size": hp.choice("back_hidden_size", [[16, 8], [32, 16]]),
         "batch_size": scope.int(hp.qloguniform("batch_size", np.log(8), np.log(4096), 1)),
-        "optimizer": hp.choice("optimizer", ["adam", "sgd", "rms", "adagrad"]),
+        "optimizer": hp.choice("optimizer", Hyperparameters.OPTIMIZERS),
         "dropout": hp.loguniform("dropout", np.log(0.1), np.log(0.3)),
         "validation_split": hp.loguniform("validation_split", np.log(0.2), np.log(0.4)),
     }
