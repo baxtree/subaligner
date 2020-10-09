@@ -4,7 +4,7 @@ usage: subaligner_train [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -od OUTP
                         [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
                         [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-d] [-q]
 
-Train the subaligner model
+Train the subaligner model. Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -54,7 +54,9 @@ def main():
         print("Cannot find Python 3")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Train the subaligner model")
+    parser = argparse.ArgumentParser(description="""Train the subaligner model.
+                                                    Each subtitle file and its companion audiovisual file need to
+                                                    share the same base filename, the part before the extension.""")
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-vd",
@@ -105,7 +107,7 @@ def main():
         "-e",
         "--epochs",
         type=int,
-        default=50,
+        default=100,
         help="Total training epochs",
     )
     hyperparameter_args.add_argument(

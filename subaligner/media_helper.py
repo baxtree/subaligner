@@ -57,7 +57,7 @@ class MediaHelper(object):
         basename = os.path.basename(video_file_path)
 
         # Using WAV for training or prediction is faster than using AAC.
-        # However the former will result in large temporary audio files saved on the disk.
+        # However the former will result in larger temporary audio files saved on the disk.
         if decompress:
             assert freq is not None, "Frequency is needed for decompression"
             audio_file_path = "{0}/{1}{2}".format(

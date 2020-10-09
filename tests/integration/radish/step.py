@@ -2,7 +2,9 @@
 
 import subprocess
 import os
-from radish import given, when, then
+import tempfile
+import shutil
+from radish import given, when, then, before, after
 
 PWD = os.path.dirname(os.path.realpath(__file__))
 WAIT_TIMEOUT_IN_SECONDS = 300
@@ -160,3 +162,52 @@ def unsupported_subtitle(step):
 @given("I have an unsupported video file")
 def unsupported_video(step):
     step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported")
+
+
+@given('I have an audiovisual file directory "{av_dir:S}"')
+def audiovisual_dir(step, av_dir):
+    step.context.av_dir = os.path.join(PWD, "..", "..", "subaligner", "resource", av_dir)
+
+
+@given('I have a subtitle file directory "{sub_dir:S}"')
+def subtitle_dir(step, sub_dir):
+    step.context.sub_dir = os.path.join(PWD, "..", "..", "subaligner", "resource", sub_dir)
+
+
+@given('I want to save the trained model in directory "{output_dir:S}"')
+def output_dir(step, output_dir):
+    step.context.training_output = os.path.join(step.context.temp_dir, output_dir)
+
+
+@when('I run the subaligner_train against them with the following hyper parameters')
+def train(step):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
+        "-vd", step.context.av_dir,
+        "-sd", step.context.sub_dir,
+        "-od", step.context.training_output,
+        "-q"] + step.text.split(" "), shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@then("a model and a training log file are generated")
+def model_trained(step):
+    model_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
+    assert step.context.exit_code == 0
+    assert os.path.join(step.context.training_output, "models", "training", "config", "hyperparameters.json") in model_files
+    assert os.path.join(step.context.training_output, "models", "training", "model", "combined.hdf5") in model_files
+    assert os.path.join(step.context.training_output, "models", "training", "model", "model.hdf5") in model_files
+    assert os.path.join(step.context.training_output, "models", "training", "weights", "weights.hdf5") in model_files
+    assert os.path.join(step.context.training_output, "training.log") in model_files
+    assert os.path.join(step.context.training_output, "training_dump.hdf5") in model_files
+
+
+@before.each_scenario(on_tags="train")
+def create_training_output_dir(scenario):
+    scenario.context.temp_dir = tempfile.mkdtemp()
+
+
+@after.each_scenario(on_tags="train")
+def remove_training_output_dir(scenario):
+    if os.path.isdir(scenario.context.temp_dir):
+        shutil.rmtree(scenario.context.temp_dir)

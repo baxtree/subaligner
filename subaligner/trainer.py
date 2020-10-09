@@ -1,6 +1,7 @@
 import datetime
 import os
 import h5py
+import threading
 import traceback
 import concurrent.futures
 import math
@@ -34,6 +35,7 @@ class Trainer(object):
         """
 
         self.__feature_embedder = feature_embedder
+        self.__lock = threading.RLock()
 
         # freeze the object after creation
         def __setattr__(self, *args):
@@ -265,13 +267,13 @@ class Trainer(object):
                 try:
                     audio_file_path, subtitle_file_path = future.result()
                     Trainer.__LOGGER.error(
-                        "Data and label extraction not done: [Audio: {}, Subtitle: {}]".format(
+                        "Data and label extraction failed for: [Audio: {}, Subtitle: {}]".format(
                             audio_file_path, subtitle_file_path
                         )
                     )
                 except Exception as e:
                     Trainer.__LOGGER.error(
-                        "Unexpected exception: {} stacktrace: {}".format(
+                        "Unexpected exception during data and label extraction: {} stacktrace: {}".format(
                             str(e), "".join(traceback.format_stack())
                         )
                     )
@@ -307,14 +309,16 @@ class Trainer(object):
                 )
             else:
                 audio_file_path = av_file_path
+            with self.__lock:
+                x, y = self.__feature_embedder.extract_data_and_label_from_audio(
+                    audio_file_path,
+                    subtitle_file_path,
+                    subtitles=None,
+                    ignore_sound_effects=True,
+                )
 
-            x, y = self.__feature_embedder.extract_data_and_label_from_audio(
-                audio_file_path,
-                subtitle_file_path,
-                subtitles=None,
-                ignore_sound_effects=True,
-            )
-        # Some media are malformed and on occurring they will be logged but the expensive training process shall continue
+        # Some media file are malformed and on occurring they will be logged
+        # However, the training shall continue after expensive embedding on healthy media files.
         except (UnsupportedFormatException, TerminalException) as e:
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
