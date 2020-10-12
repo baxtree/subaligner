@@ -5,7 +5,7 @@ usage: subaligner_1pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-o
 Run single-stage alignment
 
 optional arguments:
-  -h, --help                Show this help message and exit
+  -h, --help                show this help message and exit
   -l, --max_logloss         Max global log loss for alignment
   -o, --output              Path to the output subtitle file
   -d, --debug               Print out debugging information

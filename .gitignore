@@ -13,6 +13,7 @@ tests/subaligner/resource/*_aligned.*
 tests/subaligner/resource/test_mono.wav
 tests/subaligner/training.log
 tests/subaligner/output.log
+*-output*
 *training.log*
 *output.log*
 *.prof

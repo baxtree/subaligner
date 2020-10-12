@@ -174,7 +174,7 @@ def subtitle_dir(step, sub_dir):
     step.context.sub_dir = os.path.join(PWD, "..", "..", "subaligner", "resource", sub_dir)
 
 
-@given('I want to save the trained model in directory "{output_dir:S}"')
+@given('I want to save the output in directory "{output_dir:S}"')
 def output_dir(step, output_dir):
     step.context.training_output = os.path.join(step.context.temp_dir, output_dir)
 
@@ -192,22 +192,44 @@ def train(step):
 
 @then("a model and a training log file are generated")
 def model_trained(step):
-    model_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
+    output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
     assert step.context.exit_code == 0
-    assert os.path.join(step.context.training_output, "models", "training", "config", "hyperparameters.json") in model_files
-    assert os.path.join(step.context.training_output, "models", "training", "model", "combined.hdf5") in model_files
-    assert os.path.join(step.context.training_output, "models", "training", "model", "model.hdf5") in model_files
-    assert os.path.join(step.context.training_output, "models", "training", "weights", "weights.hdf5") in model_files
-    assert os.path.join(step.context.training_output, "training.log") in model_files
-    assert os.path.join(step.context.training_output, "training_dump.hdf5") in model_files
+    assert os.path.join(step.context.training_output, "models", "training", "config", "hyperparameters.json") in output_files
+    assert os.path.join(step.context.training_output, "models", "training", "model", "combined.hdf5") in output_files
+    assert os.path.join(step.context.training_output, "models", "training", "model", "model.hdf5") in output_files
+    assert os.path.join(step.context.training_output, "models", "training", "weights", "weights.hdf5") in output_files
+    assert os.path.join(step.context.training_output, "training.log") in output_files
+    assert os.path.join(step.context.training_output, "training_dump.hdf5") in output_files
 
 
-@before.each_scenario(on_tags="train")
+@then("a hyper parameter file is generated")
+def hyperparam_tuned(step):
+    output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f
+                   in fn]
+    assert step.context.exit_code == 0
+    assert os.path.join(step.context.training_output, "hyperparameters.json") in output_files
+
+
+@when("I run the subaligner_tune against them with the following flags")
+def tuning_configuration(step):
+    process = subprocess.Popen([
+       os.path.join(PWD, "..", "..", "..", "bin", "subaligner_tune"),
+        "-vd", step.context.av_dir,
+        "-sd", step.context.sub_dir,
+        "-od", step.context.training_output,
+        "-ept", step.table[0]["epoch_per_trail"],
+        "-t", step.table[0]["trails"],
+        "-nt", step.table[0]["network_type"],
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@before.each_scenario(on_tags="train or hyper-parameter-tuning")
 def create_training_output_dir(scenario):
     scenario.context.temp_dir = tempfile.mkdtemp()
 
 
-@after.each_scenario(on_tags="train")
+@after.each_scenario(on_tags="train or hyper-parameter-tuning")
 def remove_training_output_dir(scenario):
     if os.path.isdir(scenario.context.temp_dir):
         shutil.rmtree(scenario.context.temp_dir)

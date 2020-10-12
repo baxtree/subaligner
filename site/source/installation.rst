@@ -44,9 +44,11 @@ to create a virtual environment and set up all the dependencies:
     $ cd subaligner
     $ make install && source .venv/bin/activate
 
-**subaligner_1pass, subaligner_2pass and subaligner should be on your PATH now**::
+**Subaligner CLI should be on your PATH now**::
 
+    (.venv) $ subaligner --help
     (.venv) $ subaligner_1pass --help
     (.venv) $ subaligner_2pass --help
-    (.venv) $ subaligner --help
+    (.venv) $ subaligner_train --help
+    (.venv) $ subaligner_tune --help
 

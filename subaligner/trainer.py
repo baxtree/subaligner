@@ -73,13 +73,13 @@ class Trainer(object):
         """
 
         training_start = datetime.datetime.now()
-        model_filepath = "{0}/{1}".format(model_dir, "model.hdf5")
-        weights_filepath = "{0}/{1}".format(weights_dir, "weights.hdf5")
-        hyperparams_filepath = "{0}/{1}".format(config_dir, "hyperparameters.json")
+        model_filepath = os.path.join(os.path.abspath(model_dir), "model.hdf5")
+        weights_filepath = os.path.join(os.path.abspath(weights_dir), "weights.hdf5")
+        hyperparams_filepath = os.path.join(os.path.abspath(config_dir), "hyperparameters.json")
 
         if av_file_paths is None or subtitle_file_paths is None:
             # Load the data and labels dump from the disk
-            training_dump = training_dump_dir + "/training_dump.hdf5"
+            training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
             Trainer.__LOGGER.debug(
                 "Resume training on data dump: ".format(
                     training_dump
@@ -121,7 +121,7 @@ class Trainer(object):
             )
 
             # Dump extracted data and labels to files for re-training
-            training_dump = training_dump_dir + "/training_dump.hdf5"
+            training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
             with h5py.File(training_dump, "w") as hf:
                 hf.create_dataset("train_data", data=train_data)
                 hf.create_dataset("labels", data=labels)
@@ -161,7 +161,7 @@ class Trainer(object):
         )
 
         # Save the model together with the weights after training
-        combined_filepath = "{0}/combined.hdf5".format(model_dir)
+        combined_filepath = os.path.join(os.path.abspath(model_dir), "combined.hdf5")
         network.save_model_and_weights(
             model_filepath, weights_filepath, combined_filepath
         )
@@ -182,8 +182,7 @@ class Trainer(object):
             hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
         """
 
-        # Dump extracted data and labels to files for re-training
-        training_dump = training_dump_dir + "/training_dump.hdf5"
+        training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
         if os.path.exists(training_dump):
             with h5py.File(training_dump, "r") as hf:
                 train_data_raw = hf["train_data"]
@@ -261,7 +260,12 @@ class Trainer(object):
                 )
                 for index in range(len(av_file_paths))
             ]
-            done, not_done = concurrent.futures.wait(futures)
+            try:
+                done, not_done = concurrent.futures.wait(futures)
+            except KeyboardInterrupt:
+                for future in futures:
+                    future.cancel()
+                concurrent.futures.wait(futures)
             for future in not_done:
                 # Log undone audio files and continue
                 try:

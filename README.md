@@ -93,7 +93,14 @@ The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI
 ## Supported Formats
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2 and TMP
 
-Video: MP4, WebM, Ogg, 3GP, FLV and MOV 
+Video: MP4, WebM, Ogg, 3GP, FLV and MOV
+
+## Advanced Usage
+You can train a new model with your own audiovisual files and subtitle files:
+```
+$ subaligner_train -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -od OUTPUT_DIRECTORY
+```
+Then you can apply it to your subtitle synchronisation with the aforementioned commands. For more details on how to train and tune your own model, please refer to [Subaligner Docs](https://subaligner.readthedocs.io/en/latest/advanced_usage.html).
 
 ## Anatomy
 Subtitles can be out of sync with their companion audiovisual media files for a variety of causes including latency introduced by Speech-To-Text on live streams or calibration and rectification involving human intervention during post-production.

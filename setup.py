@@ -23,10 +23,10 @@ setup(name="subaligner",
       author="Xi Bai",
       author_email="xi.bai.ed@gmail.com",
       classifiers=[
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8"
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8"
       ],
       license="MIT",
       url="https://subaligner.readthedocs.io/en/latest/",
@@ -37,6 +37,10 @@ setup(name="subaligner",
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",
+          "subaligner.subaligner_1pass",
+          "subaligner.subaligner_2pass",
+          "subaligner.subaligner_train",
+          "subaligner.subaligner_tune",
           "subaligner.models.training.model",
           "subaligner.models.training.weights",
           "subaligner.models.training.config",
@@ -49,13 +53,18 @@ setup(name="subaligner",
       install_requires=requirements,
       test_suite="tests.subaligner",
       setup_requires=["numpy>=1.14.1,<1.18.0"],
-      scripts=["bin/subaligner_1pass", "bin/subaligner_2pass", "bin/subaligner", "bin/subaligner_train"],
-      entry_points= {
+      scripts=[
+          "bin/subaligner",
+          "bin/subaligner_1pass",
+          "bin/subaligner_2pass",
+          "bin/subaligner_train",
+          "bin/subaligner_tune",
+      ],
+      entry_points={
           "console_scripts": [
-              "subaligner_1pass=subaligner.subaligner_1pass",
-              "subaligner_2pass=subaligner.subaligner_2pass",
               "subaligner=subaligner.__main__:main",
-              "subaligner_train=subaligner.subaligner_train",
-          ]
-      },
-)
+              "subaligner_1pass=subaligner.subaligner_1pass.__main__:main",
+              "subaligner_2pass=subaligner.subaligner_2pass.__main__:main",
+              "subaligner_train=subaligner.subaligner_train.__main__:main",
+              "subaligner_tune=subaligner.subaligner_tune.__main__:main",
+          ]})

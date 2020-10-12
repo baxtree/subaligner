@@ -2,13 +2,15 @@
 """
 usage: subaligner_train [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -od OUTPUT_DIRECTORY [-r] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
                         [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
-                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-d] [-q]
+                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q]
 
 Train the subaligner model. Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.
 
 optional arguments:
   -h, --help            show this help message and exit
   -r, --resume          Continue with previous training result if present (hyper parameters passed in will be ignored except for --epochs)
+  -utd, --use_training_dump
+                        Use training dump instead of files in the video or subtitle directory
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
 
@@ -161,8 +163,10 @@ def main():
         default="adam",
         help="TensorFlow optimizer",
     )
+    parser.add_argument("-utd", "--use_training_dump", action="store_true",
+                        help="Use training dump instead of files in the video or subtitle directory")
     parser.add_argument("-d", "--debug", action="store_true",
-                        help="Print out debugging information")
+                            help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
     FLAGS, unparsed = parser.parse_known_args()
@@ -200,6 +204,9 @@ def main():
         if not FLAGS.resume:
             video_file_paths = [os.path.abspath(os.path.join(FLAGS.video_directory, p)) for p in os.listdir(FLAGS.video_directory) if not p.startswith(".")]
             subtitle_file_paths = [os.path.abspath(os.path.join(FLAGS.subtitle_directory, p)) for p in os.listdir(FLAGS.subtitle_directory) if not p.startswith(".")]
+        if FLAGS.use_training_dump:
+            print("Use data dump from previous training and passed-in video and subtitle directories will be ignored")
+            video_file_paths = subtitle_file_paths = None
 
         hyperparameters = Hyperparameters()
         hyperparameters.batch_size = FLAGS.batch_size

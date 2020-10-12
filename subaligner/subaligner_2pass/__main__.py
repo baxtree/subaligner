@@ -5,7 +5,7 @@ usage: subaligner [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] [-o
 Run two-stage alignment
 
 optional arguments:
-  -h, --help                Show this help message and exit
+  -h, --help                show this help message and exit
   -l, --max_logloss         Max global log loss for alignment
   -so, --stretch_off        Switch off stretch on non-English speech and
                             subtitles)

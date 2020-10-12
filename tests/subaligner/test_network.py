@@ -78,7 +78,9 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual("bi_lstm", network.n_type)
 
     def test_create_conv_1d_network(self):
-        pass
+        self.__hyperparameters.network_type = "conv_1d"
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
+        self.assertEqual("conv_1d", network.n_type)
 
     def test_summary(self):
         network = Undertest.get_network((2, 20), self.__hyperparameters)
