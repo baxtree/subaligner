@@ -98,7 +98,7 @@ Video: MP4, WebM, Ogg, 3GP, FLV and MOV
 ## Advanced Usage
 You can train a new model with your own audiovisual files and subtitle files:
 ```
-$ subaligner_train -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -od OUTPUT_DIRECTORY
+$ subaligner_train -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY
 ```
 Then you can apply it to your subtitle synchronisation with the aforementioned commands. For more details on how to train and tune your own model, please refer to [Subaligner Docs](https://subaligner.readthedocs.io/en/latest/advanced_usage.html).
 

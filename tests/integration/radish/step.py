@@ -205,7 +205,7 @@ def train(step):
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
         "-vd", step.context.av_dir,
         "-sd", step.context.sub_dir,
-        "-od", step.context.training_output,
+        "-tod", step.context.training_output,
         "-q"] + step.text.split(" "), shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
@@ -235,7 +235,7 @@ def tuning_configuration(step):
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_tune"),
         "-vd", step.context.av_dir,
         "-sd", step.context.sub_dir,
-        "-od", step.context.training_output,
+        "-tod", step.context.training_output,
         "-ept", step.table[0]["epoch_per_trail"],
         "-t", step.table[0]["trails"],
         "-nt", step.table[0]["network_type"],
