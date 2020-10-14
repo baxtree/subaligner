@@ -5,27 +5,39 @@ Advanced Usage
 You can train a new model with your own audiovisual files and subtitle files and the model can be
 later used for synchronising subtitles.
 
-**Start a fresh Training**::
+**Start a fresh training**::
 
-    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -od output_directory
+    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory
 
 Make sure each subtitle and its companion audiovisual content are sharing the same base filename, e.g.,
-awesome.mp4 and awesome.srt. Than spit them into a two saperate folders, e.g., av_directory and subtitle_directory.
-The training result will be stored into a specified directory, e.g., output_directory.
+awesome.mp4 and awesome.srt. Then spit them into two saperate folders, e.g., av_directory and subtitle_directory.
+The training result will be stored into another specified folder, e.g., training_output_directory.
 
 **Resume training**::
 
-    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -od output_directory -e 200 -r
+    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory -e 200 -r
 
-Training over a large dataset is normally an expensive process. You can resume the previous training with `-r` or `--resume`.
-Make sure the number of epochs you pass in is greater than the epochs done in the past.
+Training over a large dataset is usually an expensive process. You can resume the previous training with `-r` or `--resume`
+to enhance an existing model. Make sure the number of epochs you pass in with `-e` or `--epochs` is greater than the
+number of epochs already done in the past.
 
 **Reuse embeddings**::
 
-    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -od output_directory -utd
+    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory -utd
 
-Embeddings extracted from your media files can be reused with `-utd` or `--use_training_dump`. With the flag on, you can train a new
-model of another kind without going through feature embedding process, which could take quite long to finish.
+Embeddings extracted from your media files can be reused with `-utd` or `--use_training_dump`. With that flag on, you can train a new
+model of another kind without going through the feature embedding process, which could take quite long to finish so as to be
+unnecessary if your training dataset has not changed.
+
+**Run alignments after training**::
+
+    (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -tod training_output_directory
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tod training_output_directory
+    (.venv) $ subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt -tod training_output_directory
+    (.venv) $ subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt -tod training_output_directory
+
+To apply your trained model to subtitle alignment, pass in the directory containing training results with
+`-tod` or `--training_output_directory` as shown above.
 
 **Hyper parameters**::
 
@@ -50,13 +62,14 @@ model of another kind without going through feature embedding process, which cou
     -o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}, --optimizer {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}
         TensorFlow optimizer
 
-You can pass in the above flags to manually change hyper parameters before each training. Or You can let Subaligner tune hyper parameters automatically as shown below.
+You can pass in the above flags to manually change hyper parameters before each training. Or You can let Subaligner tune
+hyper parameters automatically and the how-to is shown below.
 
 **Hyper parameters tuning**::
 
-     (.venv) $ subaligner_tune -vd av_directory -sd subtitle_directory -od output_directory
+     (.venv) $ subaligner_tune -vd av_directory -sd subtitle_directory -tod training_output_directory
 
-You can pass in the following flags to customise the tuning settings:
+You can pass in the following flags to customise the tuning configuration:
 
 **Optional custom flags**::
 

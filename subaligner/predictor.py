@@ -55,7 +55,7 @@ class Predictor(Singleton):
             self,
             video_file_path,
             subtitle_file_path,
-            weights_dir="models/training/weights",
+            weights_dir=os.path.join(os.path.dirname(__file__), "models/training/weights"),
     ):
         """Predict time to shift with single pass
 
@@ -91,7 +91,7 @@ class Predictor(Singleton):
             self,
             video_file_path,
             subtitle_file_path,
-            weights_dir="models/training/weights",
+            weights_dir=os.path.join(os.path.dirname(__file__), "models/training/weights"),
             stretch=False,
             exit_segfail=False,
     ):
@@ -569,8 +569,8 @@ class Predictor(Singleton):
             sub.end = SubRipTime.coerce(new_end)
 
     def __initialise_network(self, weights_dir):
-        model_dir = os.path.join(os.path.dirname(__file__), weights_dir.replace("/weights", "/model"))
-        config_dir = os.path.join(os.path.dirname(__file__), weights_dir.replace("/weights", "/config"))
+        model_dir = weights_dir.replace("/weights", "/model")
+        config_dir = weights_dir.replace("/weights", "/config")
         files = os.listdir(model_dir)
         model_files = [
             file
@@ -678,7 +678,6 @@ class Predictor(Singleton):
 
     @staticmethod
     def __get_weights_path(weights_dir):
-        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
         files = os.listdir(weights_dir)
         weights_files = [
             file
@@ -694,9 +693,9 @@ class Predictor(Singleton):
         Predictor.__LOGGER.debug("weights files: {}".format(weights_files))
 
         # Get the first file from the file lists
-        weights_path = "{}/{}".format(weights_dir, weights_files[0])
+        weights_path = os.path.join(weights_dir, weights_files[0])
 
-        return os.path.join(os.path.dirname(__file__), weights_path)
+        return os.path.abspath(weights_path)
 
     @staticmethod
     def __normalise_seconds_to_shift(seconds_to_shift, step_sample):

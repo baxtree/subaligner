@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-usage: subaligner_train [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -od OUTPUT_DIRECTORY [-r] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
+usage: subaligner_train [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY [-r] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
                         [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
                         [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q]
 
@@ -19,7 +19,7 @@ required arguments:
                         Path to the video directory
   -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
                         Path to the subtitle directory
-  -od OUTPUT_DIRECTORY, --output_directory OUTPUT_DIRECTORY
+  -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
 
 optional hyper parameters:
@@ -55,6 +55,11 @@ def main():
     if sys.version_info.major != 3:
         print("Cannot find Python 3")
         sys.exit(20)
+    try:
+        import subaligner
+    except ModuleNotFoundError:
+        print("Subaligner is not installed")
+        sys.exit(20)
 
     parser = argparse.ArgumentParser(description="""Train the subaligner model.
                                                     Each subtitle file and its companion audiovisual file need to
@@ -77,8 +82,8 @@ def main():
         required=True,
     )
     required_args.add_argument(
-        "-od",
-        "--output_directory",
+        "-tod",
+        "--training_output_directory",
         type=str,
         default="",
         help="Path to the output directory containing training results",
@@ -166,7 +171,7 @@ def main():
     parser.add_argument("-utd", "--use_training_dump", action="store_true",
                         help="Use training dump instead of files in the video or subtitle directory")
     parser.add_argument("-d", "--debug", action="store_true",
-                            help="Print out debugging information")
+                        help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
     FLAGS, unparsed = parser.parse_known_args()
@@ -177,8 +182,8 @@ def main():
     if FLAGS.subtitle_directory == "":
         print("--subtitle_directory was not passed in")
         sys.exit(21)
-    if FLAGS.output_directory == "":
-        print("--output_directory was not passed in")
+    if FLAGS.training_output_directory == "":
+        print("--training_output_directory was not passed in")
         sys.exit(21)
 
     verbose = FLAGS.debug
@@ -192,13 +197,13 @@ def main():
         from subaligner.hyperparameters import Hyperparameters
         from subaligner.embedder import FeatureEmbedder
         from subaligner.trainer import Trainer
-        output_dir = os.path.abspath(FLAGS.output_directory)
-        os.makedirs(FLAGS.output_directory, exist_ok=True)
-        model_dir = os.path.abspath(os.path.join(FLAGS.output_directory, "models", "training", "model"))
+        output_dir = os.path.abspath(FLAGS.training_output_directory)
+        os.makedirs(FLAGS.training_output_directory, exist_ok=True)
+        model_dir = os.path.abspath(os.path.join(FLAGS.training_output_directory, "models", "training", "model"))
         os.makedirs(model_dir, exist_ok=True)
-        weights_dir = os.path.abspath(os.path.join(FLAGS.output_directory, "models", "training", "weights"))
+        weights_dir = os.path.abspath(os.path.join(FLAGS.training_output_directory, "models", "training", "weights"))
         os.makedirs(weights_dir, exist_ok=True)
-        config_dir = os.path.abspath(os.path.join(FLAGS.output_directory, "models", "training", "config"))
+        config_dir = os.path.abspath(os.path.join(FLAGS.training_output_directory, "models", "training", "config"))
         os.makedirs(config_dir, exist_ok=True)
         video_file_paths = subtitle_file_paths = None
         if not FLAGS.resume:

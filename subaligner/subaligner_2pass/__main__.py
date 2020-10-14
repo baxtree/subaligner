@@ -1,34 +1,43 @@
 #!/usr/bin/env python
 """
-usage: subaligner [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] [-o] [-d] [-q]
+usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
 
 Run two-stage alignment
 
 optional arguments:
-  -h, --help                show this help message and exit
-  -l, --max_logloss         Max global log loss for alignment
-  -so, --stretch_off        Switch off stretch on non-English speech and
-                            subtitles)
-  -es, --exit_segfail       Exit on alignment failure on one or more segments
-  -o, --output              Path to the output subtitle file
-  -d, --debug               Print out debugging information
-  -q, --quiet               Switch off logging information
+  -h, --help            show this help message and exit
+  -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
+                        Max global log loss for alignment
+  -so, --stretch_off    Switch off stretch on subtitles for non-English speech
+  -fos, --exit_segfail  Exit on any segment alignment failures
+  -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
+                        Path to the output directory containing training results
+  -o OUTPUT, --output OUTPUT
+                        Path to the output subtitle file
+  -d, --debug           Print out debugging information
+  -q, --quiet           Switch off logging information
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
-                            Path to the video file
+                        Path to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                            Path to the subtitle file
+                        Path to the subtitle file
 """
 
 import argparse
 import sys
 import traceback
+import os
 
 
 def main():
     if sys.version_info.major != 3:
         print("Cannot find Python 3")
+        sys.exit(20)
+    try:
+        import subaligner
+    except ModuleNotFoundError:
+        print("Subaligner is not installed")
         sys.exit(20)
 
     parser = argparse.ArgumentParser(description="Run two-stage alignment")
@@ -69,6 +78,13 @@ def main():
         help="Exit on any segment alignment failures",
     )
     parser.add_argument(
+        "-tod",
+        "--training_output_directory",
+        type=str,
+        default=os.path.abspath(os.path.dirname(subaligner.__file__)),
+        help="Path to the output directory containing training results",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         type=str,
@@ -104,6 +120,7 @@ def main():
         subs_list, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
             video_file_path=FLAGS.video_path,
             subtitle_file_path=FLAGS.subtitle_path,
+            weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights"),
             stretch=stretch,
             exit_segfail=exit_segfail,
         )

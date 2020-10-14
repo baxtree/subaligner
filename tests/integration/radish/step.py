@@ -98,6 +98,26 @@ def run_subaligner_without_stretch(step, aligner, mode):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and a custom model")
+def run_subaligner(step, aligner, mode):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-tod", os.path.join(PWD, "..", "..", "..", "subaligner"),
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_file_path,
+            "-tod", os.path.join(PWD, "..", "..", "..", "subaligner"),
+            "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @then('a new subtitle file "{file_name:S}" is generated')
 def expect_result(step, file_name):
     output_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
@@ -204,8 +224,7 @@ def model_trained(step):
 
 @then("a hyper parameter file is generated")
 def hyperparam_tuned(step):
-    output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f
-                   in fn]
+    output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
     assert step.context.exit_code == 0
     assert os.path.join(step.context.training_output, "hyperparameters.json") in output_files
 
@@ -213,7 +232,7 @@ def hyperparam_tuned(step):
 @when("I run the subaligner_tune against them with the following flags")
 def tuning_configuration(step):
     process = subprocess.Popen([
-       os.path.join(PWD, "..", "..", "..", "bin", "subaligner_tune"),
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_tune"),
         "-vd", step.context.av_dir,
         "-sd", step.context.sub_dir,
         "-od", step.context.training_output,

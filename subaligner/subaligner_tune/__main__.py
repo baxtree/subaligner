@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-usage: subaligner_tune [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -od OUTPUT_DIRECTORY [-ept EPOCHS_PER_TRAIL] [-t TRAILS] [-nt {lstm,bi_lstm,conv_1d}] [-utd] [-d]
-                       [-q]
+usage: subaligner_tune [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY [-ept EPOCHS_PER_TRAIL] [-t TRAILS] [-nt {lstm,bi_lstm,conv_1d}]
+                       [-utd] [-d] [-q]
 
 Tune hyper parameters before training.
 
@@ -23,7 +23,7 @@ required arguments:
                         Path to the video directory
   -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
                         Path to the subtitle directory
-  -od OUTPUT_DIRECTORY, --output_directory OUTPUT_DIRECTORY
+  -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
 """
 
@@ -36,6 +36,11 @@ import traceback
 def main():
     if sys.version_info.major != 3:
         print("Cannot find Python 3")
+        sys.exit(20)
+    try:
+        import subaligner
+    except ModuleNotFoundError:
+        print("Subaligner is not installed")
         sys.exit(20)
 
     parser = argparse.ArgumentParser(description="""Tune hyper parameters before training.""")
@@ -57,8 +62,8 @@ def main():
         required=True,
     )
     required_args.add_argument(
-        "-od",
-        "--output_directory",
+        "-tod",
+        "--training_output_directory",
         type=str,
         default="",
         help="Path to the output directory containing training results",
@@ -100,8 +105,8 @@ def main():
     if FLAGS.subtitle_directory == "":
         print("--subtitle_directory was not passed in")
         sys.exit(21)
-    if FLAGS.output_directory == "":
-        print("--output_directory was not passed in")
+    if FLAGS.training_output_directory == "":
+        print("--training_output_directory was not passed in")
         sys.exit(21)
 
     verbose = FLAGS.debug
@@ -114,8 +119,8 @@ def main():
         from subaligner.exception import TerminalException
         from subaligner.hyperparameters import Hyperparameters
         from subaligner.hparam_tuner import HyperParameterTuner
-        output_dir = os.path.abspath(FLAGS.output_directory)
-        os.makedirs(FLAGS.output_directory, exist_ok=True)
+        output_dir = os.path.abspath(FLAGS.training_output_directory)
+        os.makedirs(FLAGS.training_output_directory, exist_ok=True)
         video_file_paths = [os.path.abspath(os.path.join(FLAGS.video_directory, p)) for p in os.listdir(FLAGS.video_directory) if not p.startswith(".")]
         subtitle_file_paths = [os.path.abspath(os.path.join(FLAGS.subtitle_directory, p)) for p in os.listdir(FLAGS.subtitle_directory) if not p.startswith(".")]
         exported_hyperparam_path = os.path.join(output_dir, "hyperparameters.json")

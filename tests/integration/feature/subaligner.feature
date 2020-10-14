@@ -108,6 +108,19 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |
         |  subaligner       |  dual     |
 
+    @custom_model
+    Scenario Outline: Test alignments with trained custom models
+        Given I have a video file "test.wav"
+        And I have a subtitle file "test.srt"
+        When I run the alignment with <aligner> on them with <mode> stage and a custom model
+        Then a new subtitle file "test_aligned.srt" is generated
+    Examples:
+        |  aligner          |  mode     |
+        |  subaligner_1pass |  <NULL>   |
+        |  subaligner_2pass |  <NULL>   |
+        |  subaligner       |  single   |
+        |  subaligner       |  dual     |
+
     @exception
     Scenario Outline: Test errors out on unsupported subtitle input
         Given I have a video file "test.mp4"

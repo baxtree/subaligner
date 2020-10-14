@@ -1,31 +1,41 @@
 #!/usr/bin/env python
 """
-usage: subaligner_1pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-o] [-d] [-q]
+usage: subaligner_1pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
 
 Run single-stage alignment
 
 optional arguments:
-  -h, --help                show this help message and exit
-  -l, --max_logloss         Max global log loss for alignment
-  -o, --output              Path to the output subtitle file
-  -d, --debug               Print out debugging information
-  -q, --quiet               Switch off logging information
+  -h, --help            show this help message and exit
+  -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
+                        Max global log loss for alignment
+  -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
+                        Path to the output directory containing training results
+  -o OUTPUT, --output OUTPUT
+                        Path to the output subtitle file
+  -d, --debug           Print out debugging information
+  -q, --quiet           Switch off logging information
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
-                            Path to the video file
+                        Path to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                            Path to the subtitle file
+                        Path to the subtitle file
 """
 
 import argparse
 import sys
 import traceback
+import os
 
 
 def main():
     if sys.version_info.major != 3:
         print("Cannot find Python 3")
+        sys.exit(20)
+    try:
+        import subaligner
+    except ModuleNotFoundError:
+        print("Subaligner is not installed")
         sys.exit(20)
 
     parser = argparse.ArgumentParser(description="Run single-stage alignment")
@@ -52,6 +62,13 @@ def main():
         type=float,
         default=float("inf"),
         help="Max global log loss for alignment",
+    )
+    parser.add_argument(
+        "-tod",
+        "--training_output_directory",
+        type=str,
+        default=os.path.abspath(os.path.dirname(subaligner.__file__)),
+        help="Path to the output directory containing training results",
     )
     parser.add_argument(
         "-o",
@@ -84,7 +101,9 @@ def main():
     try:
         predictor = Predictor()
         subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
-            video_file_path=FLAGS.video_path, subtitle_file_path=FLAGS.subtitle_path
+            video_file_path=FLAGS.video_path,
+            subtitle_file_path=FLAGS.subtitle_path,
+            weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights")
         )
 
         aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
