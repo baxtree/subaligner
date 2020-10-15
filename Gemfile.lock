@@ -1,0 +1,60 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activesupport (5.2.4.4)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (>= 0.7, < 2)
+      minitest (~> 5.1)
+      tzinfo (~> 1.1)
+    addressable (2.7.0)
+      public_suffix (>= 2.0.2, < 5.0)
+    concurrent-ruby (1.1.7)
+    faraday (1.0.1)
+      multipart-post (>= 1.2, < 3)
+    faraday_middleware (1.0.0)
+      faraday (~> 1.0)
+    gh (0.18.0)
+      activesupport (~> 5.0)
+      addressable (~> 2.4)
+      faraday (~> 1.0)
+      faraday_middleware (~> 1.0)
+      multi_json (~> 1.0)
+      net-http-persistent (~> 2.9)
+      net-http-pipeline
+    highline (2.0.3)
+    i18n (1.8.5)
+      concurrent-ruby (~> 1.0)
+    json (2.3.1)
+    json_pure (2.3.1)
+    launchy (2.4.3)
+      addressable (~> 2.3)
+    minitest (5.14.2)
+    multi_json (1.15.0)
+    multipart-post (2.1.1)
+    net-http-persistent (2.9.4)
+    net-http-pipeline (1.0.1)
+    public_suffix (4.0.6)
+    pusher-client (0.6.2)
+      json
+      websocket (~> 1.0)
+    thread_safe (0.3.6)
+    travis (1.10.0)
+      faraday (~> 1.0)
+      faraday_middleware (~> 1.0)
+      gh (~> 0.13)
+      highline (~> 2.0)
+      json_pure (~> 2.3)
+      launchy (~> 2.1, < 2.5.0)
+      pusher-client (~> 0.4)
+    tzinfo (1.2.7)
+      thread_safe (~> 0.1)
+    websocket (1.2.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  travis!
+
+BUNDLED WITH
+   2.0.2
