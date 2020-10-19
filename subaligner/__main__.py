@@ -5,7 +5,7 @@ usage: subaligner [-h] -m {single,dual} -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_L
 Subaligner command line interface
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_off    Switch off stretch on non-English speech and subtitles)

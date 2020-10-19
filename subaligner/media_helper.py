@@ -39,7 +39,6 @@ class MediaHelper(object):
 
     atexit.register(clear_temp)
     signal.signal(signal.SIGTERM, clear_temp)
-    signal.signal(signal.SIGINT, clear_temp)
 
     @staticmethod
     def extract_audio(video_file_path, decompress=False, freq=16000):

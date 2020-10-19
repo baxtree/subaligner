@@ -300,7 +300,7 @@ class Predictor(Singleton):
                         raise TerminalException(message) from e
                 except KeyboardInterrupt:
                     self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
-                    raise
+                    raise TerminalException("Alignment interrupted by the user")
                 else:
                     Predictor.__LOGGER.debug("Segment aligned")
                     subs_list.append(new_subs)
@@ -465,7 +465,7 @@ class Predictor(Singleton):
             root, _ = os.path.splitext(segment_path)
             text_file_path = "{}.txt".format(root)
 
-            with open(text_file_path, "w") as text_file:
+            with open(text_file_path, "w", encoding="utf8") as text_file:
                 for sub_new in subs:
                     text_file.write(sub_new.text)
                     text_file.write(os.linesep * 2)

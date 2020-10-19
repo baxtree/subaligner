@@ -243,6 +243,22 @@ def tuning_configuration(step):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when("I run the subaligner_train to display the finished epochs")
+def run_train_display(step):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
+        "-dde",
+        "-tod", step.context.training_output,
+        "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+    step.context.done_epochs = process.stdout.read().decode("utf-8") 
+
+
+@then("it shows the done epochs equal to {done_epochs:S}")
+def return_done_epochs(step, done_epochs):
+    assert step.context.done_epochs == "Number of epochs done: %s\n" % format(done_epochs)
+
+
 @before.each_scenario(on_tags="train or hyper-parameter-tuning")
 def create_training_output_dir(scenario):
     scenario.context.temp_dir = tempfile.mkdtemp()

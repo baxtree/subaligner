@@ -25,7 +25,7 @@ class Utils(object):
         """
 
         converter = CaptionConverter()
-        with open(srt_file_path, "r") as file:
+        with open(srt_file_path, "r", encoding="utf8") as file:
             converter.read(file.read(), SRTReader())
         if ttml_file_path is None:
             ttml_file_path = srt_file_path.replace(".srt", ".xml")
@@ -42,7 +42,7 @@ class Utils(object):
         """
 
         converter = CaptionConverter()
-        with open(ttml_file_path, "r") as file:
+        with open(ttml_file_path, "r", encoding="utf8") as file:
             converter.read(file.read(), DFXPReader())
         if srt_file_path is None:
             srt_file_path = ttml_file_path.replace(".xml", ".srt")
@@ -77,6 +77,7 @@ class Utils(object):
                             srt_file_path, std_err
                         )
                     )
+                Utils.remove_trailing_newlines(vtt_file_path)
             except subprocess.TimeoutExpired as te:
                 process.kill()
                 raise TerminalException(
@@ -125,6 +126,7 @@ class Utils(object):
                             vtt_file_path, std_err
                         )
                     )
+                Utils.remove_trailing_newlines(srt_file_path)
             except subprocess.TimeoutExpired as te:
                 process.kill()
                 process.wait()
@@ -157,6 +159,8 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(srt_file_path, "srt", ass_file_path, "ass", "ass")
+        Utils.remove_trailing_newlines(ass_file_path)
+
 
     @staticmethod
     def ass2srt(ass_file_path, srt_file_path=None):
@@ -168,6 +172,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(ass_file_path, "ass", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(srt_file_path)
 
     @staticmethod
     def srt2ssa(srt_file_path, ssa_file_path=None):
@@ -179,6 +184,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(srt_file_path, "srt", ssa_file_path, "ssa", "ssa")
+        Utils.remove_trailing_newlines(ssa_file_path)
 
     @staticmethod
     def ssa2srt(ssa_file_path, srt_file_path=None):
@@ -190,6 +196,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(ssa_file_path, "ssa", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(srt_file_path)
 
     @staticmethod
     def srt2microdvd(srt_file_path, microdvd_file_path=None, frame_rate=25.0):
@@ -202,6 +209,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(srt_file_path, "srt", microdvd_file_path, "sub", "microdvd", frame_rate=frame_rate)
+        Utils.remove_trailing_newlines(microdvd_file_path)
 
     @staticmethod
     def microdvd2srt(microdvd_file_path, srt_file_path=None):
@@ -213,6 +221,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(microdvd_file_path, "sub", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(srt_file_path)
 
     @staticmethod
     def srt2mpl2(srt_file_path, mpl2_file_path=None):
@@ -224,6 +233,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(srt_file_path, "srt", mpl2_file_path, "txt", "mpl2")
+        Utils.remove_trailing_newlines(mpl2_file_path)
 
     @staticmethod
     def mpl22srt(mpl2_file_path, srt_file_path=None):
@@ -235,6 +245,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(mpl2_file_path, "txt", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(srt_file_path)
 
     @staticmethod
     def srt2tmp(srt_file_path, tmp_file_path=None):
@@ -246,6 +257,8 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(srt_file_path, "srt", tmp_file_path, "tmp", "tmp")
+        Utils.remove_trailing_newlines(tmp_file_path)
+
 
     @staticmethod
     def tmp2srt(tmp_file_path, srt_file_path=None):
@@ -257,6 +270,7 @@ class Utils(object):
         """
 
         Utils.__convert_subtitle(tmp_file_path, "tmp", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(srt_file_path)
 
     @staticmethod
     def suppress_lib_logs():
@@ -265,6 +279,17 @@ class Utils(object):
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
         os.environ["TF_CPP_MIN_VLOG_LEVEL"] = "2"
         logging.getLogger("tensorflow").disabled = True
+
+    @staticmethod
+    def remove_trailing_newlines(source_file_path, target_file_path=None):
+        with open(source_file_path, "r", encoding="utf8") as file:
+            content = file.read()
+        if target_file_path is not None:
+            with open(target_file_path, "w", encoding="utf8") as file:
+                file.write(content.rstrip())
+        else:
+            with open(source_file_path, "w", encoding="utf8") as file:
+                file.write(content.rstrip())
 
     @staticmethod
     def __convert_subtitle(source_file_path, source_ext, target_file_path, target_ext, format, frame_rate=None):

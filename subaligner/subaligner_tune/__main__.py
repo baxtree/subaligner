@@ -6,7 +6,7 @@ usage: subaligner_tune [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAI
 Tune hyper parameters before training.
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   -ept EPOCHS_PER_TRAIL, --epochs_per_trail EPOCHS_PER_TRAIL
                         Number of training epochs for each trial
   -t TRAILS, --trails TRAILS

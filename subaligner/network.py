@@ -28,6 +28,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras import backend as K
 from .utils import Utils
 from .logger import Logger
+from .exception import TerminalException
 Utils.suppress_lib_logs()
 
 
@@ -302,6 +303,7 @@ class Network(object):
             )
         except KeyboardInterrupt:
             Network.__LOGGER.warning("Training interrupted by the user")
+            raise TerminalException("Training interrupted by the user")
         finally:
             save_model(self.__model, model_filepath)
             Network.__LOGGER.warning("Model saved to %s" % model_filepath)
@@ -396,6 +398,7 @@ class Network(object):
             )
         except KeyboardInterrupt:
             Network.__LOGGER.warning("Training interrupted by the user")
+            raise TerminalException("Training interrupted by the user")
         finally:
             self.__model.save(model_filepath)
             Network.__LOGGER.warning("Model saved to %s" % model_filepath)

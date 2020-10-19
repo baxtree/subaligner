@@ -312,6 +312,7 @@ class Subtitle(object):
         filename, file_extension = os.path.splitext(source_file_path.lower())
         if file_extension in Subtitle.SUBRIP_EXTENTIONS:
             SubRipFile(subs).save(target_file_path, encoding="utf8")
+            Utils.remove_trailing_newlines(target_file_path)
         elif file_extension in Subtitle.TTML_EXTENSIONS:
             tree = ElementTree.parse(source_file_path)
             tt = tree.getroot()
@@ -325,7 +326,7 @@ class Subtitle(object):
                 cue.attrib["end"] = str(subs[index].end).replace(",", ".")
 
             # Change single quotes in the XML header to double quotes
-            with open(target_file_path, "w") as target:
+            with open(target_file_path, "w", encoding="utf8") as target:
                 normalised = (
                     ElementTree.tostring(tt, encoding="utf8", method="xml")
                     .decode("utf-8")

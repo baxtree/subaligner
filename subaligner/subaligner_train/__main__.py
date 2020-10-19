@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 """
-usage: subaligner_train [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY [-r] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
-                        [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
+usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS]
+                        [-p PATIENCE] [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
                         [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q]
 
 Train the subaligner model. Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
+  -vd VIDEO_DIRECTORY, --video_directory VIDEO_DIRECTORY
+                        Path to the video directory
+  -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
+                        Path to the subtitle directory
   -r, --resume          Continue with previous training result if present (hyper parameters passed in will be ignored except for --epochs)
+  -dde, --display_done_epochs
+                        Display the number of completed epochs
   -utd, --use_training_dump
                         Use training dump instead of files in the video or subtitle directory
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
 
 required arguments:
-  -vd VIDEO_DIRECTORY, --video_directory VIDEO_DIRECTORY
-                        Path to the video directory
-  -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
-                        Path to the subtitle directory
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
 
@@ -66,22 +68,6 @@ def main():
                                                     share the same base filename, the part before the extension.""")
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
-        "-vd",
-        "--video_directory",
-        type=str,
-        default="",
-        help="Path to the video directory",
-        required=True,
-    )
-    required_args.add_argument(
-        "-sd",
-        "--subtitle_directory",
-        type=str,
-        default="",
-        help="Path to the subtitle directory",
-        required=True,
-    )
-    required_args.add_argument(
         "-tod",
         "--training_output_directory",
         type=str,
@@ -90,10 +76,30 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "-vd",
+        "--video_directory",
+        type=str,
+        default="",
+        help="Path to the video directory",
+    )
+    parser.add_argument(
+        "-sd",
+        "--subtitle_directory",
+        type=str,
+        default="",
+        help="Path to the subtitle directory",
+    )
+    parser.add_argument(
         "-r",
         "--resume",
         action="store_true",
         help="Continue with previous training result if present (hyper parameters passed in will be ignored except for --epochs)",
+    )
+    parser.add_argument(
+        "-dde",
+        "--display_done_epochs",
+        action="store_true",
+        help="Display the number of completed epochs",
     )
     hyperparameter_args = parser.add_argument_group("optional hyper parameters")
     hyperparameter_args.add_argument(
@@ -168,6 +174,7 @@ def main():
         default="adam",
         help="TensorFlow optimizer",
     )
+
     parser.add_argument("-utd", "--use_training_dump", action="store_true",
                         help="Use training dump instead of files in the video or subtitle directory")
     parser.add_argument("-d", "--debug", action="store_true",
@@ -176,12 +183,6 @@ def main():
                         help="Switch off logging information")
     FLAGS, unparsed = parser.parse_known_args()
 
-    if FLAGS.video_directory == "":
-        print("--video_directory was not passed in")
-        sys.exit(21)
-    if FLAGS.subtitle_directory == "":
-        print("--subtitle_directory was not passed in")
-        sys.exit(21)
     if FLAGS.training_output_directory == "":
         print("--training_output_directory was not passed in")
         sys.exit(21)
@@ -197,8 +198,14 @@ def main():
         from subaligner.hyperparameters import Hyperparameters
         from subaligner.embedder import FeatureEmbedder
         from subaligner.trainer import Trainer
+
         output_dir = os.path.abspath(FLAGS.training_output_directory)
         os.makedirs(FLAGS.training_output_directory, exist_ok=True)
+        if FLAGS.display_done_epochs:
+            output_dir = os.path.abspath(FLAGS.training_output_directory)
+            print("Number of epochs done: %s" % str(Trainer.get_done_epochs(os.path.join(output_dir, "training.log"))))
+            exit(0)
+
         model_dir = os.path.abspath(os.path.join(FLAGS.training_output_directory, "models", "training", "model"))
         os.makedirs(model_dir, exist_ok=True)
         weights_dir = os.path.abspath(os.path.join(FLAGS.training_output_directory, "models", "training", "weights"))
@@ -207,6 +214,12 @@ def main():
         os.makedirs(config_dir, exist_ok=True)
         video_file_paths = subtitle_file_paths = None
         if not FLAGS.resume:
+            if FLAGS.video_directory == "":
+                print("--video_directory was not passed in")
+                sys.exit(21)
+            if FLAGS.subtitle_directory == "":
+                print("--subtitle_directory was not passed in")
+                sys.exit(21)
             video_file_paths = [os.path.abspath(os.path.join(FLAGS.video_directory, p)) for p in os.listdir(FLAGS.video_directory) if not p.startswith(".")]
             subtitle_file_paths = [os.path.abspath(os.path.join(FLAGS.subtitle_directory, p)) for p in os.listdir(FLAGS.subtitle_directory) if not p.startswith(".")]
         if FLAGS.use_training_dump:

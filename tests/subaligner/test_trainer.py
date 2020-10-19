@@ -37,6 +37,9 @@ class TrainerTests(unittest.TestCase):
         self.__model_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/models/training/model"
         )
+        self.__training_log_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/training.log"
+        )
 
     def tearDown(self):
         shutil.rmtree(self.__resource_tmp)
@@ -241,11 +244,9 @@ class TrainerTests(unittest.TestCase):
         hyperparams_files = [file for file in output_files if file.endswith(".json")]
         self.assertEqual(1, len(hyperparams_files))
 
-    def test_convert_to_pb_model(self):
-        pass
-
-    def test_create_saved_model(self):
-        pass
+    def test_get_done_epochs(self):
+        assert Undertest.get_done_epochs(self.__training_log_path) == 1
+        assert Undertest.get_done_epochs("not_exist_training.log") == 0
 
 
 if __name__ == "__main__":

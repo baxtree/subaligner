@@ -225,6 +225,16 @@ class Trainer(object):
             )
         return val_loss, val_loss
 
+    @staticmethod
+    def get_done_epochs(training_log):
+        if not os.path.isfile(training_log):
+            return 0
+        epochs_done = 0
+        training_log_file = open(training_log)
+        epochs_done += sum(1 for _ in training_log_file) - 1
+        training_log_file.close()
+        return epochs_done if epochs_done >= 0 else 0
+
     def __extract_data_and_label_from_avs(
         self, av_file_paths, subtitle_file_paths
     ):
@@ -266,6 +276,7 @@ class Trainer(object):
                 for future in futures:
                     future.cancel()
                 concurrent.futures.wait(futures)
+                raise TerminalException("Training data embedding interrupted by the user")
             for future in not_done:
                 # Log undone audio files and continue
                 try:
