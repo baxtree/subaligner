@@ -14,7 +14,6 @@ tests/subaligner/resource/test_mono.wav
 tests/subaligner/training.log
 tests/subaligner/output.log
 *-output*
-*training.log*
 *output.log*
 *.prof
 *.lprof
@@ -23,10 +22,12 @@ site/source/subaligner.rst
 site/source/modules.rst
 *subaligner.egg-info*
 examples/tmp
+examples/training.log
 docs/*.html
 scripts*
 misc/tmp
 wheels*
+/training.log
 
 # Unit test / coverage reports
 htmlcov/

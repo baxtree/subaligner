@@ -251,7 +251,7 @@ def run_train_display(step):
         "-tod", step.context.training_output,
         "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
-    step.context.done_epochs = process.stdout.read().decode("utf-8") 
+    step.context.done_epochs = process.stdout.read().decode("utf-8")
 
 
 @then("it shows the done epochs equal to {done_epochs:S}")

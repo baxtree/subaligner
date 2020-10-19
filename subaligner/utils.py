@@ -161,7 +161,6 @@ class Utils(object):
         Utils.__convert_subtitle(srt_file_path, "srt", ass_file_path, "ass", "ass")
         Utils.remove_trailing_newlines(ass_file_path)
 
-
     @staticmethod
     def ass2srt(ass_file_path, srt_file_path=None):
         """Convert Advanced SubStation Alpha v4.0+ subtitles to SubRip subtitles.
@@ -258,7 +257,6 @@ class Utils(object):
 
         Utils.__convert_subtitle(srt_file_path, "srt", tmp_file_path, "tmp", "tmp")
         Utils.remove_trailing_newlines(tmp_file_path)
-
 
     @staticmethod
     def tmp2srt(tmp_file_path, srt_file_path=None):
