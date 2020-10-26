@@ -48,6 +48,12 @@ or
 
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
+For users on Windows 10: [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) is the only option at the present.
+Assume your media assets are stored under `d:\media`. Open built-in command prompt, PowerShell, or Windows Terminal and run:
+```
+docker pull baxtree/subaligner
+docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash
+```
 
 ## Usage
 ```

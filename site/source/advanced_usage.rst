@@ -94,3 +94,8 @@ flags to customise the configuration on tuning:
     -utd, --use_training_dump
         Use training dump instead of files in the video or subtitle directory
 
+**On Windows**::
+
+    docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner COMMAND
+
+The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows 10.
