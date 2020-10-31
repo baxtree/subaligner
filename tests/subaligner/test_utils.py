@@ -37,6 +37,9 @@ class UtilsTests(unittest.TestCase):
         self.__real_tmp_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
         )
+        self.__with_newlines_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/with_newlines.txt"
+        )
         self.__resource_tmp = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/tmp"
         )
@@ -46,7 +49,6 @@ class UtilsTests(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.__resource_tmp)
-        pass
 
     @patch("pycaption.CaptionConverter.write", side_effect=lambda writer: "output")
     @patch("pycaption.CaptionConverter.read")
@@ -147,6 +149,18 @@ class UtilsTests(unittest.TestCase):
         Undertest.mpl22srt(self.__real_mpl2_path, output_file_path)
 
         self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_remove_trailing_newlines(self):
+        output_file_path = os.path.join(self.__resource_tmp, "stripped.txt")
+
+        Undertest.remove_trailing_newlines(self.__with_newlines_path, output_file_path)
+
+        with open(output_file_path, "r", encoding="utf8") as file:
+            lines = file.readlines()
+            self.assertEqual(3, len(lines))
+            self.assertEqual("\n", lines[0])
+            self.assertEqual("\n", lines[1])
+            self.assertEqual("Contains two leading newlines and three trailing newlines", lines[2])
 
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):

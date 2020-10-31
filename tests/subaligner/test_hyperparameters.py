@@ -84,9 +84,13 @@ class TestHyperparameters(unittest.TestCase):
 
     def test_optimizer_setter(self):
         hyperparams = Undertest()
-        hyperparams.optimizer = "adam"
+        hyperparams.optimizer = "adadelta"
         hyperparams.optimizer = "adagrad"
-        hyperparams.optimizer = "rms"
+        hyperparams.optimizer = "adam"
+        hyperparams.optimizer = "adamax"
+        hyperparams.optimizer = "ftrl"
+        hyperparams.optimizer = "nadam"
+        hyperparams.optimizer = "rmsprop"
         hyperparams.optimizer = "sgd"
         try:
             hyperparams.optimizer = "unknown"

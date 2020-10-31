@@ -21,6 +21,7 @@ The source code can be found on GitHub: `subaligner <https://github.com/baxtree/
 
    installation
    usage
+   advanced_usage
    anatomy
    test
    acknowledgement

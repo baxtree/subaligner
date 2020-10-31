@@ -30,7 +30,8 @@ install:
   - pip install -e . --ignore-installed
 
 script:
-  - coverage run --source subaligner -m unittest discover
+  - coverage run -m unittest discover
+  - coverage combine
   - radish -b tests/integration/radish tests/integration/feature
 
 after_success:

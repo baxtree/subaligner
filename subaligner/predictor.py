@@ -55,7 +55,7 @@ class Predictor(Singleton):
             self,
             video_file_path,
             subtitle_file_path,
-            weights_dir="models/training/weights",
+            weights_dir=os.path.join(os.path.dirname(__file__), "models/training/weights"),
     ):
         """Predict time to shift with single pass
 
@@ -91,7 +91,7 @@ class Predictor(Singleton):
             self,
             video_file_path,
             subtitle_file_path,
-            weights_dir="models/training/weights",
+            weights_dir=os.path.join(os.path.dirname(__file__), "models/training/weights"),
             stretch=False,
             exit_segfail=False,
     ):
@@ -229,166 +229,6 @@ class Predictor(Singleton):
 
         return min_log_loss, min_log_loss_idx
 
-    def __predict(
-            self,
-            video_file_path,
-            subtitle_file_path,
-            weights_file_path,
-            audio_file_path=None,
-            subtitles=None,
-            max_shift_secs=None,
-            previous_gap=None,
-    ):
-        """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
-
-        Arguments:
-            video_file_path {string} -- The file path of the original video.
-            subtitle_file_path {string} -- The file path of the out-of-sync subtitles.
-            weights_file_path {string} -- The file path of the weights file.
-
-        Keyword Arguments:
-            audio_file_path {string} -- The file path of the original audio (default: {None}).
-            subtitles {list} -- The list of SubRip files (default: {None}).
-            max_shift_secs {float} -- The maximum seconds by which subtitle cues can be shifted (default: {None}).
-            previous_gap {float} -- The duration betwee the start time of the audio segment and the start time of the subtitle segment.
-
-        Returns:
-            tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
-        """
-
-        thread_name = threading.current_thread().name
-        result = {}
-        pred_start = datetime.datetime.now()
-        if audio_file_path is not None:
-            result["audio_file_path"] = audio_file_path
-        elif video_file_path is not None:
-            t = datetime.datetime.now()
-            audio_file_path = MediaHelper.extract_audio(
-                video_file_path, True, 16000
-            )
-            Predictor.__LOGGER.debug(
-                "[{}] Audio extracted after {}".format(
-                    thread_name, str(datetime.datetime.now() - t)
-                )
-            )
-            result["video_file_path"] = video_file_path
-        else:
-            raise TerminalException("Neither audio nor video is passed in")
-
-        if subtitle_file_path is not None:
-            subs = Subtitle.load(subtitle_file_path).subs
-            result["subtitle_file_path"] = subtitle_file_path
-        elif subtitles is not None:
-            subs = subtitles
-        else:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise TerminalException("Error: No subtitles passed in")
-        with self.__lock:
-            try:
-                train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
-                    audio_file_path, None, subtitles=subs
-                )
-            except TerminalException:
-                if os.path.exists(audio_file_path):
-                    os.remove(audio_file_path)
-                raise
-
-        train_data = np.array([np.rot90(val) for val in train_data])
-        train_data = train_data - np.mean(train_data, axis=0)
-        result["time_load_dataset"] = str(datetime.datetime.now() - pred_start)
-        result["X_shape"] = train_data.shape
-
-        # Load neural network
-        input_shape = (train_data.shape[1], train_data.shape[2])
-        Predictor.__LOGGER.debug("[{}] input shape: {}".format(thread_name, input_shape))
-
-        # Network class is not thread safe so a new graph is created for each thread
-        pred_start = datetime.datetime.now()
-        with self.__lock:
-            try:
-                Predictor.__LOGGER.debug("[{}] Start predicting...".format(thread_name))
-                voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
-            except Exception as e:
-                Predictor.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(thread_name, str(e), "".join(traceback.format_stack())))
-                raise TerminalException("Prediction failed") from e
-            finally:
-                del train_data
-                del labels
-                gc.collect()
-
-        if len(voice_probabilities) <= 0:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise TerminalException(
-                "Error: Audio is too short and no voice was detected"
-            )
-
-        result["time_predictions"] = str(datetime.datetime.now() - pred_start)
-
-        # for p in voice_probabilities: Predictor.__LOGGER.debug("{}, ".format(p))
-        # Predictor.__LOGGER.debug("predictions: {}".format(voice_probabilities))
-
-        original_start = FeatureEmbedder.time_to_sec(subs[0].start)
-        shifted_subs = deepcopy(subs)
-        subs.shift(seconds=-original_start)
-
-        Predictor.__LOGGER.info("[{}] Aligning subtitle with video...".format(thread_name))
-
-        with self.__lock:
-            min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-                voice_probabilities, subs
-            )
-
-        pos_to_delay = min_log_loss_pos
-        result["loss"] = min_log_loss
-
-        Predictor.__LOGGER.info("[{}] Subtitle aligned".format(thread_name))
-
-        if subtitle_file_path is not None:  # for the first pass
-            seconds_to_shift = (
-                self.__feature_embedder.pos_to_sec(pos_to_delay) - original_start
-            )
-        elif subtitles is not None:  # for each in second pass
-            seconds_to_shift = self.__feature_embedder.pos_to_sec(pos_to_delay) - previous_gap
-        else:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise ValueError("Error: No subtitles passed in")
-
-        if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise TerminalException(
-                "Average shift duration ({} secs) have been reached".format(
-                    Predictor.__MAX_SHIFT_IN_SECS
-                )
-            )
-
-        result["seconds_to_shift"] = seconds_to_shift
-        result["original_start"] = original_start
-        total_elapsed_time = str(datetime.datetime.now() - pred_start)
-        result["time_sync"] = total_elapsed_time
-        Predictor.__LOGGER.debug("[{}] Statistics: {}".format(thread_name, result))
-
-        Predictor.__LOGGER.debug("[{}] Total Time: {}".format(thread_name, total_elapsed_time))
-        Predictor.__LOGGER.debug(
-            "[{}] Seconds to shift: {}".format(thread_name, seconds_to_shift)
-        )
-
-        # For each subtitle chunk, its end time should not be later than the end time of the audio segment
-        if max_shift_secs is not None and seconds_to_shift <= max_shift_secs:
-            shifted_subs.shift(seconds=seconds_to_shift)
-        elif max_shift_secs is not None and seconds_to_shift > max_shift_secs:
-            Predictor.__LOGGER.warning(
-                "[{}] Maximum {} seconds shift has reached".format(thread_name, max_shift_secs)
-            )
-            shifted_subs.shift(seconds=max_shift_secs)
-        else:
-            shifted_subs.shift(seconds=seconds_to_shift)
-        Predictor.__LOGGER.debug("[{}] Subtitle shifted".format(thread_name))
-        return shifted_subs, audio_file_path, voice_probabilities
-
     def __predict_2nd_pass(self, audio_file_path, subs, weights_file_path, stretch, exit_segfail):
         """This function uses divide and conquer to align partial subtitle with partial video.
 
@@ -460,7 +300,7 @@ class Predictor(Singleton):
                         raise TerminalException(message) from e
                 except KeyboardInterrupt:
                     self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
-                    raise
+                    raise TerminalException("Alignment interrupted by the user")
                 else:
                     Predictor.__LOGGER.debug("Segment aligned")
                     subs_list.append(new_subs)
@@ -569,8 +409,8 @@ class Predictor(Singleton):
             sub.end = SubRipTime.coerce(new_end)
 
     def __initialise_network(self, weights_dir):
-        model_dir = os.path.join(os.path.dirname(__file__), weights_dir.replace("/weights", "/model"))
-        config_dir = os.path.join(os.path.dirname(__file__), weights_dir.replace("/weights", "/config"))
+        model_dir = weights_dir.replace("/weights", "/model")
+        config_dir = weights_dir.replace("/weights", "/config")
         files = os.listdir(model_dir)
         model_files = [
             file
@@ -625,7 +465,7 @@ class Predictor(Singleton):
             root, _ = os.path.splitext(segment_path)
             text_file_path = "{}.txt".format(root)
 
-            with open(text_file_path, "w") as text_file:
+            with open(text_file_path, "w", encoding="utf8") as text_file:
                 for sub_new in subs:
                     text_file.write(sub_new.text)
                     text_file.write(os.linesep * 2)
@@ -678,7 +518,6 @@ class Predictor(Singleton):
 
     @staticmethod
     def __get_weights_path(weights_dir):
-        weights_dir = os.path.join(os.path.dirname(__file__), weights_dir)
         files = os.listdir(weights_dir)
         weights_files = [
             file
@@ -694,9 +533,9 @@ class Predictor(Singleton):
         Predictor.__LOGGER.debug("weights files: {}".format(weights_files))
 
         # Get the first file from the file lists
-        weights_path = "{}/{}".format(weights_dir, weights_files[0])
+        weights_path = os.path.join(weights_dir, weights_files[0])
 
-        return os.path.join(os.path.dirname(__file__), weights_path)
+        return os.path.abspath(weights_path)
 
     @staticmethod
     def __normalise_seconds_to_shift(seconds_to_shift, step_sample):

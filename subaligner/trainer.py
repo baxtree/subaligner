@@ -1,6 +1,7 @@
 import datetime
 import os
 import h5py
+import threading
 import traceback
 import concurrent.futures
 import math
@@ -34,6 +35,7 @@ class Trainer(object):
         """
 
         self.__feature_embedder = feature_embedder
+        self.__lock = threading.RLock()
 
         # freeze the object after creation
         def __setattr__(self, *args):
@@ -71,13 +73,13 @@ class Trainer(object):
         """
 
         training_start = datetime.datetime.now()
-        model_filepath = "{0}/{1}".format(model_dir, "model.hdf5")
-        weights_filepath = "{0}/{1}".format(weights_dir, "weights.hdf5")
-        hyperparams_filepath = "{0}/{1}".format(config_dir, "hyperparameters.json")
+        model_filepath = os.path.join(os.path.abspath(model_dir), "model.hdf5")
+        weights_filepath = os.path.join(os.path.abspath(weights_dir), "weights.hdf5")
+        hyperparams_filepath = os.path.join(os.path.abspath(config_dir), "hyperparameters.json")
 
         if av_file_paths is None or subtitle_file_paths is None:
             # Load the data and labels dump from the disk
-            training_dump = training_dump_dir + "/training_dump.hdf5"
+            training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
             Trainer.__LOGGER.debug(
                 "Resume training on data dump: ".format(
                     training_dump
@@ -89,9 +91,13 @@ class Trainer(object):
 
                 if resume:
                     # Load hyper parameters from previous training
-                    hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
+                    loaded_hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
 
-                    network = Network.load_model_and_weights(model_filepath, weights_filepath, hyperparameters)
+                    # Update the total epochs and save hyper parameters
+                    loaded_hyperparameters.epochs = hyperparameters.epochs
+                    loaded_hyperparameters.to_file(hyperparams_filepath)
+
+                    network = Network.load_model_and_weights(model_filepath, weights_filepath, loaded_hyperparameters)
                 else:
                     # Save hyper parameters before each new training
                     hyperparameters.to_file(hyperparams_filepath)
@@ -115,7 +121,7 @@ class Trainer(object):
             )
 
             # Dump extracted data and labels to files for re-training
-            training_dump = training_dump_dir + "/training_dump.hdf5"
+            training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
             with h5py.File(training_dump, "w") as hf:
                 hf.create_dataset("train_data", data=train_data)
                 hf.create_dataset("labels", data=labels)
@@ -155,7 +161,7 @@ class Trainer(object):
         )
 
         # Save the model together with the weights after training
-        combined_filepath = "{0}/combined.hdf5".format(model_dir)
+        combined_filepath = os.path.join(os.path.abspath(model_dir), "combined.hdf5")
         network.save_model_and_weights(
             model_filepath, weights_filepath, combined_filepath
         )
@@ -176,8 +182,7 @@ class Trainer(object):
             hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
         """
 
-        # Dump extracted data and labels to files for re-training
-        training_dump = training_dump_dir + "/training_dump.hdf5"
+        training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
         if os.path.exists(training_dump):
             with h5py.File(training_dump, "r") as hf:
                 train_data_raw = hf["train_data"]
@@ -220,6 +225,16 @@ class Trainer(object):
             )
         return val_loss, val_loss
 
+    @staticmethod
+    def get_done_epochs(training_log):
+        if not os.path.isfile(training_log):
+            return 0
+        epochs_done = 0
+        training_log_file = open(training_log)
+        epochs_done += sum(1 for _ in training_log_file) - 1
+        training_log_file.close()
+        return epochs_done if epochs_done >= 0 else 0
+
     def __extract_data_and_label_from_avs(
         self, av_file_paths, subtitle_file_paths
     ):
@@ -255,19 +270,25 @@ class Trainer(object):
                 )
                 for index in range(len(av_file_paths))
             ]
-            done, not_done = concurrent.futures.wait(futures)
+            try:
+                done, not_done = concurrent.futures.wait(futures)
+            except KeyboardInterrupt:
+                for future in futures:
+                    future.cancel()
+                concurrent.futures.wait(futures)
+                raise TerminalException("Training data embedding interrupted by the user")
             for future in not_done:
                 # Log undone audio files and continue
                 try:
                     audio_file_path, subtitle_file_path = future.result()
                     Trainer.__LOGGER.error(
-                        "Data and label extraction not done: [Audio: {}, Subtitle: {}]".format(
+                        "Data and label extraction failed for: [Audio: {}, Subtitle: {}]".format(
                             audio_file_path, subtitle_file_path
                         )
                     )
                 except Exception as e:
                     Trainer.__LOGGER.error(
-                        "Unexpected exception: {} stacktrace: {}".format(
+                        "Unexpected exception during data and label extraction: {} stacktrace: {}".format(
                             str(e), "".join(traceback.format_stack())
                         )
                     )
@@ -303,14 +324,16 @@ class Trainer(object):
                 )
             else:
                 audio_file_path = av_file_path
+            with self.__lock:
+                x, y = self.__feature_embedder.extract_data_and_label_from_audio(
+                    audio_file_path,
+                    subtitle_file_path,
+                    subtitles=None,
+                    ignore_sound_effects=True,
+                )
 
-            x, y = self.__feature_embedder.extract_data_and_label_from_audio(
-                audio_file_path,
-                subtitle_file_path,
-                subtitles=None,
-                ignore_sound_effects=True,
-            )
-        # Some media are malformed and on occurring they will be logged but the expensive training process shall continue
+        # Some media file are malformed and on occurring they will be logged
+        # However, the training shall continue after expensive embedding on healthy media files.
         except (UnsupportedFormatException, TerminalException) as e:
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(

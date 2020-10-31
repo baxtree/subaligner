@@ -6,6 +6,8 @@ class Hyperparameters(object):
     """ The configuration on hyper parameters used for training
     """
 
+    OPTIMIZERS = ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rmsprop", "sgd"]
+
     def __init__(self):
         """Hyper parameters initialiser setting default values"""
 
@@ -96,16 +98,25 @@ class Hyperparameters(object):
 
     @optimizer.setter
     def optimizer(self, value):
-        if value.lower() == "adam":
-            self.__optimizer = "Adam"
+        if value not in self.OPTIMIZERS:
+            raise ValueError("Optimizer {} is not supported".format(value))
+
+        if value.lower() == "adadelta":
+            self.__optimizer = "Adadelta"
         elif value.lower() == "adagrad":
             self.__optimizer = "Adagrad"
-        elif value.lower() == "rms":
+        elif value.lower() == "adam":
+            self.__optimizer = "Adam"
+        elif value.lower() == "adamax":
+            self.__optimizer = "Adamax"
+        elif value.lower() == "ftrl":
+            self.__optimizer = "Ftrl"
+        elif value.lower() == "nadam":
+            self.__optimizer = "Nadam"
+        elif value.lower() == "rmsprop":
             self.__optimizer = "RMSprop"
         elif value.lower() == "sgd":
             self.__optimizer = "SGD"
-        else:
-            raise ValueError("Optimizer {} is not supported".format(value))
 
     @property
     def loss(self):

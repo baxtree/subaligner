@@ -5,18 +5,18 @@ import psutil
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.optimizers as tf_optimizers
-
 from tensorflow.keras.layers import (
     Dense,
     Input,
     LSTM,
     Conv1D,
+    MaxPooling1D,
     Dropout,
     Activation,
     BatchNormalization,
     Bidirectional,
-    Flatten,
 )
+
 from tensorflow.keras.callbacks import (
     EarlyStopping,
     ModelCheckpoint,
@@ -27,6 +27,8 @@ from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras import backend as K
 from .utils import Utils
+from .logger import Logger
+from .exception import TerminalException
 Utils.suppress_lib_logs()
 
 
@@ -36,10 +38,13 @@ class Network(object):
     Only factory methods are allowed when generating DNN objects.
     """
 
+    LSTM = "lstm"
+    BI_LSTM = "bi_lstm"
+    CONV_1D = "conv_1d"
+    TYPES = [LSTM, BI_LSTM, CONV_1D]
+
+    __LOGGER = Logger().get_logger(__name__)
     __secret = object()
-    __LSTM = "lstm"
-    __BI_LSTM = "bi_lstm"
-    __CONV_1D = "conv_1d"
     __UNKNOWN = "unknown"
 
     def __init__(
@@ -69,17 +74,17 @@ class Network(object):
 
         Network.__set_keras_backend(backend)
 
-        if hyperparameters.network_type == Network.__LSTM:
+        if hyperparameters.network_type == Network.LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
                 input_shape, hyperparameters
             )
-        if hyperparameters.network_type == Network.__BI_LSTM:
+        if hyperparameters.network_type == Network.BI_LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
                 input_shape, hyperparameters, is_bidirectional=True
             )
-        if hyperparameters.network_type == Network.__CONV_1D:
+        if hyperparameters.network_type == Network.CONV_1D:
             self.__input_shape = input_shape
             self.__model = self.__conv1d(
                 input_shape, hyperparameters
@@ -282,20 +287,26 @@ class Network(object):
             training_log_file = open(training_log)
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
-            assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
-
-        hist = self.__model.fit(
-            train_data,
-            labels,
-            epochs=self.hyperparameters.epochs,
-            batch_size=self.hyperparameters.batch_size,
-            shuffle=True,
-            validation_split=self.hyperparameters.validation_split,
-            verbose=1,
-            callbacks=callbacks_list,
-            initial_epoch=initial_epoch,
-        )
-        save_model(self.__model, model_filepath)
+            assert self.hyperparameters.epochs > initial_epoch, \
+                "The existing model has been trained for {0} epochs. Make sure the total epochs are larger than {0}".format(initial_epoch)
+        try:
+            hist = self.__model.fit(
+                train_data,
+                labels,
+                epochs=self.hyperparameters.epochs,
+                batch_size=self.hyperparameters.batch_size,
+                shuffle=True,
+                validation_split=self.hyperparameters.validation_split,
+                verbose=1,
+                callbacks=callbacks_list,
+                initial_epoch=initial_epoch,
+            )
+        except KeyboardInterrupt:
+            Network.__LOGGER.warning("Training interrupted by the user")
+            raise TerminalException("Training interrupted by the user")
+        finally:
+            save_model(self.__model, model_filepath)
+            Network.__LOGGER.warning("Model saved to %s" % model_filepath)
 
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
@@ -326,7 +337,11 @@ class Network(object):
         initial_epoch = 0
         batch_size = self.hyperparameters.batch_size
         validation_split = self.hyperparameters.validation_split
-        csv_logger = CSVLogger(training_log)
+        csv_logger = (
+            CSVLogger(training_log)
+            if not resume
+            else CSVLogger(training_log, append=True)
+        )
         checkpoint = ModelCheckpoint(
             filepath=weights_filepath,
             monitor=self.hyperparameters.monitor,
@@ -362,24 +377,31 @@ class Network(object):
             training_log_file = open(training_log)
             initial_epoch += sum(1 for _ in training_log_file) - 1
             training_log_file.close()
-            assert self.hyperparameters.epochs > initial_epoch, "Existing model has been trained for {} epochs".format(initial_epoch)
+            assert self.hyperparameters.epochs > initial_epoch, \
+                "The existing model has been trained for {0} epochs. Make sure the total epochs are larger than {0}".format(initial_epoch)
 
         train_generator = self.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=False)
         test_generator = self.__generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation=True)
         steps_per_epoch = math.ceil(float(train_data_raw.shape[0]) * (1 - validation_split) / batch_size)
         validation_steps = math.ceil(float(train_data_raw.shape[0]) * validation_split / batch_size)
 
-        hist = self.__model.fit(
-            train_generator,
-            steps_per_epoch=steps_per_epoch,
-            validation_data=test_generator,
-            validation_steps=validation_steps,
-            epochs=self.hyperparameters.epochs,
-            shuffle=False,
-            callbacks=callbacks_list,
-            initial_epoch=initial_epoch,
-        )
-        self.__model.save(model_filepath)
+        try:
+            hist = self.__model.fit(
+                train_generator,
+                steps_per_epoch=steps_per_epoch,
+                validation_data=test_generator,
+                validation_steps=validation_steps,
+                epochs=self.hyperparameters.epochs,
+                shuffle=False,
+                callbacks=callbacks_list,
+                initial_epoch=initial_epoch,
+            )
+        except KeyboardInterrupt:
+            Network.__LOGGER.warning("Training interrupted by the user")
+            raise TerminalException("Training interrupted by the user")
+        finally:
+            self.__model.save(model_filepath)
+            Network.__LOGGER.warning("Model saved to %s" % model_filepath)
 
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
@@ -514,9 +536,10 @@ class Network(object):
         hidden = BatchNormalization()(inputs)
 
         for nodes in hyperparameters.front_hidden_size:
-            hidden = Conv1D(filters=nodes, kernel_size=3, activation="relu")(
-                hidden
-            )
+            hidden = Conv1D(filters=nodes, kernel_size=2, activation="relu", input_shape=hidden.shape[1:])(hidden)
+            hidden = MaxPooling1D(pool_size=1)(hidden)
+            hidden = BatchNormalization()(hidden)
+            hidden = Dropout(hyperparameters.dropout)(hidden)
 
         for nodes in hyperparameters.back_hidden_size:
             hidden = Dense(nodes)(hidden)

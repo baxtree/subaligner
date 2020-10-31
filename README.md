@@ -22,6 +22,11 @@ $ pip install subaligner
 ```
 or
 ```
+# Install via pipx
+pipx install subaligner
+```
+or
+```
 # Install from GitHub via Pipenv
 ...
 [packages]
@@ -43,6 +48,12 @@ or
 
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
+For users on Windows 10: [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) is the only option at the present.
+Assume your media assets are stored under `d:\media`. Open built-in command prompt, PowerShell, or Windows Terminal and run:
+```
+docker pull baxtree/subaligner
+docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash
+```
 
 ## Usage
 ```
@@ -55,13 +66,18 @@ $ subaligner_1pass -v video.mp4 -s subtitle.srt
 
 $ subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
-or 
+or
 ```
 # Pass in single-stage or dual-stage as the alignment mode
 
 $ subaligner -m single -v video.mp4 -s subtitle.srt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt
+```
+```
+# Run alignments with pipx
 
+$ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
+$ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
 ```
 ```
 # Run the module as a script
@@ -83,7 +99,14 @@ The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI
 ## Supported Formats
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2 and TMP
 
-Video: MP4, WebM, Ogg, 3GP, FLV and MOV 
+Video: MP4, WebM, Ogg, 3GP, FLV and MOV
+
+## Advanced Usage
+You can train a new model with your own audiovisual files and subtitle files:
+```
+$ subaligner_train -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY
+```
+Then you can apply it to your subtitle synchronisation with the aforementioned commands. For more details on how to train and tune your own model, please refer to [Subaligner Docs](https://subaligner.readthedocs.io/en/latest/advanced_usage.html).
 
 ## Anatomy
 Subtitles can be out of sync with their companion audiovisual media files for a variety of causes including latency introduced by Speech-To-Text on live streams or calibration and rectification involving human intervention during post-production.

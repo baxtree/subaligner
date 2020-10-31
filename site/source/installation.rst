@@ -18,6 +18,10 @@ Installation
     $ pip install numpy
     $ pip install subaligner
 
+**Install Subaligner via pipx**::
+
+    $ pipx install subaligner
+
 **Install from GitHub via Pipenv**::
 
     ...
@@ -40,9 +44,18 @@ to create a virtual environment and set up all the dependencies:
     $ cd subaligner
     $ make install && source .venv/bin/activate
 
-**subaligner_1pass, subaligner_2pass and subaligner should be on your PATH now**::
+**Subaligner CLI should be on your PATH now**::
 
+    (.venv) $ subaligner --help
     (.venv) $ subaligner_1pass --help
     (.venv) $ subaligner_2pass --help
-    (.venv) $ subaligner --help
+    (.venv) $ subaligner_train --help
+    (.venv) $ subaligner_tune --help
 
+**On Windows**::
+
+    docker pull baxtree/subaligner
+    docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash
+
+Assume your media assets are stored under "d:\\media". Open built-in command prompt, PowerShell, or Windows Terminal and run the above.
+`Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ is the only option at the present for Windows users.

@@ -29,6 +29,11 @@ Make sure you have got the virtual environment activated upfront.
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
 
+**Run alignments with pipx**::
+
+    $ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
+    $ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
+
 **Run the module as a script**::
 
     $ python -m subaligner -m single -v video.mp4 -s subtitle.srt
@@ -49,3 +54,9 @@ Currently the stretching is experimental and only works for speech and subtitles
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
     or
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
+
+**On Windows**::
+
+    docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner COMMAND
+
+The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows 10.
