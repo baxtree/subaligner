@@ -9,7 +9,7 @@ SPHINXAPIDOC  ?= sphinx-apidoc
 SOURCEDIR     = source
 BUILDDIR      = build
 INCLUDED      = ../subaligner
-EXCLUDED      = ../subaligner/models
+EXCLUDED      = ../subaligner/subaligner_*
 
 
 # Put it first so that "make" without argument is like "make help".

@@ -122,7 +122,7 @@ class MediaHelperTests(unittest.TestCase):
             self.fail("Should have thrown exception")
 
     @patch("subprocess.Popen.communicate", side_effect=KeyboardInterrupt)
-    def test_throw_exception_on_extract_audio_timeout(self, mock_communicate):
+    def test_throw_exception_on_extract_audio_interrupted(self, mock_communicate):
         try:
             Undertest.extract_audio(self.__video_file_path)
         except Exception as e:

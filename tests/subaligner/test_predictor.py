@@ -2,9 +2,10 @@ import unittest
 import os
 import sys
 
+from concurrent.futures._base import Future
 from mock import patch
-from subaligner.predictor import Predictor as Undertest
 from subaligner.exception import TerminalException
+from subaligner.predictor import Predictor as Undertest
 
 
 class PredictorTests(unittest.TestCase):
@@ -206,6 +207,20 @@ class PredictorTests(unittest.TestCase):
             self.assertTrue(mock_time_to_sec.called)
             self.assertTrue(isinstance(e, TerminalException))
             self.assertTrue("At least one of the segments failed on alignment. Exiting..." in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("concurrent.futures._base.Future.result", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_predict_interrupted(self, mock_result):
+        try:
+            undertest_obj = Undertest(n_mfcc=20)
+            undertest_obj.predict_dual_pass(
+                self.__video_file_path, self.__srt_file_path, self.__weights_dir
+            )
+        except Exception as e:
+            self.assertTrue(mock_result.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("interrupted" in str(e))
         else:
             self.fail("Should have thrown exception")
 

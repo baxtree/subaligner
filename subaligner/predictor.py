@@ -168,8 +168,7 @@ class Predictor(Singleton):
         return result
 
     def get_min_log_loss_and_index(self, voice_probabilities, subs):
-        """Returns the minimum loss value and its shift position
-        after going through all possible shifts.
+        """Returns the minimum loss value and its shift position after going through all possible shifts.
             Arguments:
                 voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
                 subs {list} -- A list of subtitle segments.

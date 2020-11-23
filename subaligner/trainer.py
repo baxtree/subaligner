@@ -275,7 +275,7 @@ class Trainer(object):
             except KeyboardInterrupt:
                 for future in futures:
                     future.cancel()
-                concurrent.futures.wait(futures)
+                # concurrent.futures.wait(futures)
                 raise TerminalException("Training data embedding interrupted by the user")
             for future in not_done:
                 # Log undone audio files and continue

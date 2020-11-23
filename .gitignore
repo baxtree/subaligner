@@ -28,6 +28,7 @@ scripts*
 misc/tmp
 wheels*
 /training.log
+site/source/subaligner.subaligner_*.rst
 
 # Unit test / coverage reports
 htmlcov/

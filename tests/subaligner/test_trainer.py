@@ -1,9 +1,12 @@
 import unittest
 import os
 import shutil
+import concurrent.futures
 from subaligner.embedder import FeatureEmbedder
 from subaligner.hyperparameters import Hyperparameters
 from subaligner.trainer import Trainer as Undertest
+from subaligner.exception import TerminalException
+from mock import patch
 
 
 class TrainerTests(unittest.TestCase):
@@ -247,6 +250,26 @@ class TrainerTests(unittest.TestCase):
     def test_get_done_epochs(self):
         assert Undertest.get_done_epochs(self.__training_log_path) == 1
         assert Undertest.get_done_epochs("not_exist_training.log") == 0
+
+    @patch("concurrent.futures.wait", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_training_interrupted(self, mock_wait):
+        try:
+            Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
+                [self.__video_file_path, self.__video_file_path],
+                [self.__srt_file_path, self.__srt_file_path],
+                model_dir=self.__resource_tmp,
+                weights_dir=self.__resource_tmp,
+                config_dir=self.__resource_tmp,
+                logs_dir=self.__resource_tmp,
+                training_dump_dir=self.__resource_tmp,
+                hyperparameters=self.__hyperparameters,
+            )
+        except Exception as e:
+            self.assertTrue(mock_wait.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("interrupted" in str(e))
+        else:
+            self.fail("Should have thrown exception")
 
 
 if __name__ == "__main__":

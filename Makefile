@@ -90,10 +90,6 @@ pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.subtitle; mv subaligner.subtitle.html docs
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.logger; mv subaligner.logger.html docs
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.exception; mv subaligner.exception.html docs
-	.$(PYTHON)/bin/python -m pydoc -w subaligner.models; mv subaligner.models.html docs
-	.$(PYTHON)/bin/python -m pydoc -w subaligner.models.training; mv subaligner.models.training.html docs
-	.$(PYTHON)/bin/python -m pydoc -w subaligner.models.training.model; mv subaligner.models.training.model.html docs
-	.$(PYTHON)/bin/python -m pydoc -w subaligner.models.training.weights; mv subaligner.models.training.weights.html docs
 	.$(PYTHON)/bin/python -m pydoc -w subaligner._version; mv subaligner._version.html docs
 	$(BROWSER) docs/index.html
 
@@ -114,13 +110,16 @@ manual: clean-manual ## generate manual pages
 	SPHINXAPIDOC=../.$(PYTHON)/bin/sphinx-apidoc SPHINXBUILD=../.$(PYTHON)/bin/sphinx-build make -C ./site html
 	$(BROWSER) ./site/build/html/index.html
 
-dist: clean-dist
+test-dist:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
+	.$(PYTHON)/bin/pip install -e . --use-feature=2020-resolver; \
+
+dist: clean-dist test-dist
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/python setup.py sdist bdist_wheel bdist_egg
 
-release: dist
+release:
 	.$(PYTHON)/bin/twine upload dist/*
 
 pipenv-install:
