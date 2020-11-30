@@ -172,7 +172,7 @@ class UtilsTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired("", 1.0))
     def test_throw_exception_on_srt2vtt_timeout(self, mock_communicate):
         try:
             Undertest.srt2vtt(self.__real_srt_path, "output")
@@ -202,7 +202,7 @@ class UtilsTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired("", 1.0))
     def test_throw_exception_on_vtt2srt_timeout(self, mock_communicate):
         try:
             Undertest.vtt2srt(self.__real_vtt_path, "output")

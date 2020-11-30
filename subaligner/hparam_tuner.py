@@ -2,6 +2,7 @@ import hyperopt
 import numpy as np
 from hyperopt import hp
 from hyperopt.pyll.base import scope
+from typing import List, Dict
 from .trainer import Trainer
 from .embedder import FeatureEmbedder
 from .hyperparameters import Hyperparameters
@@ -22,12 +23,12 @@ class HyperParameterTuner(object):
     }
 
     def __init__(self,
-                 av_file_paths,
-                 subtitle_file_paths,
-                 training_dump_dir,
-                 num_of_trials=5,
-                 tuning_epochs=5,
-                 network_type=Network.LSTM):
+                 av_file_paths: List[str],
+                 subtitle_file_paths: List[str],
+                 training_dump_dir: str,
+                 num_of_trials: int = 5,
+                 tuning_epochs: int = 5,
+                 network_type: str = Network.LSTM):
         """Hyper parameter tuner initialiser
 
         Arguments:
@@ -55,11 +56,11 @@ class HyperParameterTuner(object):
         self.__original_epochs = self.__hyperparameters.epochs
 
     @property
-    def hyperparameters(self):
+    def hyperparameters(self) -> Hyperparameters:
         self.__hyperparameters.epochs = self.__original_epochs
         return self.__hyperparameters.clone()
 
-    def tune_hyperparameters(self):
+    def tune_hyperparameters(self) -> None:
         """Tune the hyper parameters"""
 
         trials = hyperopt.Trials()
@@ -78,7 +79,7 @@ class HyperParameterTuner(object):
             else:
                 setattr(self.__hyperparameters, key, value)
 
-    def __get_val_loss(self, params):
+    def __get_val_loss(self, params: Dict) -> Dict:
         for key, value in params.items():
             if key == "front_hidden_size":
                 self.__hyperparameters.front_hidden_size = list(value)

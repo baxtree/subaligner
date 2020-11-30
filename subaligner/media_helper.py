@@ -7,8 +7,9 @@ import shutil
 import atexit
 import signal
 
+from typing import Optional, Tuple, List
 from copy import deepcopy
-from pysrt import SubRipFile
+from pysrt import SubRipFile, SubRipItem
 from decimal import Decimal
 from .embedder import FeatureEmbedder
 from .exception import TerminalException
@@ -41,7 +42,7 @@ class MediaHelper(object):
     signal.signal(signal.SIGTERM, clear_temp)
 
     @staticmethod
-    def extract_audio(video_file_path, decompress=False, freq=16000):
+    def extract_audio(video_file_path, decompress: bool = False, freq: int = 16000) -> str:
         """Extract audio track from the video file and save it to a WAV file.
 
         Arguments:
@@ -132,7 +133,7 @@ class MediaHelper(object):
                 os.system("stty sane")
 
     @staticmethod
-    def get_duration_in_seconds(start, end):
+    def get_duration_in_seconds(start: Optional[str], end: Optional[str]) -> Optional[float]:
         """Get the duration in seconds between a start time and an end time.
 
         Arguments:
@@ -157,7 +158,7 @@ class MediaHelper(object):
         )
 
     @staticmethod
-    def extract_audio_from_start_to_end(audio_file_path, start, end=None):
+    def extract_audio_from_start_to_end(audio_file_path: str, start: str, end: Optional[str] = None) -> Tuple[str, Optional[float]]:
         """Extract audio based on the start time and the end time and save it to a temporary file.
 
         Arguments:
@@ -249,7 +250,7 @@ class MediaHelper(object):
                 os.system("stty sane")
 
     @staticmethod
-    def get_audio_segment_starts_and_ends(subs):
+    def get_audio_segment_starts_and_ends(subs: List[SubRipItem]) -> Tuple[List[str], List[str], List[SubRipFile]]:
         """Group subtitle cues into larger segments in terms of silence gaps.
 
         Arguments:
@@ -303,7 +304,7 @@ class MediaHelper(object):
         return segment_starts, segment_ends, new_subs
 
     @staticmethod
-    def get_frame_rate(file_path):
+    def get_frame_rate(file_path: str) -> float:
         """Extract the video frame rate. Will return 25 when input is audio
 
         Arguments:
@@ -367,7 +368,7 @@ class MediaHelper(object):
                     os.system("stty sane")
 
     @staticmethod
-    def __preprocess_subs(subs):
+    def __preprocess_subs(subs: List[SubRipItem]) -> List[SubRipItem]:
         local_subs = deepcopy(subs)
 
         # Preprocess overlapping subtitles

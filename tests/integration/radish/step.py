@@ -4,7 +4,7 @@ import subprocess
 import os
 import tempfile
 import shutil
-from radish import given, when, then, before, after
+from radish import given, when, then, before, after  # type: ignore
 
 PWD = os.path.dirname(os.path.realpath(__file__))
 WAIT_TIMEOUT_IN_SECONDS = 300
@@ -59,7 +59,7 @@ def run_subaligner_with_output(step, aligner, mode, file_name):
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and with exit_segfail")
-def run_subaligner_without_stretch(step, aligner, mode):
+def run_subaligner_with_exit_segfail(step, aligner, mode):
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -99,7 +99,7 @@ def run_subaligner_without_stretch(step, aligner, mode):
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and a custom model")
-def run_subaligner(step, aligner, mode):
+def run_subaligner_with_custom_model(step, aligner, mode):
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -170,7 +170,7 @@ def expect_help_information(step, aligner):
 
 
 @then("the dual-stage help information is displayed")
-def expect_help_information(step):
+def expect_dual_stage_help_information(step):
     assert "usage: subaligner_2pass" in step.context.stdout
 
 

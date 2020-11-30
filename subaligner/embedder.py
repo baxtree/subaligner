@@ -2,6 +2,8 @@ import librosa
 import gc
 import numpy as np
 from datetime import datetime, timedelta
+from pysrt import SubRipTime, SubRipFile
+from typing import Tuple
 from .singleton import Singleton
 from .subtitle import Subtitle
 from .exception import UnsupportedFormatException, TerminalException
@@ -16,11 +18,11 @@ class FeatureEmbedder(Singleton):
 
     def __init__(
         self,
-        n_mfcc=13,
-        frequency=16000,
-        hop_len=512,
-        step_sample=0.04,
-        len_sample=0.075,
+        n_mfcc: int = 13,
+        frequency: int = 16000,
+        hop_len: int = 512,
+        step_sample: float = 0.04,
+        len_sample: float = 0.075,
     ):
         """Feature embedder initialiser.
 
@@ -53,7 +55,7 @@ class FeatureEmbedder(Singleton):
             raise NotImplementedError("Cannot modify the immutable object")
 
     @property
-    def n_mfcc(self):
+    def n_mfcc(self) -> int:
         """Get the number of MFCC components.
 
         Returns:
@@ -63,7 +65,7 @@ class FeatureEmbedder(Singleton):
         return self.__n_mfcc
 
     @property
-    def frequency(self):
+    def frequency(self) -> int:
         """Get the sample rate.
 
         Returns:
@@ -73,7 +75,7 @@ class FeatureEmbedder(Singleton):
         return self.__frequency
 
     @property
-    def hop_len(self):
+    def hop_len(self) -> int:
         """Get the number of samples per frame.
 
         Returns:
@@ -83,17 +85,17 @@ class FeatureEmbedder(Singleton):
         return self.__hop_len
 
     @property
-    def step_sample(self):
+    def step_sample(self) -> float:
         """The space (in seconds) between the begining of each sample.
 
         Returns:
-            int -- The space (in seconds) between the begining of each sample.
+            float -- The space (in seconds) between the begining of each sample.
         """
 
         return self.__step_sample
 
-    @ step_sample.setter
-    def step_sample(self, step_sample):
+    @step_sample.setter
+    def step_sample(self, step_sample: int) -> None:
         """Configure the step sample
 
         Arguments:
@@ -103,17 +105,17 @@ class FeatureEmbedder(Singleton):
         self.__step_sample = step_sample
 
     @property
-    def len_sample(self):
+    def len_sample(self) -> float:
         """Get the length in seconds for the input samples.
 
         Returns:
-            int -- The length in seconds for the input samples.
+            float -- The length in seconds for the input samples.
         """
 
         return self.__item_time
 
     @classmethod
-    def time_to_sec(cls, pysrt_time):
+    def time_to_sec(cls, pysrt_time: SubRipTime) -> float:
         """Convert timestamp to seconds.
 
         Arguments:
@@ -136,7 +138,7 @@ class FeatureEmbedder(Singleton):
 
         return round(total_sec, 3)
 
-    def get_len_mfcc(self):
+    def get_len_mfcc(self) -> float:
         """Get the number of samples to get LEN_SAMPLE: LEN_SAMPLE/(HOP_LEN/FREQUENCY).
 
         Returns:
@@ -145,16 +147,16 @@ class FeatureEmbedder(Singleton):
 
         return self.__len_sample / (self.__hop_len / self.__frequency)
 
-    def get_step_mfcc(self):
+    def get_step_mfcc(self) -> float:
         """Get the number of samples to get STEP_SAMPLE: STEP_SAMPLE/(HOP_LEN/FREQUENCY).
 
         Returns:
-            flaot -- The number of samples.
+            float -- The number of samples.
         """
 
         return self.__step_sample / (self.__hop_len / self.__frequency)
 
-    def time_to_pos(self, pysrt_time):
+    def time_to_position(self, pysrt_time: SubRipTime) -> int:
         """Return a cell position from timestamp.
 
         Arguments:
@@ -170,7 +172,7 @@ class FeatureEmbedder(Singleton):
             ) / self.get_step_mfcc()
         )
 
-    def sec_to_pos(self, seconds):
+    def duration_to_position(self, seconds: float) -> int:
         """Return the cell position from a time in seconds.
 
         Arguments:
@@ -184,22 +186,21 @@ class FeatureEmbedder(Singleton):
             (float(self.__frequency * seconds) / self.__hop_len) / self.get_step_mfcc()
         )
 
-    # Return cell position from timestamp
-    def pos_to_sec(self, position):
+    def position_to_duration(self, position: int) -> float:
         """Return the time in seconds from a cell position.
 
         Arguments:
             position {int} -- The cell position.
 
         Returns:
-            int -- The number of seconds.
+            float -- The number of seconds.
         """
 
         return (
             float(position) * self.get_step_mfcc() * self.__hop_len
         ) / self.__frequency
 
-    def pos_to_time_str(self, position):
+    def position_to_time_str(self, position: int) -> str:
         """Return the time string from a cell position.
 
         Arguments:
@@ -241,11 +242,11 @@ class FeatureEmbedder(Singleton):
 
     def extract_data_and_label_from_audio(
         self,
-        audio_file_path,
-        subtitle_file_path,
-        subtitles=None,
-        ignore_sound_effects=False,
-    ):
+        audio_file_path: str,
+        subtitle_file_path: str,
+        subtitles: SubRipFile = None,
+        ignore_sound_effects: bool = False,
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """Generate a train dataset from an audio file and its subtitles
 
         Arguments:
@@ -335,14 +336,13 @@ class FeatureEmbedder(Singleton):
         labels = np.zeros(len(train_data))
         for sub in subs:
             for i in np.arange(
-                self.time_to_pos(sub.start), self.time_to_pos(sub.end) + 1
+                self.time_to_position(sub.start), self.time_to_position(sub.end) + 1
             ):
                 if i < len(labels):
                     labels[i] = 1
 
         label_extraction_time = datetime.now() - t
 
-        total_time = datetime.now() - total_time
         FeatureEmbedder.__LOGGER.debug(
             "----- Feature Embedding Metrics --------"
         )
@@ -359,7 +359,7 @@ class FeatureEmbedder(Singleton):
             "| Label extraction time: {}".format(str(label_extraction_time))
         )
         FeatureEmbedder.__LOGGER.debug(
-            "| Total time: {}".format(str(total_time))
+            "| Total time: {}".format(str(datetime.now() - total_time))
         )
         FeatureEmbedder.__LOGGER.debug(
             "----------------------------------------"
