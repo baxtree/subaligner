@@ -1,6 +1,8 @@
 import os
 import subprocess
 import pysubs2
+import requests
+import shutil
 
 from typing import Optional, TextIO, BinaryIO, Union
 from pycaption import (
@@ -292,6 +294,13 @@ class Utils(object):
         else:
             with open(source_file_path, "w", encoding="utf8") as file:
                 file.write(content.rstrip())
+
+    @staticmethod
+    def download_file(remote_file_url: str, local_file_path: str) -> str:
+        r = requests.get(remote_file_url, verify=True, stream=True)
+        r.raw.decode_content = True
+        with open(local_file_path, "wb") as file:
+            shutil.copyfileobj(r.raw, file)
 
     @staticmethod
     def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> str:

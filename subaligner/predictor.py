@@ -94,6 +94,7 @@ class Predictor(Singleton):
             subtitle_file_path: str,
             weights_dir: str = os.path.join(os.path.dirname(__file__), "models/training/weights"),
             stretch: bool = False,
+            stretch_in_lang: str = "eng",
             exit_segfail: bool = False,
     ) -> Tuple[List[SubRipItem], List[SubRipItem], List[float], Optional[float]]:
         """Predict time to shift with single pass
@@ -103,6 +104,7 @@ class Predictor(Singleton):
             subtitle_file_path {string} -- The path to the subtitle file.
             weights_dir {string} -- The the model weights directory.
             stretch {bool} -- True to stretch the subtitle segments (default: {False})
+            stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
             exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
@@ -118,7 +120,12 @@ class Predictor(Singleton):
                 video_file_path, subtitle_file_path, weights_file_path
             )
             new_subs = self.__predict_2nd_pass(
-                audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch, exit_segfail=exit_segfail
+                audio_file_path,
+                subs,
+                weights_file_path=weights_file_path,
+                stretch=stretch,
+                stretch_in_lang=stretch_in_lang,
+                exit_segfail=exit_segfail,
             )
             try:
                 frame_rate = MediaHelper.get_frame_rate(video_file_path)
@@ -229,7 +236,7 @@ class Predictor(Singleton):
 
         return min_log_loss, min_log_loss_idx
 
-    def __predict_2nd_pass(self, audio_file_path: str, subs: List[SubRipItem], weights_file_path: str, stretch: bool, exit_segfail: bool) -> List[SubRipItem]:
+    def __predict_2nd_pass(self, audio_file_path: str, subs: List[SubRipItem], weights_file_path: str, stretch: bool, stretch_in_lang: str, exit_segfail: bool) -> List[SubRipItem]:
         """This function uses divide and conquer to align partial subtitle with partial video.
 
         Arguments:
@@ -237,6 +244,7 @@ class Predictor(Singleton):
             subs {list} -- A list of SubRip files.
             weights_file_path {string} --  The file path of the weights file.
             stretch {bool} -- True to stretch the subtitle segments.
+            stretch_in_lang {str} -- The language used for stretching subtitles.
             exit_segfail {bool} -- True to exit on any segment alignment failures.
         """
 
@@ -278,6 +286,7 @@ class Predictor(Singleton):
                     subs,
                     subs_copy,
                     stretch,
+                    stretch_in_lang,
                     exit_segfail
                 )
                 for i in range(len(segment_starts))
@@ -321,6 +330,7 @@ class Predictor(Singleton):
             subs: List[SubRipItem],
             subs_copy: List[SubRipItem],
             stretch: bool,
+            stretch_in_lang: str,
             exit_segfail: bool,
     ) -> List[SubRipItem]:
         thread_name = threading.current_thread().name
@@ -364,7 +374,7 @@ class Predictor(Singleton):
             gc.collect()
 
             if stretch:
-                subs_new = self.__adjust_durations(subs_new, audio_file_path)
+                subs_new = self.__adjust_durations(subs_new, audio_file_path, stretch_in_lang)
                 Predictor.__LOGGER.info("[{}] Segment {} stretched".format(thread_name, segment_index))
             return subs_new
         except Exception as e:
@@ -441,7 +451,7 @@ class Predictor(Singleton):
             hyperparams = Hyperparameters.from_file(hyperparams_path)
             self.__network = Network.get_from_model(model_path, hyperparams)
 
-    def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str) -> List[SubRipItem]:
+    def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str, stretch_in_lang: str) -> List[SubRipItem]:
         from aeneas.executetask import ExecuteTask
         from aeneas.task import Task
         from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -449,7 +459,7 @@ class Predictor(Singleton):
 
         # Initialise a DTW alignment task
         task_config_string = (
-            "task_language=eng|os_task_file_format=srt|is_text_type=subtitles"
+            "task_language={}|os_task_file_format=srt|is_text_type=subtitles".format(stretch_in_lang)
         )
         runtime_config_string = "dtw_algorithm=stripe"  # stripe or exact
         task = Task(config_string=task_config_string)

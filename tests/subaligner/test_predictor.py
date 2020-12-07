@@ -141,7 +141,25 @@ class PredictorTests(unittest.TestCase):
         )
         stretched = False
         for index, sub in enumerate(new_subs):
-            if (sub.duration != subs[index].duration):
+            if sub.duration != subs[index].duration:
+                stretched = True
+                break
+
+        self.assertGreater(len(new_subs), 0)
+        self.assertEqual(len(new_subs), len(subs))
+        self.assertTrue(stretched)
+        self.assertGreater(len(voice_probabilities), 0)
+        self.assertEqual(24.0, frame_rate)
+
+    def test_predict_dual_pass_with_specified_language(self):
+        undertest_obj = Undertest(n_mfcc=20)
+
+        new_subs, subs, voice_probabilities, frame_rate = undertest_obj.predict_dual_pass(
+            self.__video_file_path, self.__srt_file_path, self.__weights_dir, stretch=True, stretch_in_lang="zho"
+        )
+        stretched = False
+        for index, sub in enumerate(new_subs):
+            if sub.duration != subs[index].duration:
                 stretched = True
                 break
 
@@ -171,12 +189,6 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(min_log_loss, 0)
         self.assertGreaterEqual(min_log_loss_pos, 0)
         self.assertEqual(24.0, frame_rate)
-
-    def test_housekeeping_on_exceptions(self):
-        pass
-
-    def test_throw_terminal_exception_on_unmatched_audio_subtitle_durations(self):
-        pass
 
     def test_throw_terminal_exception_on_missing_video(self):
         try:

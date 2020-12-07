@@ -12,12 +12,18 @@ WAIT_TIMEOUT_IN_SECONDS = 300
 
 @given('I have a video file "{file_name:S}"')
 def video_file(step, file_name):
-    step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+    if file_name.lower().startswith("http"):
+        step.context.video_file_path = file_name
+    else:
+        step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
 @given('I have a subtitle file "{file_name:S}"')
 def subtitle_file(step, file_name):
-    step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+    if file_name.lower().startswith("http"):
+        step.context.subtitle_file_path = file_name
+    else:
+        step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage")
@@ -86,6 +92,7 @@ def run_subaligner_without_stretch(step, aligner, mode):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_file_path,
             "-so",
+            "-sil", "eng",
             "-q"], shell=False)
     else:
         process = subprocess.Popen([
@@ -94,6 +101,7 @@ def run_subaligner_without_stretch(step, aligner, mode):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_file_path,
             "-so",
+            "-sil", "eng",
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
