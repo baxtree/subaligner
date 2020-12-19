@@ -86,7 +86,7 @@ def setup(app):
             from sphinx.ext.apidoc import main as apidoc_main
             cur_dir = os.path.abspath(os.path.dirname(__file__))
             included_module = "../../subaligner"
-            excluded_module = "../../subaligner/subaligner_*"
+            excluded_module = "../../subaligner/models"
             apidoc_main(["-e", "-o", cur_dir, included_module, excluded_module, "--force"])
         app.connect("builder-inited", run_apidoc)
     else:

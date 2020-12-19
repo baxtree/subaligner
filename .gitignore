@@ -20,6 +20,7 @@ tests/subaligner/output.log
 site/build
 site/source/subaligner.rst
 site/source/modules.rst
+site/source/subaligner.subaligner_*.rst
 *subaligner.egg-info*
 examples/tmp
 examples/training.log
@@ -28,7 +29,6 @@ scripts*
 misc/tmp
 wheels*
 /training.log
-site/source/subaligner.subaligner_*.rst
 
 # Unit test / coverage reports
 htmlcov/

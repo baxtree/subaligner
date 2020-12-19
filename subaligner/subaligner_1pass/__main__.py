@@ -5,7 +5,7 @@ usage: subaligner_1pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-t
 Run single-stage alignment
 
 optional arguments:
-  -h, --help            Show this help message and exit
+  -h, --help            show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
@@ -39,7 +39,7 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Run single-stage alignment")
+    parser = argparse.ArgumentParser(description="Run single-stage alignment", formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-v",

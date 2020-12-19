@@ -4,13 +4,13 @@ from typing import Any, List
 
 
 class Hyperparameters(object):
-    """ The configuration on hyper parameters used for training
+    """ The configuration on hyperparameters used for training
     """
 
     OPTIMIZERS = ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rmsprop", "sgd"]
 
     def __init__(self):
-        """Hyper parameters initialiser setting default values"""
+        """Hyperparameters initialiser setting default values"""
 
         self.__learning_rate = 0.001
         self.__hidden_size = {
@@ -188,24 +188,24 @@ class Hyperparameters(object):
         self.__network_type = value
 
     def to_json(self) -> str:
-        """Serialise hyper parameters into JSON string
+        """Serialise hyperparameters into JSON string
 
         Returns:
-            string -- The serialised hyper parameters in JSON
+            string -- The serialised hyperparameters in JSON
         """
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
     def to_file(self, file_path: str) -> None:
-        """Serialise hyper parameters into JSON and save the content to a file
+        """Serialise hyperparameters into JSON and save the content to a file
 
         Arguments:
-            file_path {string} -- The path to the file containing saved hyper parameters.
+            file_path {string} -- The path to the file containing saved hyperparameters.
         """
         with open(file_path, "w", encoding="utf8") as file:
             file.write(self.to_json())
 
     def clone(self) -> "Hyperparameters":
-        """Make a cloned hyper parameters object
+        """Make a cloned hyperparameters object
 
         Returns:
             Hyperparameters -- The cloned Hyperparameters object.
@@ -217,7 +217,7 @@ class Hyperparameters(object):
         """Deserialise JSON string into a Hyperparameters object
 
         Arguments:
-            json_str {string} -- Hyper parameters in JSON.
+            json_str {string} -- Hyperparameters in JSON.
 
         Returns:
             Hyperparameters -- The deserialised Hyperparameters object.
@@ -231,7 +231,7 @@ class Hyperparameters(object):
         """Deserialise a file content into a Hyperparameters object
 
         Arguments:
-            file_path {string} -- The path to the file containing hyper parameters.
+            file_path {string} -- The path to the file containing hyperparameters.
 
         Returns:
             Hyperparameters -- The deserialised Hyperparameters object.

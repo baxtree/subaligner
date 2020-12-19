@@ -1,28 +1,37 @@
 #!/usr/bin/env python
 """
-usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so] [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
+usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so]
+                        [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
+                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
+subaligner_2pass: error: the following arguments are required: -v/--video_path, -s/--subtitle_path
+(.3.8.5) subaligner-github baix01$ subaligner_2pass  -h
+usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so]
+                        [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
+                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
 
 Run two-stage alignment
 
 optional arguments:
-  -h, --help                Show this help message and exit
+  -h, --help            show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
-                            Max global log loss for alignment
-  -so, --stretch_off        Switch off stretch on subtitles for non-English speech
-  -sil, --stretch_in_lang   Switch on stretch on subtitles with the language
-  -fos, --exit_segfail      Exit on any segment alignment failures
+                        Max global log loss for alignment
+  -so, --stretch_off    Switch off stretch on subtitles for non-English speech
+  -sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --stretch_in_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
+                        Stretch the subtitle with the supported ISO 639-2 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes].
+                        NB: This will be ignored if -so or --stretch_off is present
+  -fos, --exit_segfail  Exit on any segment alignment failures
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
-                            Path to the output directory containing training results
+                        Path to the output directory containing training results
   -o OUTPUT, --output OUTPUT
-                            Path to the output subtitle file
-  -d, --debug               Print out debugging information
-  -q, --quiet               Switch off logging information
+                        Path to the output subtitle file
+  -d, --debug           Print out debugging information
+  -q, --quiet           Switch off logging information
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
-                            Path to the video file
+                        Path to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                            Path to the subtitle file
+                        Path to the subtitle file
 """
 
 import argparse
@@ -42,7 +51,7 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Run two-stage alignment")
+    parser = argparse.ArgumentParser(description="Run two-stage alignment", formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-v",
@@ -80,7 +89,7 @@ def main():
         type=str,
         choices=Language.ALLOWED_VALUES,
         default=Language.ENG,
-        help="Switch on stretch on subtitles with the language",
+        help="Stretch the subtitle with the supported ISO 639-2 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
     )
     parser.add_argument(
         "-fos",

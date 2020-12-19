@@ -3,7 +3,7 @@
 usage: subaligner_tune [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY [-ept EPOCHS_PER_TRAIL] [-t TRAILS] [-nt {lstm,bi_lstm,conv_1d}]
                        [-utd] [-d] [-q]
 
-Tune hyper parameters before training.
+Tune hyperparameters before training.
 
 optional arguments:
   -h, --help            Show this help message and exit
@@ -43,7 +43,7 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="""Tune hyper parameters before training.""")
+    parser = argparse.ArgumentParser(description="Tune hyperparameters before training.", formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-vd",

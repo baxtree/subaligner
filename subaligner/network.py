@@ -63,7 +63,7 @@ class Network(object):
         Arguments:
             secret {object} -- A hash only known by factory methods.
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             model_path {string} -- The path to the model file.
             backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
                                 by TF 2 and this parameter is here only for a historical reason.
@@ -114,7 +114,7 @@ class Network(object):
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
             Network -- A constructed network object.
@@ -132,7 +132,7 @@ class Network(object):
 
         Arguments:
             model_path {string} -- The path to the model file.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
         """
 
         hp = hyperparameters.clone()
@@ -166,7 +166,7 @@ class Network(object):
         Arguments:
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
             Network -- Reconstructed network object.
@@ -425,7 +425,7 @@ class Network(object):
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             train_data {numpy.array} -- The Numpy array of training data.
             labels {numpy.array} -- The Numpy array of training labels.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
@@ -466,7 +466,7 @@ class Network(object):
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             train_data_raw {list} -- The HDF5 raw training data.
             labels_raw {list} -- The HDF5 raw training labels.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
         """

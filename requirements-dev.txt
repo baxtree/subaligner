@@ -5,6 +5,6 @@ pycodestyle==2.5.0
 twine>=3.1.1
 snakeviz==2.1.0
 line-profiler==3.0.2
-radish-bdd<=0.14.0
+radish-bdd[bddxml]<=0.14.0
 pex==2.1.15
 mypy==0.790

@@ -49,7 +49,7 @@ which could take quite long to finish for a large dataset so as to be unnecessar
 To apply your trained model to subtitle alignment, pass in the training_output_directory containing training results as
 shown above with `-tod` or `--training_output_directory`.
 
-**Hyper parameters**::
+**Hyperparameters**::
 
     -bs BATCH_SIZE, --batch_size BATCH_SIZE
                         Number of 32ms samples at each training step
@@ -72,10 +72,10 @@ shown above with `-tod` or `--training_output_directory`.
     -o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}, --optimizer {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}
         TensorFlow optimizer
 
-You can pass in the above flags to manually change hyper parameters for each training cycle. Alternatively, you can let
-Subaligner tune hyper parameters automatically and the how-to is shown below.
+You can pass in the above flags to manually change hyperparameters for each training cycle. Alternatively, you can let
+Subaligner tune hyperparameters automatically and the how-to is shown below.
 
-**Hyper parameters tuning**::
+**Hyperparameters tuning**::
 
      (.venv) $ subaligner_tune -vd av_directory -sd subtitle_directory -tod training_output_directory
 

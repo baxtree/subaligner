@@ -66,10 +66,10 @@ class Trainer(object):
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
             model_dir {string} -- The directory of the model file.
             weights_dir {string} -- The directory of the weights file.
-            config_dir {string} -- The directory of the hyper parameter file where hyper parameters will be saved.
+            config_dir {string} -- The directory of the hyperparameter file where hyperparameters will be saved.
             logs_dir {string} -- The directory of the log file.
             training_dump_dir {string} --  The directory of the training data dump file.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
         """
@@ -92,16 +92,16 @@ class Trainer(object):
                 labels_raw = hf["labels"]
 
                 if resume:
-                    # Load hyper parameters from previous training
+                    # Load hyperparameters from previous training
                     loaded_hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
 
-                    # Update the total epochs and save hyper parameters
+                    # Update the total epochs and save hyperparameters
                     loaded_hyperparameters.epochs = hyperparameters.epochs
                     loaded_hyperparameters.to_file(hyperparams_filepath)
 
                     network = Network.load_model_and_weights(model_filepath, weights_filepath, loaded_hyperparameters)
                 else:
-                    # Save hyper parameters before each new training
+                    # Save hyperparameters before each new training
                     hyperparameters.to_file(hyperparams_filepath)
 
                     input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
@@ -140,7 +140,7 @@ class Trainer(object):
             input_shape = (train_data.shape[1], train_data.shape[2])
             Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
 
-            # Save hyper parameters before each new training
+            # Save hyperparameters before each new training
             hyperparameters.to_file(hyperparams_filepath)
 
             network = Network.get_network(input_shape, hyperparameters)
@@ -181,7 +181,7 @@ class Trainer(object):
             av_file_paths {list} -- A list of paths to the input audio/video files.
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
             training_dump_dir {string} --  The directory of the training data dump file.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
         """
 
         training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")

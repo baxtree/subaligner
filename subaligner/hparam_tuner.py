@@ -10,7 +10,7 @@ from .network import Network
 
 
 class HyperParameterTuner(object):
-    """Hyper parameter tuning using the Tree of Parzen Estimators algorithm"""
+    """Hyperparameter tuning using the Tree of Parzen Estimators algorithm"""
 
     SEARCH_SPACE = {
         "learning_rate": hp.loguniform("learning_rate", np.log(0.00001), np.log(0.1)),
@@ -29,7 +29,7 @@ class HyperParameterTuner(object):
                  num_of_trials: int = 5,
                  tuning_epochs: int = 5,
                  network_type: str = Network.LSTM):
-        """Hyper parameter tuner initialiser
+        """Hyperparameter tuner initialiser
 
         Arguments:
             av_file_paths {list} -- A list of paths to the input audio/video files.
@@ -61,7 +61,7 @@ class HyperParameterTuner(object):
         return self.__hyperparameters.clone()
 
     def tune_hyperparameters(self) -> None:
-        """Tune the hyper parameters"""
+        """Tune the hyperparameters"""
 
         trials = hyperopt.Trials()
         minimised = hyperopt.fmin(fn=self.__get_val_loss,
@@ -94,6 +94,6 @@ class HyperParameterTuner(object):
                                                self.__training_dump_dir,
                                                self.__hyperparameters)
         if not val_loss:
-            raise ValueError("Cannot get training loss during hyper parameter tuning")
+            raise ValueError("Cannot get training loss during hyperparameter tuning")
 
         return {"loss": sum(val_loss) / len(val_loss), "status": hyperopt.STATUS_OK}

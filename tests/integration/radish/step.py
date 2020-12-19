@@ -207,7 +207,7 @@ def output_dir(step, output_dir):
     step.context.training_output = os.path.join(step.context.temp_dir, output_dir)
 
 
-@when('I run the subaligner_train against them with the following hyper parameters')
+@when('I run the subaligner_train against them with the following hyperparameters')
 def train(step):
     process = subprocess.Popen([
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
@@ -230,7 +230,7 @@ def model_trained(step):
     assert os.path.join(step.context.training_output, "training_dump.hdf5") in output_files
 
 
-@then("a hyper parameter file is generated")
+@then("a hyperparameter file is generated")
 def hyperparam_tuned(step):
     output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
     assert step.context.exit_code == 0
@@ -267,12 +267,12 @@ def return_done_epochs(step, done_epochs):
     assert step.context.done_epochs == "Number of epochs done: %s\n" % format(done_epochs)
 
 
-@before.each_scenario(on_tags="train or hyper-parameter-tuning")
+@before.each_scenario(on_tags="train or hyperparameter-tuning")
 def create_training_output_dir(scenario):
     scenario.context.temp_dir = tempfile.mkdtemp()
 
 
-@after.each_scenario(on_tags="train or hyper-parameter-tuning")
+@after.each_scenario(on_tags="train or hyperparameter-tuning")
 def remove_training_output_dir(scenario):
     if os.path.isdir(scenario.context.temp_dir):
         shutil.rmtree(scenario.context.temp_dir)

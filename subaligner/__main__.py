@@ -44,7 +44,7 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Subaligner command line interface")
+    parser = argparse.ArgumentParser(description="Subaligner command line interface", formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-m",
@@ -91,7 +91,7 @@ def main():
         type=str,
         choices=Language.ALLOWED_VALUES,
         default=Language.ENG,
-        help="Switch on stretch on subtitles with the language",
+        help="Stretch the subtitle with the supported ISO 639-2 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
     )
     parser.add_argument(
         "-fos",
