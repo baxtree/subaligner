@@ -2,6 +2,7 @@ import hyperopt
 import numpy as np
 from hyperopt import hp
 from hyperopt.pyll.base import scope
+from typing import List, Dict
 from .trainer import Trainer
 from .embedder import FeatureEmbedder
 from .hyperparameters import Hyperparameters
@@ -9,7 +10,7 @@ from .network import Network
 
 
 class HyperParameterTuner(object):
-    """Hyper parameter tuning using the Tree of Parzen Estimators algorithm"""
+    """Hyperparameter tuning using the Tree of Parzen Estimators algorithm"""
 
     SEARCH_SPACE = {
         "learning_rate": hp.loguniform("learning_rate", np.log(0.00001), np.log(0.1)),
@@ -22,13 +23,13 @@ class HyperParameterTuner(object):
     }
 
     def __init__(self,
-                 av_file_paths,
-                 subtitle_file_paths,
-                 training_dump_dir,
-                 num_of_trials=5,
-                 tuning_epochs=5,
-                 network_type=Network.LSTM):
-        """Hyper parameter tuner initialiser
+                 av_file_paths: List[str],
+                 subtitle_file_paths: List[str],
+                 training_dump_dir: str,
+                 num_of_trials: int = 5,
+                 tuning_epochs: int = 5,
+                 network_type: str = Network.LSTM):
+        """Hyperparameter tuner initialiser
 
         Arguments:
             av_file_paths {list} -- A list of paths to the input audio/video files.
@@ -55,12 +56,12 @@ class HyperParameterTuner(object):
         self.__original_epochs = self.__hyperparameters.epochs
 
     @property
-    def hyperparameters(self):
+    def hyperparameters(self) -> Hyperparameters:
         self.__hyperparameters.epochs = self.__original_epochs
         return self.__hyperparameters.clone()
 
-    def tune_hyperparameters(self):
-        """Tune the hyper parameters"""
+    def tune_hyperparameters(self) -> None:
+        """Tune the hyperparameters"""
 
         trials = hyperopt.Trials()
         minimised = hyperopt.fmin(fn=self.__get_val_loss,
@@ -78,7 +79,7 @@ class HyperParameterTuner(object):
             else:
                 setattr(self.__hyperparameters, key, value)
 
-    def __get_val_loss(self, params):
+    def __get_val_loss(self, params: Dict) -> Dict:
         for key, value in params.items():
             if key == "front_hidden_size":
                 self.__hyperparameters.front_hidden_size = list(value)
@@ -93,6 +94,6 @@ class HyperParameterTuner(object):
                                                self.__training_dump_dir,
                                                self.__hyperparameters)
         if not val_loss:
-            raise ValueError("Cannot get training loss during hyper parameter tuning")
+            raise ValueError("Cannot get training loss during hyperparameter tuning")
 
         return {"loss": sum(val_loss) / len(val_loss), "status": hyperopt.STATUS_OK}

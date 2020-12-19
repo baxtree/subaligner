@@ -3,9 +3,12 @@ import unittest
 import shutil
 import filecmp
 import subprocess
+import requests
+import shutil
 from subaligner.utils import Utils as Undertest
 from subaligner.exception import TerminalException
 from mock import patch
+from unittest.mock import ANY
 
 
 class UtilsTests(unittest.TestCase):
@@ -162,6 +165,16 @@ class UtilsTests(unittest.TestCase):
             self.assertEqual("\n", lines[1])
             self.assertEqual("Contains two leading newlines and three trailing newlines", lines[2])
 
+    @patch("requests.get")
+    @patch("builtins.open")
+    @patch("shutil.copyfileobj")
+    def test_download(self, mocked_copyfileobj, mocked_open, mocked_get):
+        Undertest.download_file("remote_file_url", "local_file_path")
+
+        mocked_get.assert_called_once_with("remote_file_url", verify=True, stream=True)
+        mocked_open.assert_called_once_with("local_file_path", "wb")
+        mocked_copyfileobj.assert_called_once_with(ANY, ANY)
+
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):
         try:
@@ -172,7 +185,7 @@ class UtilsTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired("", 1.0))
     def test_throw_exception_on_srt2vtt_timeout(self, mock_communicate):
         try:
             Undertest.srt2vtt(self.__real_srt_path, "output")
@@ -202,7 +215,7 @@ class UtilsTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired(None, None))
+    @patch("subprocess.Popen.communicate", side_effect=subprocess.TimeoutExpired("", 1.0))
     def test_throw_exception_on_vtt2srt_timeout(self, mock_communicate):
         try:
             Undertest.vtt2srt(self.__real_vtt_path, "output")

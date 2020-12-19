@@ -52,7 +52,6 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -86,7 +85,7 @@ def setup(app):
             from sphinx.ext.apidoc import main as apidoc_main
             cur_dir = os.path.abspath(os.path.dirname(__file__))
             included_module = "../../subaligner"
-            excluded_module = "../../subaligner/subaligner_*"
+            excluded_module = "../../subaligner/models"
             apidoc_main(["-e", "-o", cur_dir, included_module, excluded_module, "--force"])
         app.connect("builder-inited", run_apidoc)
     else:

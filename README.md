@@ -40,7 +40,8 @@ or
 
 $ git clone git@github.com:baxtree/subaligner.git
 $ cd subaligner
-$ make install && source .venv/bin/activate
+$ pip install numpy
+$ python setup.py install
 ```
 or
 ```

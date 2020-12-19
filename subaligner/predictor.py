@@ -8,7 +8,8 @@ import math
 import numpy as np
 import multiprocessing as mp
 
-from pysrt import SubRipTime
+from typing import Tuple, List, Optional, Dict, Any
+from pysrt import SubRipTime, SubRipItem, SubRipFile
 from sklearn.metrics import log_loss
 from copy import deepcopy
 from .network import Network
@@ -53,10 +54,10 @@ class Predictor(Singleton):
 
     def predict_single_pass(
             self,
-            video_file_path,
-            subtitle_file_path,
-            weights_dir=os.path.join(os.path.dirname(__file__), "models/training/weights"),
-    ):
+            video_file_path: str,
+            subtitle_file_path: str,
+            weights_dir: str = os.path.join(os.path.dirname(__file__), "models/training/weights"),
+    ) -> Tuple[List[SubRipItem], str, List[float], Optional[float]]:
         """Predict time to shift with single pass
 
             Arguments:
@@ -89,12 +90,13 @@ class Predictor(Singleton):
 
     def predict_dual_pass(
             self,
-            video_file_path,
-            subtitle_file_path,
-            weights_dir=os.path.join(os.path.dirname(__file__), "models/training/weights"),
-            stretch=False,
-            exit_segfail=False,
-    ):
+            video_file_path: str,
+            subtitle_file_path: str,
+            weights_dir: str = os.path.join(os.path.dirname(__file__), "models/training/weights"),
+            stretch: bool = False,
+            stretch_in_lang: str = "eng",
+            exit_segfail: bool = False,
+    ) -> Tuple[List[SubRipItem], List[SubRipItem], List[float], Optional[float]]:
         """Predict time to shift with single pass
 
             Arguments:
@@ -102,6 +104,7 @@ class Predictor(Singleton):
             subtitle_file_path {string} -- The path to the subtitle file.
             weights_dir {string} -- The the model weights directory.
             stretch {bool} -- True to stretch the subtitle segments (default: {False})
+            stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
             exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
@@ -117,7 +120,12 @@ class Predictor(Singleton):
                 video_file_path, subtitle_file_path, weights_file_path
             )
             new_subs = self.__predict_2nd_pass(
-                audio_file_path, subs, weights_file_path=weights_file_path, stretch=stretch, exit_segfail=exit_segfail
+                audio_file_path,
+                subs,
+                weights_file_path=weights_file_path,
+                stretch=stretch,
+                stretch_in_lang=stretch_in_lang,
+                exit_segfail=exit_segfail,
             )
             try:
                 frame_rate = MediaHelper.get_frame_rate(video_file_path)
@@ -131,7 +139,7 @@ class Predictor(Singleton):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
 
-    def get_log_loss(self, voice_probabilities, subs):
+    def get_log_loss(self, voice_probabilities: "np.ndarray[float]", subs: List[SubRipItem]) -> float:
         """Returns a single loss value on voice prediction
 
             Arguments:
@@ -167,7 +175,7 @@ class Predictor(Singleton):
         Predictor.__LOGGER.debug("Log loss: {}".format(result))
         return result
 
-    def get_min_log_loss_and_index(self, voice_probabilities, subs):
+    def get_min_log_loss_and_index(self, voice_probabilities: "np.ndarray[float]", subs: SubRipFile) -> Tuple[float, int]:
         """Returns the minimum loss value and its shift position after going through all possible shifts.
             Arguments:
                 voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
@@ -228,7 +236,7 @@ class Predictor(Singleton):
 
         return min_log_loss, min_log_loss_idx
 
-    def __predict_2nd_pass(self, audio_file_path, subs, weights_file_path, stretch, exit_segfail):
+    def __predict_2nd_pass(self, audio_file_path: str, subs: List[SubRipItem], weights_file_path: str, stretch: bool, stretch_in_lang: str, exit_segfail: bool) -> List[SubRipItem]:
         """This function uses divide and conquer to align partial subtitle with partial video.
 
         Arguments:
@@ -236,6 +244,7 @@ class Predictor(Singleton):
             subs {list} -- A list of SubRip files.
             weights_file_path {string} --  The file path of the weights file.
             stretch {bool} -- True to stretch the subtitle segments.
+            stretch_in_lang {str} -- The language used for stretching subtitles.
             exit_segfail {bool} -- True to exit on any segment alignment failures.
         """
 
@@ -277,6 +286,7 @@ class Predictor(Singleton):
                     subs,
                     subs_copy,
                     stretch,
+                    stretch_in_lang,
                     exit_segfail
                 )
                 for i in range(len(segment_starts))
@@ -312,16 +322,17 @@ class Predictor(Singleton):
 
     def __predict_in_multithreads(
             self,
-            segment_index,
-            segment_starts,
-            segment_ends,
-            weights_file_path,
-            audio_file_path,
-            subs,
-            subs_copy,
-            stretch,
-            exit_segfail,
-    ):
+            segment_index: int,
+            segment_starts: List[str],
+            segment_ends: List[str],
+            weights_file_path: str,
+            audio_file_path: str,
+            subs: List[SubRipItem],
+            subs_copy: List[SubRipItem],
+            stretch: bool,
+            stretch_in_lang: str,
+            exit_segfail: bool,
+    ) -> List[SubRipItem]:
         thread_name = threading.current_thread().name
         segment_path = ""
         try:
@@ -363,7 +374,7 @@ class Predictor(Singleton):
             gc.collect()
 
             if stretch:
-                subs_new = self.__adjust_durations(subs_new, audio_file_path)
+                subs_new = self.__adjust_durations(subs_new, audio_file_path, stretch_in_lang)
                 Predictor.__LOGGER.info("[{}] Segment {} stretched".format(thread_name, segment_index))
             return subs_new
         except Exception as e:
@@ -380,24 +391,24 @@ class Predictor(Singleton):
             if os.path.exists(segment_path):
                 os.remove(segment_path)
 
-    def __cancel_futures(self, futures, timeout):
+    def __cancel_futures(self, futures: List[concurrent.futures.Future], timeout: int) -> None:
         for future in futures:
             future.cancel()
         concurrent.futures.wait(futures, timeout=timeout)
 
-    def __get_subtitle_mask(self, subs):
-        pos = self.__feature_embedder.time_to_pos(subs[len(subs) - 1].end) - 1
+    def __get_subtitle_mask(self, subs: List[SubRipItem]) -> np.ndarray:
+        pos = self.__feature_embedder.time_to_position(subs[len(subs) - 1].end) - 1
         subtitle_mask = np.zeros(pos if pos > 0 else 0)
 
         for sub in subs:
-            start_pos = self.__feature_embedder.time_to_pos(sub.start)
-            end_pos = self.__feature_embedder.time_to_pos(sub.end)
+            start_pos = self.__feature_embedder.time_to_position(sub.start)
+            end_pos = self.__feature_embedder.time_to_position(sub.end)
             for i in np.arange(start_pos, end_pos):
                 if i < len(subtitle_mask):
                     subtitle_mask[i] = 1
         return subtitle_mask
 
-    def __on_frame_timecodes(self, subs):
+    def __on_frame_timecodes(self, subs: List[SubRipItem]) -> None:
         for sub in subs:
             millis_per_frame = self.__feature_embedder.step_sample * 1000
             new_start_millis = round(int(str(sub.start).split(",")[1]) / millis_per_frame + 0.5) * millis_per_frame
@@ -407,7 +418,7 @@ class Predictor(Singleton):
             sub.start = SubRipTime.coerce(new_start)
             sub.end = SubRipTime.coerce(new_end)
 
-    def __initialise_network(self, weights_dir):
+    def __initialise_network(self, weights_dir: str) -> None:
         model_dir = weights_dir.replace("/weights", "/model")
         config_dir = weights_dir.replace("/weights", "/config")
         files = os.listdir(model_dir)
@@ -440,7 +451,7 @@ class Predictor(Singleton):
             hyperparams = Hyperparameters.from_file(hyperparams_path)
             self.__network = Network.get_from_model(model_path, hyperparams)
 
-    def __adjust_durations(self, subs, audio_file_path):
+    def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str, stretch_in_lang: str) -> List[SubRipItem]:
         from aeneas.executetask import ExecuteTask
         from aeneas.task import Task
         from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -448,7 +459,7 @@ class Predictor(Singleton):
 
         # Initialise a DTW alignment task
         task_config_string = (
-            "task_language=eng|os_task_file_format=srt|is_text_type=subtitles"
+            "task_language={}|os_task_file_format=srt|is_text_type=subtitles".format(stretch_in_lang)
         )
         runtime_config_string = "dtw_algorithm=stripe"  # stripe or exact
         task = Task(config_string=task_config_string)
@@ -516,7 +527,7 @@ class Predictor(Singleton):
                 os.remove(task.sync_map_file_path_absolute)
 
     @staticmethod
-    def __get_weights_path(weights_dir):
+    def __get_weights_path(weights_dir: str) -> str:
         files = os.listdir(weights_dir)
         weights_files = [
             file
@@ -537,20 +548,20 @@ class Predictor(Singleton):
         return os.path.abspath(weights_path)
 
     @staticmethod
-    def __normalise_seconds_to_shift(seconds_to_shift, step_sample):
+    def __normalise_seconds_to_shift(seconds_to_shift: float, step_sample: int):
         # Make sure each cue starts right on the beginning of a frame
         return round(seconds_to_shift / step_sample) * step_sample
 
     def __predict(
             self,
-            video_file_path,
-            subtitle_file_path,
-            weights_file_path,
-            audio_file_path=None,
-            subtitles=None,
-            max_shift_secs=None,
-            previous_gap=None,
-    ):
+            video_file_path: Optional[str],
+            subtitle_file_path: Optional[str],
+            weights_file_path: str,
+            audio_file_path: Optional[str] = None,
+            subtitles: Optional[SubRipFile] = None,
+            max_shift_secs: Optional[float] = None,
+            previous_gap: Optional[float] = None,
+    ) -> Tuple[List[SubRipItem], str, "np.ndarray[float]"]:
         """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
 
         Arguments:
@@ -569,7 +580,7 @@ class Predictor(Singleton):
         """
 
         thread_name = threading.current_thread().name
-        result = {}
+        result: Dict[str, Any] = {}
         pred_start = datetime.datetime.now()
         if audio_file_path is not None:
             result["audio_file_path"] = audio_file_path
@@ -659,10 +670,10 @@ class Predictor(Singleton):
 
         if subtitle_file_path is not None:  # for the first pass
             seconds_to_shift = (
-                self.__feature_embedder.pos_to_sec(pos_to_delay) - original_start
+                self.__feature_embedder.position_to_duration(pos_to_delay) - original_start
             )
         elif subtitles is not None:  # for each in second pass
-            seconds_to_shift = self.__feature_embedder.pos_to_sec(pos_to_delay) - previous_gap
+            seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap
         else:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
@@ -704,7 +715,7 @@ class Predictor(Singleton):
 
 class _ThreadPoolExecutorLocal:
 
-    def __init__(self, queue_size, max_workers):
+    def __init__(self, queue_size: int, max_workers: int):
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
         self.semaphore = threading.BoundedSemaphore(queue_size + max_workers)
 

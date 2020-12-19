@@ -8,9 +8,11 @@ import math
 import numpy as np
 import multiprocessing as mp
 
+from typing import List, Tuple
 from .network import Network
 from .media_helper import MediaHelper
 from .hyperparameters import Hyperparameters
+from .embedder import FeatureEmbedder
 from .exception import UnsupportedFormatException, TerminalException
 from .logger import Logger
 from .utils import Utils
@@ -24,7 +26,7 @@ class Trainer(object):
     __LOGGER = Logger().get_logger(__name__)
     __MAX_BYTES = 2 ** 31 - 1
 
-    def __init__(self, feature_embedder):
+    def __init__(self, feature_embedder: FeatureEmbedder):
         """Initialiser for the training process.
 
         Arguments:
@@ -46,17 +48,17 @@ class Trainer(object):
 
     def train(
         self,
-        av_file_paths,
-        subtitle_file_paths,
-        model_dir,
-        weights_dir,
-        config_dir,
-        logs_dir,
-        training_dump_dir,
-        hyperparameters,
-        training_log="training.log",
-        resume=False,
-    ):
+        av_file_paths: List[str],
+        subtitle_file_paths: List[str],
+        model_dir: str,
+        weights_dir: str,
+        config_dir: str,
+        logs_dir: str,
+        training_dump_dir: str,
+        hyperparameters: Hyperparameters,
+        training_log: str = "training.log",
+        resume: bool = False,
+    ) -> None:
         """Trigger the training process.
 
         Arguments:
@@ -64,10 +66,10 @@ class Trainer(object):
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
             model_dir {string} -- The directory of the model file.
             weights_dir {string} -- The directory of the weights file.
-            config_dir {string} -- The directory of the hyper parameter file where hyper parameters will be saved.
+            config_dir {string} -- The directory of the hyperparameter file where hyperparameters will be saved.
             logs_dir {string} -- The directory of the log file.
             training_dump_dir {string} --  The directory of the training data dump file.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
         """
@@ -90,16 +92,16 @@ class Trainer(object):
                 labels_raw = hf["labels"]
 
                 if resume:
-                    # Load hyper parameters from previous training
+                    # Load hyperparameters from previous training
                     loaded_hyperparameters = Hyperparameters.from_file(hyperparams_filepath)
 
-                    # Update the total epochs and save hyper parameters
+                    # Update the total epochs and save hyperparameters
                     loaded_hyperparameters.epochs = hyperparameters.epochs
                     loaded_hyperparameters.to_file(hyperparams_filepath)
 
                     network = Network.load_model_and_weights(model_filepath, weights_filepath, loaded_hyperparameters)
                 else:
-                    # Save hyper parameters before each new training
+                    # Save hyperparameters before each new training
                     hyperparameters.to_file(hyperparams_filepath)
 
                     input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
@@ -138,7 +140,7 @@ class Trainer(object):
             input_shape = (train_data.shape[1], train_data.shape[2])
             Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
 
-            # Save hyper parameters before each new training
+            # Save hyperparameters before each new training
             hyperparameters.to_file(hyperparams_filepath)
 
             network = Network.get_network(input_shape, hyperparameters)
@@ -168,18 +170,18 @@ class Trainer(object):
 
     def pre_train(
         self,
-        av_file_paths,
-        subtitle_file_paths,
-        training_dump_dir,
-        hyperparameters
-    ):
+        av_file_paths: List[str],
+        subtitle_file_paths: List[str],
+        training_dump_dir: str,
+        hyperparameters: Hyperparameters,
+    ) -> Tuple[List[float], List[float]]:
         """Trigger the training process.
 
         Arguments:
             av_file_paths {list} -- A list of paths to the input audio/video files.
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
             training_dump_dir {string} --  The directory of the training data dump file.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
         """
 
         training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
@@ -223,10 +225,15 @@ class Trainer(object):
                 labels,
                 hyperparameters
             )
-        return val_loss, val_loss
+        return val_loss, val_acc
 
     @staticmethod
-    def get_done_epochs(training_log):
+    def get_done_epochs(training_log: str) -> int:
+        """Get the number of finished epochs.
+
+        Arguments:
+            training_log {string} -- The path to the training log file.
+        """
         if not os.path.isfile(training_log):
             return 0
         epochs_done = 0
@@ -236,8 +243,8 @@ class Trainer(object):
         return epochs_done if epochs_done >= 0 else 0
 
     def __extract_data_and_label_from_avs(
-        self, av_file_paths, subtitle_file_paths
-    ):
+        self, av_file_paths: List[str], subtitle_file_paths: List[str]
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """Generate a training dataset and labels from audio/video files.
 
         Arguments:
@@ -307,8 +314,8 @@ class Trainer(object):
         return train_data, labels
 
     def __extract_in_multithreads(
-        self, index, av_file_path, subtitle_file_path, train_data, labels
-    ):
+        self, index: int, av_file_path: str, subtitle_file_path: str, train_data: np.ndarray, labels: np.ndarray
+    ) -> Tuple[str, str]:
         _, file_ext = os.path.splitext(av_file_path)
 
         try:

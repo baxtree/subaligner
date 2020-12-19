@@ -5,6 +5,8 @@ import psutil
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.optimizers as tf_optimizers
+
+from typing import Tuple, Optional, Any, List, Generator
 from tensorflow.keras.layers import (
     Dense,
     Input,
@@ -29,6 +31,7 @@ from tensorflow.keras import backend as K
 from .utils import Utils
 from .logger import Logger
 from .exception import TerminalException
+from .hyperparameters import Hyperparameters
 Utils.suppress_lib_logs()
 
 
@@ -49,18 +52,18 @@ class Network(object):
 
     def __init__(
         self,
-        secret,
-        input_shape,
-        hyperparameters,
-        model_path=None,
-        backend="tensorflow"
+        secret: Optional[object],
+        input_shape: Tuple,
+        hyperparameters: Hyperparameters,
+        model_path: Optional[str] = None,
+        backend: str = "tensorflow"
     ):
         """ Network object initialiser used by factory methods.
 
         Arguments:
             secret {object} -- A hash only known by factory methods.
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             model_path {string} -- The path to the model file.
             backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
                                 by TF 2 and this parameter is here only for a historical reason.
@@ -74,24 +77,27 @@ class Network(object):
 
         Network.__set_keras_backend(backend)
 
-        if hyperparameters.network_type == Network.LSTM:
+        if (hyperparameters.network_type == Network.__UNKNOWN and model_path is not None):
+            self.__model = load_model(model_path)
+            self.__input_shape = self.__model.input_shape[1:]
+        elif hyperparameters.network_type == Network.LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
                 input_shape, hyperparameters
             )
-        if hyperparameters.network_type == Network.BI_LSTM:
+        elif hyperparameters.network_type == Network.BI_LSTM:
             self.__input_shape = input_shape
             self.__model = self.__lstm(
                 input_shape, hyperparameters, is_bidirectional=True
             )
-        if hyperparameters.network_type == Network.CONV_1D:
+        elif hyperparameters.network_type == Network.CONV_1D:
             self.__input_shape = input_shape
             self.__model = self.__conv1d(
                 input_shape, hyperparameters
             )
-        if (input_shape is None and hyperparameters.network_type == Network.__UNKNOWN and model_path is not None):
-            self.__model = load_model(model_path)
-            self.__input_shape = self.__model.input_shape[1:]
+        else:
+            raise ValueError("Unknown network type. Should be one of %s", str(Network.TYPES))
+
         self.__n_type = hyperparameters.network_type
         self.hyperparameters = hyperparameters
 
@@ -103,12 +109,12 @@ class Network(object):
             raise NotImplementedError("Cannot modify the immutable object")
 
     @classmethod
-    def get_network(cls, input_shape, hyperparameters):
+    def get_network(cls, input_shape: Tuple, hyperparameters: Hyperparameters) -> "Network":
         """Factory method for creating a network.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
             Network -- A constructed network object.
@@ -121,27 +127,27 @@ class Network(object):
         )
 
     @classmethod
-    def get_from_model(cls, model_path, hyperparameters):
+    def get_from_model(cls, model_path: str, hyperparameters: Hyperparameters) -> "Network":
         """Load model into a network object.
 
         Arguments:
             model_path {string} -- The path to the model file.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
         """
 
         hp = hyperparameters.clone()
         hp.network_type = Network.__UNKNOWN
         return cls(
             cls.__secret,
-            None,
+            (),
             hp,
             model_path=model_path
         )
 
     @classmethod
     def save_model_and_weights(
-        cls, model_filepath, weights_filepath, combined_filepath
-    ):
+        cls, model_filepath: str, weights_filepath: str, combined_filepath: str
+    ) -> None:
         """Combine model and weights and save to a file
 
         Arguments:
@@ -154,13 +160,13 @@ class Network(object):
         model.save(combined_filepath)
 
     @staticmethod
-    def load_model_and_weights(model_filepath, weights_filepath, hyperparameters):
+    def load_model_and_weights(model_filepath: str, weights_filepath: str, hyperparameters: Hyperparameters) -> "Network":
         """Load weights to the Network model.
 
         Arguments:
             model_filepath {string} -- The model file path.
             weights_filepath {string} -- The weights file path.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
             Network -- Reconstructed network object.
@@ -170,7 +176,7 @@ class Network(object):
         return network
 
     @property
-    def input_shape(self):
+    def input_shape(self) -> Tuple:
         """Get the input shape of the network.
 
         Returns:
@@ -180,7 +186,7 @@ class Network(object):
         return self.__input_shape
 
     @property
-    def n_type(self):
+    def n_type(self) -> str:
         """Get the type of the network.
 
         Returns:
@@ -190,7 +196,7 @@ class Network(object):
         return self.__n_type
 
     @property
-    def summary(self):
+    def summary(self) -> str:
         """Get the summary of the network.
 
         Returns:
@@ -200,7 +206,7 @@ class Network(object):
         return self.__model.summary()
 
     @property
-    def layers(self):
+    def layers(self) -> List[Any]:
         """Get the layers of the network.
 
         Returns:
@@ -209,7 +215,7 @@ class Network(object):
 
         return self.__model.layers
 
-    def get_predictions(self, input_data, weights_filepath):
+    def get_predictions(self, input_data: np.ndarray, weights_filepath: str) -> np.ndarray:
         """Get a Numpy array of predictions.
 
         Arguments:
@@ -224,14 +230,14 @@ class Network(object):
 
     def fit_and_get_history(
         self,
-        train_data,
-        labels,
-        model_filepath,
-        weights_filepath,
-        logs_dir,
-        training_log,
-        resume,
-    ):
+        train_data: np.ndarray,
+        labels: np.ndarray,
+        model_filepath: str,
+        weights_filepath: str,
+        logs_dir: str,
+        training_log: str,
+        resume: bool,
+    ) -> Tuple[List[float], List[float]]:
         """Fit the training data to the network and save the network model as a HDF file.
 
         Arguments:
@@ -312,14 +318,14 @@ class Network(object):
 
     def fit_with_generator(
             self,
-            train_data_raw,
-            labels_raw,
-            model_filepath,
-            weights_filepath,
-            logs_dir,
-            training_log,
-            resume,
-    ):
+            train_data_raw: np.ndarray,
+            labels_raw: np.ndarray,
+            model_filepath: str,
+            weights_filepath: str,
+            logs_dir: str,
+            training_log: str,
+            resume: bool,
+    ) -> Tuple[List[float], List[float]]:
         """Fit the training data to the network and save the network model as a HDF file.
 
         Arguments:
@@ -408,18 +414,18 @@ class Network(object):
     @classmethod
     def simple_fit(
         cls,
-        input_shape,
-        train_data,
-        labels,
-        hyperparameters,
-    ):
+        input_shape: Tuple,
+        train_data: np.ndarray,
+        labels: np.ndarray,
+        hyperparameters: Hyperparameters,
+    ) -> Tuple[List[float], List[float]]:
         """Fit the training data to the network and save the network model as a HDF file.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             train_data {numpy.array} -- The Numpy array of training data.
             labels {numpy.array} -- The Numpy array of training labels.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
@@ -449,18 +455,18 @@ class Network(object):
     @classmethod
     def simple_fit_with_generator(
             cls,
-            input_shape,
-            train_data_raw,
-            labels_raw,
-            hyperparameters,
-    ):
+            input_shape: Tuple,
+            train_data_raw: np.ndarray,
+            labels_raw: np.ndarray,
+            hyperparameters: Hyperparameters,
+    ) -> Tuple[List[float], List[float]]:
         """Fit the training data to the network and save the network model as a HDF file.
 
         Arguments:
             input_shape {tuple} -- A shape tuple (integers), not including the batch size.
             train_data_raw {list} -- The HDF5 raw training data.
             labels_raw {list} -- The HDF5 raw training labels.
-            hyperparameters {Hyperparameters} -- A configuration for hyper parameters used for training.
+            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
         """
@@ -495,7 +501,7 @@ class Network(object):
 
     # To make this work, need to change model._network_nodes to model._container_nodes
     # in tensorflow/python/keras/_impl/keras/utils/vis_utils.py
-    def plot_model(self, file_path):
+    def plot_model(self, file_path: str) -> None:
         """Plot the network architecture in the dot format.
 
         Arguments:
@@ -505,11 +511,11 @@ class Network(object):
         plot_model(self.__model, to_file=file_path, show_shapes=True)
 
     @staticmethod
-    def reset():
+    def reset() -> None:
         K.clear_session()
 
     @staticmethod
-    def __lstm(input_shape, hyperparameters, is_bidirectional=False):
+    def __lstm(input_shape: Tuple, hyperparameters: Hyperparameters, is_bidirectional: bool = False) -> Model:
         inputs = Input(shape=input_shape)
         hidden = BatchNormalization()(inputs)
 
@@ -531,7 +537,7 @@ class Network(object):
         return Model(inputs, outputs)
 
     @staticmethod
-    def __conv1d(input_shape, hyperparameters):
+    def __conv1d(input_shape: Tuple, hyperparameters: Hyperparameters) -> Model:
         inputs = Input(shape=input_shape)
         hidden = BatchNormalization()(inputs)
 
@@ -553,7 +559,7 @@ class Network(object):
         return Model(inputs, outputs)
 
     @staticmethod
-    def __set_keras_backend(backend):
+    def __set_keras_backend(backend: str):
         # Changing backend is no longer supported by tf.keras in TF2
         if K.backend() != backend:
             os.environ["KERAS_BACKEND"] = backend
@@ -582,7 +588,7 @@ class Network(object):
             raise ValueError("Unknown backend: {}".format(backend))
 
     @staticmethod
-    def __generator(train_data_raw, labels_raw, batch_size, validation_split, is_validation):
+    def __generator(train_data_raw: np.ndarray, labels_raw: np.ndarray, batch_size: int, validation_split: float, is_validation: bool) -> Generator:
         while True:
             total_size = train_data_raw.shape[0]
             for i in range(0, total_size, batch_size):

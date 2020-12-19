@@ -3,7 +3,8 @@ import tempfile
 import os
 import re
 import xml.etree.ElementTree as ElementTree
-from pysrt import SubRipFile
+from typing import Optional, List
+from pysrt import SubRipFile, SubRipItem
 from copy import deepcopy
 from .utils import Utils
 from .exception import UnsupportedFormatException
@@ -32,7 +33,7 @@ class Subtitle(object):
     MPL2_EXTENSIONS = [".txt"]
     TMP_EXTENSIONS = [".tmp"]
 
-    def __init__(self, secret, subtitle_file_path, subtitle_format):
+    def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str):
         """Subtitle object initialiser.
 
         Arguments:
@@ -83,7 +84,7 @@ class Subtitle(object):
             raise NotImplementedError("Cannot modify the immutable object")
 
     @classmethod
-    def load_subrip(cls, subtitle_file_path):
+    def load_subrip(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip subtitle file.
 
         Arguments:
@@ -96,7 +97,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "subrip")
 
     @classmethod
-    def load_ttml(cls, subtitle_file_path):
+    def load_ttml(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a TTML subtitle file.
 
         Arguments:
@@ -109,7 +110,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "ttml")
 
     @classmethod
-    def load_webvtt(cls, subtitle_file_path):
+    def load_webvtt(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a WebVTT subtitle file.
 
         Arguments:
@@ -122,7 +123,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "webvtt")
 
     @classmethod
-    def load_ssa(cls, subtitle_file_path):
+    def load_ssa(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubStation Alpha v4.0 subtitle file.
 
         Arguments:
@@ -135,7 +136,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "ssa")
 
     @classmethod
-    def load_ass(cls, subtitle_file_path):
+    def load_ass(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a Advanced SubStation Alpha v4.0+ subtitle file.
 
         Arguments:
@@ -148,7 +149,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "ass")
 
     @classmethod
-    def load_microdvd(cls, subtitle_file_path):
+    def load_microdvd(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a MicroDVD subtitle file.
 
         Arguments:
@@ -161,7 +162,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "microdvd")
 
     @classmethod
-    def load_mpl2(cls, subtitle_file_path):
+    def load_mpl2(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a MPL2 subtitle file.
 
         Arguments:
@@ -174,7 +175,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "mpl2")
 
     @classmethod
-    def load_tmp(cls, subtitle_file_path):
+    def load_tmp(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a TMP subtitle file.
 
         Arguments:
@@ -187,7 +188,7 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "tmp")
 
     @classmethod
-    def load(cls, subtitle_file_path):
+    def load(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip or TTML subtitle file based on the file extension.
 
         Arguments:
@@ -220,11 +221,11 @@ class Subtitle(object):
     @classmethod
     def shift_subtitle(
         cls,
-        subtitle_file_path,
-        seconds,
-        shifted_subtitle_file_path=None,
-        suffix="_shifted",
-    ):
+        subtitle_file_path: str,
+        seconds: float,
+        shifted_subtitle_file_path: Optional[str] = None,
+        suffix: str = "_shifted",
+    ) -> Optional[str]:
         """Shift subtitle cues based on the input seconds.
 
         Arguments:
@@ -249,11 +250,7 @@ class Subtitle(object):
             subs.shift(seconds=seconds)
             tree = ElementTree.parse(subtitle_file_path)
             tt = tree.getroot()
-            cues = (
-                tt.find("tt:body", Subtitle.TT_NS)
-                .find("tt:div", Subtitle.TT_NS)
-                .findall("tt:p", Subtitle.TT_NS)
-            )
+            cues = (tt.find("tt:body", Subtitle.TT_NS).find("tt:div", Subtitle.TT_NS).findall("tt:p", Subtitle.TT_NS))  # type: ignore
             for index, cue in enumerate(cues):
                 cue.attrib["begin"] = subs[index].start
                 cue.attrib["end"] = subs[index].end
@@ -299,7 +296,7 @@ class Subtitle(object):
             )
 
     @staticmethod
-    def export_subtitle(source_file_path, subs, target_file_path, frame_rate=25.0):
+    def export_subtitle(source_file_path: str, subs: List[SubRipItem], target_file_path: str, frame_rate: float = 25.0) -> None:
         """Export subtitle in the format determined by the file extension.
 
         Arguments:
@@ -316,11 +313,7 @@ class Subtitle(object):
         elif file_extension in Subtitle.TTML_EXTENSIONS:
             tree = ElementTree.parse(source_file_path)
             tt = tree.getroot()
-            cues = (
-                tt.find("tt:body", Subtitle.TT_NS)
-                .find("tt:div", Subtitle.TT_NS)
-                .findall("tt:p", Subtitle.TT_NS)
-            )
+            cues = (tt.find("tt:body", Subtitle.TT_NS).find("tt:div", Subtitle.TT_NS).findall("tt:p", Subtitle.TT_NS))  # type: ignore
             for index, cue in enumerate(cues):
                 cue.attrib["begin"] = str(subs[index].start).replace(",", ".")
                 cue.attrib["end"] = str(subs[index].end).replace(",", ".")
@@ -384,7 +377,7 @@ class Subtitle(object):
             )
 
     @staticmethod
-    def remove_sound_effects_by_case(subs, se_uppercase=True):
+    def remove_sound_effects_by_case(subs: List[SubRipItem], se_uppercase: bool = True) -> List[SubRipItem]:
         """Remove subtitles of sound effects based on case
 
         Arguments:
@@ -404,7 +397,7 @@ class Subtitle(object):
         return new_subs
 
     @staticmethod
-    def remove_sound_effects_by_affixes(subs, se_prefix, se_suffix=None):
+    def remove_sound_effects_by_affixes(subs: List[SubRipItem], se_prefix: str, se_suffix: Optional[str] = None) -> List[SubRipItem]:
         """Remove subtitles of sound effects based on prefix or prefix and suffix
 
         Arguments:
@@ -431,7 +424,7 @@ class Subtitle(object):
         return new_subs
 
     @staticmethod
-    def extract_text(subtitle_file_path, delimiter=" "):
+    def extract_text(subtitle_file_path: str, delimiter: str = " ") -> str:
         """Extract plain texts from a subtitle file.
 
         Arguments:
@@ -446,15 +439,15 @@ class Subtitle(object):
         return delimiter.join(texts)
 
     @property
-    def subtitle_file_path(self):
+    def subtitle_file_path(self) -> str:
         return self.__subtitle_file_path
 
     @property
-    def subs(self):
+    def subs(self) -> SubRipFile:
         return self.__subs
 
     @staticmethod
-    def __load_subrip(subrip_file_path):
+    def __load_subrip(subrip_file_path: str) -> SubRipFile:
         """Load a subtitle file in the SubRip format
 
                 Arguments:
@@ -466,7 +459,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(subrip_file_path)
 
     @staticmethod
-    def __convert_ttml_to_subs(ttml_file_path):
+    def __convert_ttml_to_subs(ttml_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the TTML format to the SubRip format
 
         Arguments:
@@ -482,7 +475,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __convert_vtt_to_subs(vtt_file_path):
+    def __convert_vtt_to_subs(vtt_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the WebVTT format to the SubRip format
 
         Arguments:
@@ -498,7 +491,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __convert_ssa_to_subs(ssa_file_path):
+    def __convert_ssa_to_subs(ssa_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the SubStation Alpha v4.0 format to the SubRip format
 
         Arguments:
@@ -515,7 +508,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __convert_ass_to_subs(ass_file_path):
+    def __convert_ass_to_subs(ass_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the Advanced SubStation Alpha v4.0+ format to the SubRip format
 
         Arguments:
@@ -532,7 +525,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __convert_microdvd_to_subs(microdvd_file_path):
+    def __convert_microdvd_to_subs(microdvd_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the MicroDVD format to the SubRip format
 
         Arguments:
@@ -549,7 +542,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __convert_mpl2_to_subs(mpl2_file_path):
+    def __convert_mpl2_to_subs(mpl2_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the MPL2 format to the SubRip format
 
         Arguments:
@@ -566,7 +559,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __convert_tmp_to_subs(tmp_file_path):
+    def __convert_tmp_to_subs(tmp_file_path: str) -> SubRipFile:
         """Convert a subtitle file from the TMP format to the SubRip format
 
         Arguments:
@@ -583,7 +576,7 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
-    def __export_with_format(subs, source_file_path, target_file_path, file_extension, suffix):
+    def __export_with_format(subs: List[SubRipItem], source_file_path: str, target_file_path: Optional[str], file_extension: str, suffix: str) -> None:
         if target_file_path is None:
             target_file_path = source_file_path.replace(
                 file_extension, "{}{}".format(suffix, file_extension)
@@ -591,7 +584,7 @@ class Subtitle(object):
         Subtitle.export_subtitle(source_file_path, subs, target_file_path)
 
     @staticmethod
-    def __get_srt_subs(subrip_file_path, housekeep=False):
+    def __get_srt_subs(subrip_file_path: str, housekeep: bool = False) -> SubRipFile:
         try:
             subs = pysrt.open(subrip_file_path, encoding="utf-8")
         except Exception as e:

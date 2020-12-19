@@ -28,24 +28,24 @@ class FeatureEmbedderTests(unittest.TestCase):
     def test_time_to_pos(self):
         subs = pysrt.open(self.__subtitle_file_path, encoding="utf-8")
         self.assertEqual(
-            248, Undertest(n_mfcc=20, step_sample=0.05).time_to_pos(subs[0].start)
+            248, Undertest(n_mfcc=20, step_sample=0.05).time_to_position(subs[0].start)
         )
         self.assertEqual(
-            299, Undertest(n_mfcc=20, step_sample=0.05).time_to_pos(subs[0].end)
+            299, Undertest(n_mfcc=20, step_sample=0.05).time_to_position(subs[0].end)
         )
 
     def test_sec_to_pos(self):
-        self.assertEqual(275, Undertest(n_mfcc=20, step_sample=0.05).sec_to_pos(13.75))
-        self.assertEqual(322, Undertest(n_mfcc=20, step_sample=0.05).sec_to_pos(16.15))
+        self.assertEqual(275, Undertest(n_mfcc=20, step_sample=0.05).duration_to_position(13.75))
+        self.assertEqual(322, Undertest(n_mfcc=20, step_sample=0.05).duration_to_position(16.15))
 
     def test_pos_to_sec(self):
-        self.assertEqual(13.75, Undertest(n_mfcc=20, step_sample=0.05).pos_to_sec(275))
-        self.assertEqual(16.1, Undertest(n_mfcc=20, step_sample=0.05).pos_to_sec(322))
+        self.assertEqual(13.75, Undertest(n_mfcc=20, step_sample=0.05).position_to_duration(275))
+        self.assertEqual(16.1, Undertest(n_mfcc=20, step_sample=0.05).position_to_duration(322))
 
     def test_pos_to_time_str(self):
         self.assertEqual(
             "01:23:20,150",
-            Undertest(n_mfcc=20, step_sample=0.05).pos_to_time_str(100003),
+            Undertest(n_mfcc=20, step_sample=0.05).position_to_time_str(100003),
         )
 
     def test_extract_data_and_label_from_audio(self):

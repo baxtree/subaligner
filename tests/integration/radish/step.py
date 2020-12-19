@@ -4,7 +4,7 @@ import subprocess
 import os
 import tempfile
 import shutil
-from radish import given, when, then, before, after
+from radish import given, when, then, before, after  # type: ignore
 
 PWD = os.path.dirname(os.path.realpath(__file__))
 WAIT_TIMEOUT_IN_SECONDS = 300
@@ -12,12 +12,18 @@ WAIT_TIMEOUT_IN_SECONDS = 300
 
 @given('I have a video file "{file_name:S}"')
 def video_file(step, file_name):
-    step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+    if file_name.lower().startswith("http"):
+        step.context.video_file_path = file_name
+    else:
+        step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
 @given('I have a subtitle file "{file_name:S}"')
 def subtitle_file(step, file_name):
-    step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+    if file_name.lower().startswith("http"):
+        step.context.subtitle_file_path = file_name
+    else:
+        step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage")
@@ -59,7 +65,7 @@ def run_subaligner_with_output(step, aligner, mode, file_name):
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and with exit_segfail")
-def run_subaligner_without_stretch(step, aligner, mode):
+def run_subaligner_with_exit_segfail(step, aligner, mode):
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -86,6 +92,7 @@ def run_subaligner_without_stretch(step, aligner, mode):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_file_path,
             "-so",
+            "-sil", "eng",
             "-q"], shell=False)
     else:
         process = subprocess.Popen([
@@ -94,12 +101,13 @@ def run_subaligner_without_stretch(step, aligner, mode):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_file_path,
             "-so",
+            "-sil", "eng",
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and a custom model")
-def run_subaligner(step, aligner, mode):
+def run_subaligner_with_custom_model(step, aligner, mode):
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -170,7 +178,7 @@ def expect_help_information(step, aligner):
 
 
 @then("the dual-stage help information is displayed")
-def expect_help_information(step):
+def expect_dual_stage_help_information(step):
     assert "usage: subaligner_2pass" in step.context.stdout
 
 
@@ -199,7 +207,7 @@ def output_dir(step, output_dir):
     step.context.training_output = os.path.join(step.context.temp_dir, output_dir)
 
 
-@when('I run the subaligner_train against them with the following hyper parameters')
+@when('I run the subaligner_train against them with the following hyperparameters')
 def train(step):
     process = subprocess.Popen([
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
@@ -222,7 +230,7 @@ def model_trained(step):
     assert os.path.join(step.context.training_output, "training_dump.hdf5") in output_files
 
 
-@then("a hyper parameter file is generated")
+@then("a hyperparameter file is generated")
 def hyperparam_tuned(step):
     output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
     assert step.context.exit_code == 0
@@ -259,12 +267,12 @@ def return_done_epochs(step, done_epochs):
     assert step.context.done_epochs == "Number of epochs done: %s\n" % format(done_epochs)
 
 
-@before.each_scenario(on_tags="train or hyper-parameter-tuning")
+@before.each_scenario(on_tags="train or hyperparameter-tuning")
 def create_training_output_dir(scenario):
     scenario.context.temp_dir = tempfile.mkdtemp()
 
 
-@after.each_scenario(on_tags="train or hyper-parameter-tuning")
+@after.each_scenario(on_tags="train or hyperparameter-tuning")
 def remove_training_output_dir(scenario):
     if os.path.isdir(scenario.context.temp_dir):
         shutil.rmtree(scenario.context.temp_dir)

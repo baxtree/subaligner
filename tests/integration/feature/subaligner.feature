@@ -27,8 +27,9 @@ Feature: Subaligner CLI
         |  subaligner       |  dual     |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner       |  dual     |  "test.tmp"       |  "test_aligned.tmp"       |
 
+
     @video-input @without-mode
-    Scenario Outline: Test alignments with video
+    Scenario Outline: Test alignments without modes
         Given I have a video file "test.mp4"
         And I have a subtitle file <subtitle-in>
         When I run the alignment with <aligner> on them with <mode> stage
@@ -45,6 +46,19 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
         |  subaligner_2pass |  <NULL>   |  "test.ssa"  |  "test_aligned.ssa"    |
         |  subaligner_2pass |  <NULL>   |  "test.ass"  |  "test_aligned.ass"    |
+
+    @remote-inputs
+    Scenario Outline: Test alignments with remote inputs
+        Given I have a video file "https://raw.githubusercontent.com/baxtree/subaligner/master/tests/subaligner/resource/test.mp4"
+        And I have a subtitle file "https://raw.githubusercontent.com/baxtree/subaligner/master/tests/subaligner/resource/test.srt"
+        When I run the alignment with <aligner> on them with <mode> stage and output "custom_aligned.srt"
+        Then a new subtitle file "custom_aligned.srt" is generated
+    Examples:
+        |  aligner          |  mode     |
+        |  subaligner_1pass |  <NULL>   |
+        |  subaligner_2pass |  <NULL>   |
+        |  subaligner       |  single   |
+        |  subaligner       |  dual     |
 
     @audio-input
     Scenario Outline: Test alignments with audio

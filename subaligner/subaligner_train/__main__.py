@@ -12,7 +12,7 @@ optional arguments:
                         Path to the video directory
   -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
                         Path to the subtitle directory
-  -r, --resume          Continue with previous training result if present (hyper parameters passed in will be ignored except for --epochs)
+  -r, --resume          Continue with previous training result if present (hyperparameters passed in will be ignored except for --epochs)
   -dde, --display_done_epochs
                         Display the number of completed epochs
   -utd, --use_training_dump
@@ -24,7 +24,7 @@ required arguments:
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
 
-optional hyper parameters:
+optional hyperparameters:
   -bs BATCH_SIZE, --batch_size BATCH_SIZE
                         Number of 32ms samples at each training step
   -do DROPOUT, --dropout DROPOUT
@@ -63,9 +63,9 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="""Train the subaligner model.
-                                                    Each subtitle file and its companion audiovisual file need to
-                                                    share the same base filename, the part before the extension.""")
+    parser = argparse.ArgumentParser(description="""Train the subaligner model.\n
+Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.""",
+                                     formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-tod",
@@ -93,7 +93,7 @@ def main():
         "-r",
         "--resume",
         action="store_true",
-        help="Continue with previous training result if present (hyper parameters passed in will be ignored except for --epochs)",
+        help="Continue with previous training result if present (hyperparameters passed in will be ignored except for --epochs)",
     )
     parser.add_argument(
         "-dde",
@@ -101,7 +101,7 @@ def main():
         action="store_true",
         help="Display the number of completed epochs",
     )
-    hyperparameter_args = parser.add_argument_group("optional hyper parameters")
+    hyperparameter_args = parser.add_argument_group("optional hyperparameters")
     hyperparameter_args.add_argument(
         "-bs",
         "--batch_size",

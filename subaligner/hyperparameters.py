@@ -1,15 +1,16 @@
 import sys
 import json
+from typing import Any, List
 
 
 class Hyperparameters(object):
-    """ The configuration on hyper parameters used for training
+    """ The configuration on hyperparameters used for training
     """
 
     OPTIMIZERS = ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rmsprop", "sgd"]
 
     def __init__(self):
-        """Hyper parameters initialiser setting default values"""
+        """Hyperparameters initialiser setting default values"""
 
         self.__learning_rate = 0.001
         self.__hidden_size = {
@@ -29,7 +30,7 @@ class Hyperparameters(object):
         self.__es_patience = sys.maxsize
         self.__network_type = "lstm"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         """Comparator for Hyperparameters objects"""
 
         if isinstance(other, Hyperparameters):
@@ -53,51 +54,51 @@ class Hyperparameters(object):
         return False
 
     @property
-    def learning_rate(self):
+    def learning_rate(self) -> float:
         return self.__learning_rate
 
     @learning_rate.setter
-    def learning_rate(self, value):
+    def learning_rate(self, value: float) -> None:
         self.__learning_rate = value
 
     @property
-    def front_hidden_size(self):
+    def front_hidden_size(self) -> List[int]:
         return self.__hidden_size["front_layers"]
 
     @front_hidden_size.setter
-    def front_hidden_size(self, value):
+    def front_hidden_size(self, value: List[int]) -> None:
         self.__hidden_size["front_layers"] = value
 
     @property
-    def back_hidden_size(self):
+    def back_hidden_size(self) -> List[int]:
         return self.__hidden_size["back_layers"]
 
     @back_hidden_size.setter
-    def back_hidden_size(self, value):
+    def back_hidden_size(self, value: List[int]) -> None:
         self.__hidden_size["back_layers"] = value
 
     @property
-    def dropout(self):
+    def dropout(self) -> float:
         return self.__dropout
 
     @dropout.setter
-    def dropout(self, value):
+    def dropout(self, value: float) -> None:
         self.__dropout = value
 
     @property
-    def epochs(self):
+    def epochs(self) -> int:
         return self.__epochs
 
     @epochs.setter
-    def epochs(self, value):
+    def epochs(self, value: int) -> None:
         self.__epochs = value
 
     @property
-    def optimizer(self):
+    def optimizer(self) -> str:
         return self.__optimizer
 
     @optimizer.setter
-    def optimizer(self, value):
+    def optimizer(self, value: str) -> None:
         if value not in self.OPTIMIZERS:
             raise ValueError("Optimizer {} is not supported".format(value))
 
@@ -119,92 +120,92 @@ class Hyperparameters(object):
             self.__optimizer = "SGD"
 
     @property
-    def loss(self):
+    def loss(self) -> float:
         return self.__loss
 
     @property
-    def metrics(self):
+    def metrics(self) -> List[str]:
         return self.__metrics
 
     @metrics.setter
-    def metrics(self, value):
+    def metrics(self, value: List[str]):
         self.__metrics = value
 
     @property
-    def batch_size(self):
+    def batch_size(self) -> int:
         return self.__batch_size
 
     @batch_size.setter
-    def batch_size(self, value):
+    def batch_size(self, value: int) -> None:
         self.__batch_size = value
 
     @property
-    def validation_split(self):
+    def validation_split(self) -> float:
         return self.__validation_split
 
     @validation_split.setter
-    def validation_split(self, value):
+    def validation_split(self, value: float) -> None:
         self.__validation_split = value
 
     @property
-    def monitor(self):
+    def monitor(self) -> str:
         return self.__monitor
 
     @monitor.setter
-    def monitor(self, value):
+    def monitor(self, value: str) -> None:
         self.__monitor = value
 
     @property
-    def es_mode(self):
+    def es_mode(self) -> str:
         return self.__es_mode
 
     @es_mode.setter
-    def es_mode(self, value):
+    def es_mode(self, value: str) -> None:
         self.__es_mode = value
 
     @property
-    def es_min_delta(self):
+    def es_min_delta(self) -> float:
         return self.__es_min_delta
 
     @es_min_delta.setter
-    def es_min_delta(self, value):
+    def es_min_delta(self, value: float) -> None:
         self.__es_min_delta = value
 
     @property
-    def es_patience(self):
+    def es_patience(self) -> int:
         return self.__es_patience
 
     @es_patience.setter
-    def es_patience(self, value):
+    def es_patience(self, value: int) -> None:
         self.__es_patience = value
 
     @property
-    def network_type(self):
+    def network_type(self) -> str:
         return self.__network_type
 
     @network_type.setter
-    def network_type(self, value):
+    def network_type(self, value: str) -> None:
         self.__network_type = value
 
-    def to_json(self):
-        """Serialise hyper parameters into JSON string
+    def to_json(self) -> str:
+        """Serialise hyperparameters into JSON string
 
         Returns:
-            string -- The serialised hyper parameters in JSON
+            string -- The serialised hyperparameters in JSON
         """
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
-    def to_file(self, file_path):
-        """Serialise hyper parameters into JSON and save the content to a file
+    def to_file(self, file_path: str) -> None:
+        """Serialise hyperparameters into JSON and save the content to a file
 
         Arguments:
-            file_path {string} -- The path to the file containing saved hyper parameters.
+            file_path {string} -- The path to the file containing saved hyperparameters.
         """
         with open(file_path, "w", encoding="utf8") as file:
             file.write(self.to_json())
 
-    def clone(self):
-        """Make a cloned hyper parameters object
+    def clone(self) -> "Hyperparameters":
+        """Make a cloned hyperparameters object
 
         Returns:
             Hyperparameters -- The cloned Hyperparameters object.
@@ -212,11 +213,11 @@ class Hyperparameters(object):
         return self.from_json(self.to_json())
 
     @classmethod
-    def from_json(cls, json_str):
+    def from_json(cls, json_str: str) -> "Hyperparameters":
         """Deserialise JSON string into a Hyperparameters object
 
         Arguments:
-            json_str {string} -- Hyper parameters in JSON.
+            json_str {string} -- Hyperparameters in JSON.
 
         Returns:
             Hyperparameters -- The deserialised Hyperparameters object.
@@ -226,11 +227,11 @@ class Hyperparameters(object):
         return hp
 
     @classmethod
-    def from_file(cls, file_path):
+    def from_file(cls, file_path: str) -> "Hyperparameters":
         """Deserialise a file content into a Hyperparameters object
 
         Arguments:
-            file_path {string} -- The path to the file containing hyper parameters.
+            file_path {string} -- The path to the file containing hyperparameters.
 
         Returns:
             Hyperparameters -- The deserialised Hyperparameters object.
