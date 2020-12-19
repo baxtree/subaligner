@@ -29,6 +29,7 @@ scripts*
 misc/tmp
 wheels*
 /training.log
+Pipfile.lock
 
 # Unit test / coverage reports
 htmlcov/
