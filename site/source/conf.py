@@ -77,6 +77,7 @@ autodoc_mock_imports = [
     "pysrt",
     "sklearn",
     "tensorflow",
+    "pysubs2",
 ]
 
 def setup(app):
