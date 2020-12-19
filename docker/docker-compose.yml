@@ -19,17 +19,11 @@ services:
        dockerfile: Dockerfile-CentOS8
      image: baxtree/subaligner:${SUBALIGNER_VERSION}.el8
 
-   subaligner-ubuntu18:
+   subaligner-ubuntu19:
      build:
        context: ./
        dockerfile: Dockerfile-Ubuntu18
      image: baxtree/subaligner:${SUBALIGNER_VERSION}.u18
-
-   subaligner-ubuntu19:
-     build:
-       context: ./
-       dockerfile: Dockerfile-Ubuntu19
-     image: baxtree/subaligner:${SUBALIGNER_VERSION}.u19
 
    subaligner-ubuntu20:
      build:
