@@ -15,8 +15,6 @@ from .hyperparameters import Hyperparameters
 from .embedder import FeatureEmbedder
 from .exception import UnsupportedFormatException, TerminalException
 from .logger import Logger
-from .utils import Utils
-Utils.suppress_lib_logs()
 
 
 class Trainer(object):

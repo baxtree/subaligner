@@ -11,17 +11,19 @@ Make sure you have got the virtual environment activated upfront.
 **Single-stage alignment**::
 
     (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt
+    (.venv) $ subaligner_1pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
 
 **Dual-stage alignment**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt
-
+    (.venv) $ subaligner_2pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
 
 **Pass in single-stage or dual-stage as the alignment mode**::
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt
+    (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
-
+    (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
 
 **Run alignments with the docker image**::
 

@@ -280,8 +280,8 @@ class Utils(object):
     def suppress_lib_logs() -> None:
         import os
         import logging
-        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-        os.environ["TF_CPP_MIN_VLOG_LEVEL"] = "2"
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+        os.environ["TF_CPP_MIN_VLOG_LEVEL"] = "0"
         logging.getLogger("tensorflow").disabled = True
 
     @staticmethod

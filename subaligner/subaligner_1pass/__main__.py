@@ -17,9 +17,9 @@ optional arguments:
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
-                        Path to the video file
+                        File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        Path to the subtitle file
+                        File path or URL to the subtitle file
 """
 
 import argparse
@@ -46,7 +46,7 @@ def main():
         "--video_path",
         type=str,
         default="",
-        help="Path to the video file",
+        help="File path or URL to the video file",
         required=True,
     )
     required_args.add_argument(
@@ -54,7 +54,7 @@ def main():
         "--subtitle_path",
         type=str,
         default="",
-        help="Path to the subtitle file",
+        help="File path or URL to the subtitle file",
         required=True,
     )
     parser.add_argument(
