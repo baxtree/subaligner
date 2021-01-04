@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 """
-usage: subaligner_tune [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY [-ept EPOCHS_PER_TRAIL] [-t TRAILS] [-nt {lstm,bi_lstm,conv_1d}]
-                       [-utd] [-d] [-q]
+usage: subaligner_tune [-h] -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTPUT_DIRECTORY [-ept EPOCHS_PER_TRAIL] [-t TRAILS] [-nt {lstm,bi_lstm,conv_1d}] [-utd] [-d] [-q] [-ver]
 
-Tune hyperparameters before training.
+Tune hyperparameters before training
 
 optional arguments:
-  -h, --help            Show this help message and exit
+  -h, --help            show this help message and exit
   -ept EPOCHS_PER_TRAIL, --epochs_per_trail EPOCHS_PER_TRAIL
                         Number of training epochs for each trial
   -t TRAILS, --trails TRAILS
@@ -17,6 +16,7 @@ optional arguments:
                         Use training dump instead of files in the video or subtitle directory
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
+  -ver, --version       show program's version number and exit
 
 required arguments:
   -vd VIDEO_DIRECTORY, --video_directory VIDEO_DIRECTORY
@@ -43,7 +43,8 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Tune hyperparameters before training.", formatter_class=argparse.RawTextHelpFormatter)
+    from subaligner._version import __version__
+    parser = argparse.ArgumentParser(description="Tune hyperparameters before training (v%s)" % __version__, formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-vd",
@@ -97,6 +98,7 @@ def main():
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
+    parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.video_directory == "":

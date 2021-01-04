@@ -21,13 +21,16 @@ Make sure you have got the virtual environment activated upfront.
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
-
+    (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
+    (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
 
 **Run alignments with the docker image**::
 
     $ docker pull baxtree/subaligner
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
+    $ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+    $ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 
 **Run alignments with pipx**::
 

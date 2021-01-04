@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-usage: subaligner_1pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
+usage: subaligner_1pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q] [-ver]
 
 Run single-stage alignment
 
@@ -14,12 +14,13 @@ optional arguments:
                         Path to the output subtitle file
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
+  -ver, --version       show program's version number and exit
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         Path to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        Path to the subtitle file
+                       File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -39,7 +40,8 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Run single-stage alignment", formatter_class=argparse.RawTextHelpFormatter)
+    from subaligner._version import __version__
+    parser = argparse.ArgumentParser(description="Run single-stage alignment (v%s)" % __version__, formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-v",
@@ -49,12 +51,13 @@ def main():
         help="Path to the video file",
         required=True,
     )
+    from subaligner.subtitle import Subtitle
     required_args.add_argument(
         "-s",
         "--subtitle_path",
         type=str,
         default="",
-        help="Path to the subtitle file",
+        help="File path or URL to the subtitle file (Extensions of supported subtitles: {}) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)".format(", ".join(Subtitle.subtitle_extensions())),
         required=True,
     )
     parser.add_argument(
@@ -82,6 +85,7 @@ def main():
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
+    parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.video_path == "":
@@ -93,6 +97,9 @@ def main():
     if FLAGS.subtitle_path.lower().startswith("http") and FLAGS.output == "":
         print("--output was not passed in for alignment on a remote subtitle file")
         sys.exit(21)
+    if FLAGS.subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
+        print("--output was not passed in for alignment on embedded subtitles")
+        sys.exit(21)
 
     local_video_path = FLAGS.video_path
     local_subtitle_path = FLAGS.subtitle_path
@@ -101,7 +108,6 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
-    from subaligner.subtitle import Subtitle
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
     from subaligner.utils import Utils
@@ -119,6 +125,21 @@ def main():
             local_subtitle_path = "{}{}".format(local_subtitle_path, subtitle_file_extension)
             Utils.download_file(FLAGS.subtitle_path, local_subtitle_path)
 
+        if FLAGS.subtitle_path.lower().startswith("embedded:"):
+            _, local_subtitle_path = tempfile.mkstemp()
+            _, subtitle_file_extension = os.path.splitext(FLAGS.output)
+            local_subtitle_path = "{}{}".format(local_subtitle_path, subtitle_file_extension)
+            params = FLAGS.subtitle_path.lower().split(":")[1].split(",")
+            if params and "=" in params[0]:
+                params = {param.split("=")[0]: param.split("=")[1] for param in params}
+                if "page_num" in params:
+                    Utils.extract_teletext_as_subtitle(local_video_path, int(params["page_num"]), local_subtitle_path)
+                elif "stream_index" in params:
+                    Utils.extract_matroska_subtitle(local_video_path, int(params["stream_index"]), local_subtitle_path)
+            else:
+                print("Embedded subtitle selector cannot be empty")
+                sys.exit(21)
+
         predictor = Predictor()
         subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
             video_file_path=local_video_path,
@@ -127,8 +148,7 @@ def main():
         )
 
         aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(FLAGS.subtitle_path, subs, aligned_subtitle_path, frame_rate)
-        print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
+        Subtitle.export_subtitle(local_subtitle_path, subs, aligned_subtitle_path, frame_rate)
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs)
         if log_loss is None or log_loss > FLAGS.max_logloss:
@@ -137,6 +157,8 @@ def main():
             )
             _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
             sys.exit(22)
+
+        print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
     except UnsupportedFormatException as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")

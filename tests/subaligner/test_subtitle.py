@@ -1,6 +1,7 @@
 import unittest
 import os
 import shutil
+from pathlib import Path
 from subaligner.subtitle import Subtitle as Undertest
 from subaligner.exception import UnsupportedFormatException
 
@@ -33,6 +34,9 @@ class SubtitleTests(unittest.TestCase):
         )
         self.__tmp_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
+        )
+        self.__sami_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.smi"
         )
         self.__subtxt_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.txt"
@@ -83,6 +87,10 @@ class SubtitleTests(unittest.TestCase):
         subtitle = Undertest.load_tmp(self.__tmp_file_path)
         self.assertEqual(self.__tmp_file_path, subtitle.subtitle_file_path)
 
+    def test_get_sami_file_path(self):
+        subtitle = Undertest.load_sami(self.__sami_file_path)
+        self.assertEqual(self.__sami_file_path, subtitle.subtitle_file_path)
+
     def test_load_srt_subs(self):
         subtitle = Undertest.load_subrip(self.__srt_file_path)
         self.assertGreater(len(subtitle.subs), 0)
@@ -124,6 +132,7 @@ class SubtitleTests(unittest.TestCase):
         microdvd_subtitle = Undertest.load(self.__microdvd_file_path)
         mp2_subtitle = Undertest.load(self.__mpl2_file_path)
         tmp_subtitle = Undertest.load(self.__tmp_file_path)
+        sami_subtitle = Undertest.load(self.__sami_file_path)
 
         self.assertEqual(len(srt_subtitle.subs), len(ttml_subtitle.subs))
         self.assertEqual(len(srt_subtitle.subs), len(vtt_subtitle.subs))
@@ -132,6 +141,7 @@ class SubtitleTests(unittest.TestCase):
         self.assertEqual(len(srt_subtitle.subs), len(microdvd_subtitle.subs))
         self.assertEqual(len(srt_subtitle.subs), len(mp2_subtitle.subs))
         self.assertEqual(len(srt_subtitle.subs), len(tmp_subtitle.subs))
+        self.assertEqual(len(srt_subtitle.subs), len(sami_subtitle.subs))
 
     def test_shift_srt_subtitle(self):
         shifted_srt_file_path = os.path.join(self.__resource_tmp, "subtitle_test.srt")
@@ -232,6 +242,21 @@ class SubtitleTests(unittest.TestCase):
             for i, lo in enumerate(original):
                 pass
         with open(shifted_tmp_file_path) as shifted:
+            for j, ls in enumerate(shifted):
+                pass
+        original_line_num = i + 1
+        shifted_line_num = j + 1
+        self.assertEqual(original_line_num, shifted_line_num)
+
+    def test_shift_sami_subtitle(self):
+        shifted_sami_file_path = os.path.join(self.__resource_tmp, "subtitle_test.sami.txt")
+        Undertest.shift_subtitle(
+            self.__sami_file_path, 2, shifted_sami_file_path, suffix="_test"
+        )
+        with open(self.__sami_file_path) as original:
+            for i, lo in enumerate(original):
+                pass
+        with open(shifted_sami_file_path) as shifted:
             for j, ls in enumerate(shifted):
                 pass
         original_line_num = i + 1
@@ -357,6 +382,23 @@ class SubtitleTests(unittest.TestCase):
         target_line_num = j + 1
         self.assertEqual(original_line_num, target_line_num)
 
+    def test_export_sami_subtitle(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_test.sami.txt")
+        Undertest.export_subtitle(
+            self.__sami_file_path,
+            Undertest.load(self.__sami_file_path).subs,
+            target_file_path,
+        )
+        with open(self.__sami_file_path) as original:
+            for i, lo in enumerate(original):
+                pass
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        original_line_num = i + 1
+        target_line_num = j + 1
+        self.assertEqual(original_line_num, target_line_num)
+
     def test_remove_sound_effects_with_affixes(self):
         subtitle = Undertest.load(self.__srt_file_path)
         new_subs = Undertest.remove_sound_effects_by_affixes(
@@ -426,9 +468,20 @@ class SubtitleTests(unittest.TestCase):
             expected_text = target.read()
         self.assertEqual(expected_text, text)
 
+    def test_extract_text_from_sami(self):
+        text = Undertest.extract_text(self.__sami_file_path)
+        with open(self.__subtxt_file_path) as target:
+            expected_text = target.read()
+        self.assertEqual(expected_text, text)
+
+    def test_subtitle_extentions(self):
+        self.assertEqual({".srt", ".xml", ".ttml", ".dfxp", ".vtt", ".ssa", ".ass", ".sub", ".txt", ".tmp", ".smi", ".sami"},
+                         Undertest.subtitle_extensions())
+
     def test_throw_exception_on_missing_subtitle(self):
         try:
             unknown_file_path = os.path.join(self.__resource_tmp, "subtitle_test.unknown")
+            Path(unknown_file_path).touch()
             Undertest.export_subtitle(unknown_file_path, None, "")
         except Exception as e:
             self.assertTrue(isinstance(e, UnsupportedFormatException))
@@ -438,6 +491,7 @@ class SubtitleTests(unittest.TestCase):
     def test_throw_exception_on_loading_unknown_subtitle(self):
         try:
             unknown_file_path = os.path.join(self.__resource_tmp, "subtitle_test.unknown")
+            Path(unknown_file_path).touch()
             Undertest.shift_subtitle(unknown_file_path, 2, "", "")
         except Exception as e:
             self.assertTrue(isinstance(e, UnsupportedFormatException))
@@ -447,6 +501,7 @@ class SubtitleTests(unittest.TestCase):
     def test_throw_exception_on_shifting_unknown_subtitle(self):
         try:
             unknown_file_path = os.path.join(self.__resource_tmp, "subtitle_test.unknown")
+            Path(unknown_file_path).touch()
             Undertest.load(unknown_file_path)
         except Exception as e:
             self.assertTrue(isinstance(e, UnsupportedFormatException))
@@ -456,6 +511,7 @@ class SubtitleTests(unittest.TestCase):
     def test_throw_exception_on_exporting_unknown_subtitle(self):
         try:
             unknown_file_path = os.path.join(self.__resource_tmp, "subtitle_test.unknown")
+            Path(unknown_file_path).touch()
             Undertest.export_subtitle(
                 unknown_file_path,
                 Undertest.load(self.__ttml_file_path).subs,

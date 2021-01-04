@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 """
-usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS]
-                        [-p PATIENCE] [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
-                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q]
+usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
+                        [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
+                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q] [-ver]
 
-Train the subaligner model. Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.
+Train the Subaligner model
+
+Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.
 
 optional arguments:
-  -h, --help            Show this help message and exit
+  -h, --help            show this help message and exit
   -vd VIDEO_DIRECTORY, --video_directory VIDEO_DIRECTORY
                         Path to the video directory
   -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
@@ -19,6 +21,7 @@ optional arguments:
                         Use training dump instead of files in the video or subtitle directory
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
+  -ver, --version       show program's version number and exit
 
 required arguments:
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
@@ -63,8 +66,9 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="""Train the subaligner model.\n
-Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.""",
+    from subaligner._version import __version__
+    parser = argparse.ArgumentParser(description="""Train the Subaligner model (%s)\n
+Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.""" % __version__,
                                      formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
@@ -181,6 +185,7 @@ Each subtitle file and its companion audiovisual file need to share the same bas
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
+    parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.training_output_directory == "":

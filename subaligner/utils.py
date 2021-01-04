@@ -3,15 +3,18 @@ import subprocess
 import pysubs2
 import requests
 import shutil
+import chardet
 
-from typing import Optional, TextIO, BinaryIO, Union
 from pycaption import (
     CaptionConverter,
+    SRTWriter,
     SRTReader,
     DFXPWriter,
     DFXPReader,
-    SRTWriter,
+    SAMIWriter,
+    SAMIReader,
 )
+from typing import Optional, TextIO, BinaryIO, Union, Callable, Any
 from .exception import TerminalException
 
 
@@ -30,12 +33,13 @@ class Utils(object):
 
         file: Union[TextIO, BinaryIO]
         converter = CaptionConverter()
-        with open(srt_file_path, "r", encoding="utf8") as file:
+        encoding = Utils.detect_encoding(srt_file_path)
+        with open(srt_file_path, "r", encoding=encoding) as file:
             converter.read(file.read(), SRTReader())
         if ttml_file_path is None:
             ttml_file_path = srt_file_path.replace(".srt", ".xml")
         with open(ttml_file_path, "wb") as file:
-            file.write(converter.write(DFXPWriter()).encode("utf-8"))
+            file.write(converter.write(DFXPWriter()).encode(encoding))
 
     @staticmethod
     def ttml2srt(ttml_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -48,12 +52,13 @@ class Utils(object):
 
         file: Union[TextIO, BinaryIO]
         converter = CaptionConverter()
-        with open(ttml_file_path, "r", encoding="utf8") as file:
+        encoding = Utils.detect_encoding(ttml_file_path)
+        with open(ttml_file_path, "r", encoding=encoding) as file:
             converter.read(file.read(), DFXPReader())
         if srt_file_path is None:
             srt_file_path = ttml_file_path.replace(".xml", ".srt")
         with open(srt_file_path, "wb") as file:
-            file.write(converter.write(SRTWriter()).encode("utf-8"))
+            file.write(converter.write(SRTWriter()).encode(encoding))
 
     @staticmethod
     def srt2vtt(srt_file_path: str, vtt_file_path: Optional[str] = None, timeout_secs: int = 30) -> None:
@@ -62,47 +67,25 @@ class Utils(object):
         Arguments:
             srt_file_path {string} -- The path to the SubRip file.
             vtt_file_path {string} -- The path to the WebVTT file.
+            timeout_secs {int} -- The timeout in seconds on conversion {default: 30}.
         """
 
         _vtt_file_path = srt_file_path.replace(".srt", ".vtt") if vtt_file_path is None else vtt_file_path
-        command = "ffmpeg -y -i {0} -f webvtt {1}".format(srt_file_path, _vtt_file_path)
-        with subprocess.Popen(
-            command.split(),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            close_fds=True,
-            universal_newlines=True,
-            bufsize=1,
-        ) as process:
-            try:
-                _, std_err = process.communicate(timeout=timeout_secs)
-                if process.returncode != 0:
-                    raise TerminalException(
-                        "Cannot convert SubRip to WebVTT: {} with error {}".format(
-                            srt_file_path, std_err
-                        )
-                    )
-                Utils.remove_trailing_newlines(_vtt_file_path)
-            except subprocess.TimeoutExpired as te:
-                process.kill()
+        encoding = Utils.detect_encoding(srt_file_path)
+        command = "ffmpeg -y -sub_charenc {0} -i {1} -f webvtt {2}".format(encoding, srt_file_path, _vtt_file_path)
+        timeout_msg = "Timeout on converting SubRip to WebVTT: {}".format(srt_file_path)
+        error_msg = "Cannot convert SubRip to WebVTT: {}".format(srt_file_path)
+
+        def _callback(returncode: int, std_err: str) -> None:
+            if returncode != 0:
                 raise TerminalException(
-                    "Timeout on converting SubRip to WebVTT: {}".format(
-                        srt_file_path
+                    "Cannot convert SubRip to WebVTT: {} with error {}".format(
+                        srt_file_path, std_err
                     )
-                ) from te
-            except Exception as e:
-                process.kill()
-                if isinstance(e, TerminalException):
-                    raise e
-                else:
-                    raise TerminalException(
-                        "Cannot convert SubRip to WebVTT: {}".format(
-                            srt_file_path
-                        )
-                    ) from e
-            finally:
-                os.system("stty sane")
+                )
+            Utils.remove_trailing_newlines(_vtt_file_path, encoding)
+
+        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def vtt2srt(vtt_file_path: str, srt_file_path: Optional[str] = None, timeout_secs: int = 30) -> None:
@@ -111,49 +94,25 @@ class Utils(object):
         Arguments:
             vtt_file_path {string} -- The path to the WebVTT file.
             srt_file_path {string} -- The path to the SubRip file.
+            timeout_secs {int} -- The timeout in seconds on conversion {default: 30}.
         """
 
         _srt_file_path = vtt_file_path.replace(".vtt", ".srt") if srt_file_path is None else srt_file_path
-        command = "ffmpeg -y -i {0} -f srt {1}".format(vtt_file_path, _srt_file_path)
-        with subprocess.Popen(
-            command.split(),
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            close_fds=True,
-            universal_newlines=True,
-            bufsize=1,
-        ) as process:
-            try:
-                _, std_err = process.communicate(timeout=timeout_secs)
-                if process.returncode != 0:
-                    raise TerminalException(
-                        "Cannot convert WebVTT to SubRip: {} with error {}".format(
-                            vtt_file_path, std_err
-                        )
-                    )
-                Utils.remove_trailing_newlines(_srt_file_path)
-            except subprocess.TimeoutExpired as te:
-                process.kill()
-                process.wait()
+        encoding = Utils.detect_encoding(vtt_file_path)
+        command = "ffmpeg -y -sub_charenc {0} -i {1} -f srt {2}".format(encoding, vtt_file_path, _srt_file_path)
+        timeout_msg = "Timeout on converting WebVTT to SubRip: {}".format(vtt_file_path)
+        error_msg = "Cannot convert WebVTT to SubRip: {}".format(vtt_file_path)
+
+        def _callback(returncode: int, std_err: str) -> None:
+            if returncode != 0:
                 raise TerminalException(
-                    "Timeout on converting WebVTT to SubRip: {}".format(
-                        vtt_file_path
+                    "Cannot convert WebVTT to SubRip: {} with error {}".format(
+                        vtt_file_path, std_err
                     )
-                ) from te
-            except Exception as e:
-                process.kill()
-                process.wait()
-                if isinstance(e, TerminalException):
-                    raise e
-                else:
-                    raise TerminalException(
-                        "Cannot convert WebVTT to SubRip: {}".format(
-                            vtt_file_path
-                        )
-                    ) from e
-            finally:
-                os.system("stty sane")
+                )
+            Utils.remove_trailing_newlines(_srt_file_path, encoding)
+
+        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def srt2ass(srt_file_path: str, ass_file_path: Optional[str] = None) -> None:
@@ -164,8 +123,8 @@ class Utils(object):
             ass_file_path {string} -- The path to the ASS file.
         """
 
-        new_ass_file_path = Utils.__convert_subtitle(srt_file_path, "srt", ass_file_path, "ass", "ass")
-        Utils.remove_trailing_newlines(new_ass_file_path)
+        new_ass_file_path, encoding = Utils.__convert_subtitle(srt_file_path, "srt", ass_file_path, "ass", "ass")
+        Utils.remove_trailing_newlines(new_ass_file_path, encoding)
 
     @staticmethod
     def ass2srt(ass_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -176,8 +135,8 @@ class Utils(object):
             srt_file_path {string} -- The path to the SubRip file.
         """
 
-        new_srt_file_path = Utils.__convert_subtitle(ass_file_path, "ass", srt_file_path, "srt", "srt")
-        Utils.remove_trailing_newlines(new_srt_file_path)
+        new_srt_file_path, encoding = Utils.__convert_subtitle(ass_file_path, "ass", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(new_srt_file_path, encoding)
 
     @staticmethod
     def srt2ssa(srt_file_path: str, ssa_file_path: Optional[str] = None) -> None:
@@ -188,8 +147,8 @@ class Utils(object):
             ssa_file_path {string} -- The path to the SSA file.
         """
 
-        new_ssa_file_path = Utils.__convert_subtitle(srt_file_path, "srt", ssa_file_path, "ssa", "ssa")
-        Utils.remove_trailing_newlines(new_ssa_file_path)
+        new_ssa_file_path, encoding = Utils.__convert_subtitle(srt_file_path, "srt", ssa_file_path, "ssa", "ssa")
+        Utils.remove_trailing_newlines(new_ssa_file_path, encoding)
 
     @staticmethod
     def ssa2srt(ssa_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -200,8 +159,8 @@ class Utils(object):
             srt_file_path {string} -- The path to the SubRip file.
         """
 
-        new_srt_file_path = Utils.__convert_subtitle(ssa_file_path, "ssa", srt_file_path, "srt", "srt")
-        Utils.remove_trailing_newlines(new_srt_file_path)
+        new_srt_file_path, encoding = Utils.__convert_subtitle(ssa_file_path, "ssa", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(new_srt_file_path, encoding)
 
     @staticmethod
     def srt2microdvd(srt_file_path: str, microdvd_file_path: Optional[str] = None, frame_rate: float = 25.0):
@@ -213,8 +172,8 @@ class Utils(object):
             frame_rate {float} -- The frame rate for frame-based MicroDVD.
         """
 
-        new_microdvd_file_path = Utils.__convert_subtitle(srt_file_path, "srt", microdvd_file_path, "sub", "microdvd", frame_rate=frame_rate)
-        Utils.remove_trailing_newlines(new_microdvd_file_path)
+        new_microdvd_file_path, encoding = Utils.__convert_subtitle(srt_file_path, "srt", microdvd_file_path, "sub", "microdvd", frame_rate=frame_rate)
+        Utils.remove_trailing_newlines(new_microdvd_file_path, encoding)
 
     @staticmethod
     def microdvd2srt(microdvd_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -225,8 +184,8 @@ class Utils(object):
             srt_file_path {string} -- The path to the SubRip file.
         """
 
-        new_srt_file_path = Utils.__convert_subtitle(microdvd_file_path, "sub", srt_file_path, "srt", "srt")
-        Utils.remove_trailing_newlines(new_srt_file_path)
+        new_srt_file_path, encoding = Utils.__convert_subtitle(microdvd_file_path, "sub", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(new_srt_file_path, encoding)
 
     @staticmethod
     def srt2mpl2(srt_file_path: str, mpl2_file_path: Optional[str] = None) -> None:
@@ -237,8 +196,8 @@ class Utils(object):
             mpl2_file_path {string} -- The path to the MPL2 file.
         """
 
-        new_mpl2_file_path = Utils.__convert_subtitle(srt_file_path, "srt", mpl2_file_path, "txt", "mpl2")
-        Utils.remove_trailing_newlines(new_mpl2_file_path)
+        new_mpl2_file_path, encoding = Utils.__convert_subtitle(srt_file_path, "srt", mpl2_file_path, "txt", "mpl2")
+        Utils.remove_trailing_newlines(new_mpl2_file_path, encoding)
 
     @staticmethod
     def mpl22srt(mpl2_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -249,8 +208,8 @@ class Utils(object):
             srt_file_path {string} -- The path to the SubRip file.
         """
 
-        new_srt_file_path = Utils.__convert_subtitle(mpl2_file_path, "txt", srt_file_path, "srt", "srt")
-        Utils.remove_trailing_newlines(new_srt_file_path)
+        new_srt_file_path, encoding = Utils.__convert_subtitle(mpl2_file_path, "txt", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(new_srt_file_path, encoding)
 
     @staticmethod
     def srt2tmp(srt_file_path: str, tmp_file_path: Optional[str] = None) -> None:
@@ -261,8 +220,8 @@ class Utils(object):
             tmp_file_path {string} -- The path to the TMP file.
         """
 
-        new_tmp_file_path = Utils.__convert_subtitle(srt_file_path, "srt", tmp_file_path, "tmp", "tmp")
-        Utils.remove_trailing_newlines(new_tmp_file_path)
+        new_tmp_file_path, encoding = Utils.__convert_subtitle(srt_file_path, "srt", tmp_file_path, "tmp", "tmp")
+        Utils.remove_trailing_newlines(new_tmp_file_path, encoding)
 
     @staticmethod
     def tmp2srt(tmp_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -273,8 +232,98 @@ class Utils(object):
             tmp_file_path {string} -- The path to the SubRip file.
         """
 
-        new_srt_file_path = Utils.__convert_subtitle(tmp_file_path, "tmp", srt_file_path, "srt", "srt")
-        Utils.remove_trailing_newlines(new_srt_file_path)
+        new_srt_file_path, encoding = Utils.__convert_subtitle(tmp_file_path, "tmp", srt_file_path, "srt", "srt")
+        Utils.remove_trailing_newlines(new_srt_file_path, encoding)
+
+    @staticmethod
+    def srt2sami(srt_file_path: str, sami_file_path: Optional[str] = None) -> None:
+        """Convert SubRip subtitles to SAMI subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            sami_file_path {string} -- The path to the SAMI file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        converter = CaptionConverter()
+        encoding = Utils.detect_encoding(srt_file_path)
+        with open(srt_file_path, "r", encoding=encoding) as file:
+            converter.read(file.read(), SRTReader())
+        if sami_file_path is None:
+            sami_file_path = srt_file_path.replace(".srt", ".smi")
+        with open(sami_file_path, "wb") as file:
+            file.write(converter.write(SAMIWriter()).encode(encoding))
+
+    @staticmethod
+    def sami2srt(sami_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert SAMI subtitles to SubRip subtitles.
+
+        Arguments:
+            sami_file_path {string} -- The path to the SAMI file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        converter = CaptionConverter()
+        encoding = Utils.detect_encoding(sami_file_path)
+        with open(sami_file_path, "r", encoding=encoding) as file:
+            converter.read(file.read(), SAMIReader())
+        if srt_file_path is None:
+            srt_file_path = sami_file_path.replace(".smi", ".srt")
+        with open(srt_file_path, "wb") as file:
+            file.write(converter.write(SRTWriter()).encode(encoding))
+        Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
+    def extract_teletext_as_subtitle(ts_file_path: str, page_num: int, output_file_path: str, timeout_secs: int = 30) -> None:
+        """Extract DVB Teletext from MPEG transport stream files and convert them into the output format.
+
+        Arguments:
+            ts_file_path {string} -- The path to the Transport Stream file.
+            page_num {int} -- The page number for the Teletext
+            output_file_path {string} -- The path to the output file.
+            timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
+        """
+
+        command = "ffmpeg -y -fix_sub_duration -txt_page {0} -txt_format text -i {1} {2}".format(page_num, ts_file_path, output_file_path)
+        timeout_msg = "Timeout on extracting Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
+        error_msg = "Cannot extract Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
+
+        def _callback(returncode: int, std_err: str) -> None:
+            if returncode != 0:
+                raise TerminalException(
+                    "Cannot extract Teletext from transport stream: {} on page: {} with error {}".format(
+                        ts_file_path, page_num, std_err
+                    )
+                )
+            Utils.remove_trailing_newlines(output_file_path, "utf-8")
+
+        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+
+    @staticmethod
+    def extract_matroska_subtitle(mkv_file_path: str, stream_index: int, output_file_path: str, timeout_secs: int = 30) -> None:
+        """Extract subtitles from Matroska files and convert them into the output format.
+
+        Arguments:
+            mkv_file_path {string} -- The path to the Matroska file.
+            stream_index {int} -- The index of the subtitle stream
+            output_file_path {string} -- The path to the output file.
+            timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
+        """
+
+        command = "ffmpeg -y -i {} -map 0:s:{} {}".format(mkv_file_path, stream_index, output_file_path)
+        timeout_msg = "Timeout on extracting the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
+        error_msg = "Cannot extract the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
+
+        def _callback(returncode: int, std_err: str) -> None:
+            if returncode != 0:
+                raise TerminalException(
+                    "Cannot extract the subtitle from file: {} with stream index: {} with error {}".format(
+                        mkv_file_path, stream_index, std_err
+                    )
+                )
+            Utils.remove_trailing_newlines(output_file_path, "utf-8")
+        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def suppress_lib_logs() -> None:
@@ -285,29 +334,93 @@ class Utils(object):
         logging.getLogger("tensorflow").disabled = True
 
     @staticmethod
-    def remove_trailing_newlines(source_file_path: str, target_file_path: Optional[str] = None) -> None:
-        with open(source_file_path, "r", encoding="utf8") as file:
+    def remove_trailing_newlines(source_file_path: str, encoding: str, target_file_path: Optional[str] = None) -> None:
+        with open(source_file_path, "r", encoding=encoding) as file:
             content = file.read()
         if target_file_path is not None:
-            with open(target_file_path, "w", encoding="utf8") as file:
+            with open(target_file_path, "w", encoding=encoding) as file:
                 file.write(content.rstrip())
         else:
-            with open(source_file_path, "w", encoding="utf8") as file:
+            with open(source_file_path, "w", encoding=encoding) as file:
                 file.write(content.rstrip())
 
     @staticmethod
-    def download_file(remote_file_url: str, local_file_path: str) -> str:
+    def download_file(remote_file_url: str, local_file_path: str) -> None:
         r = requests.get(remote_file_url, verify=True, stream=True)
         r.raw.decode_content = True
         with open(local_file_path, "wb") as file:
             shutil.copyfileobj(r.raw, file)
 
     @staticmethod
+    def contains_embedded_subtitles(video_file_path: str, timeout_secs: int = 30) -> bool:
+        """Detect if the input video contains embedded subtitles.
+
+        Arguments:
+            video_file_path {string} -- The path to the video file.
+            timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
+
+        Returns:
+            bool -- True if the video contains embedded subtitles or False otherwise.
+        """
+
+        command = "ffmpeg -y -i {0} -c copy -map 0:s -f null - -v 0 -hide_banner".format(video_file_path)
+        timeout_msg = "Timeout on detecting embedded subtitles from file: {}".format(video_file_path)
+        error_msg = "Embedded subtitle detection failed for file: {}".format(video_file_path)
+
+        def _callback(returncode: int, std_err: str) -> bool:
+            return returncode == 0
+        return Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+
+    @staticmethod
+    def detect_encoding(subtitle_file_path: str) -> str:
+        """Detect the encoding of the subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            string -- The string represent the encoding
+        """
+
+        with open(subtitle_file_path, "rb") as file:
+            raw = b"".join([file.readline() for _ in range(10)])
+
+        detected = chardet.detect(raw)
+        return detected["encoding"] if "encoding" in detected else "utf-8"
+
+    @staticmethod
     def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> str:
-        subs = pysubs2.load(source_file_path, encoding="utf-8")
+        encoding = Utils.detect_encoding(source_file_path)
+        subs = pysubs2.load(source_file_path, encoding=encoding)
         new_target_file_path = source_file_path.replace(".%s" % source_ext, ".%s" % target_ext) if target_file_path is None else target_file_path
         if frame_rate is None:
-            subs.save(new_target_file_path, encoding="utf-8", format_=format)
+            subs.save(new_target_file_path, encoding=encoding, format_=format)
         else:
-            subs.save(new_target_file_path, encoding="utf-8", format_=format, fps=frame_rate)
-        return new_target_file_path
+            subs.save(new_target_file_path, encoding=encoding, format_=format, fps=frame_rate)
+        return new_target_file_path, encoding
+
+    @staticmethod
+    def __run_command(command: str, timeout_secs: int, timeout_msg: str, error_msg: str, callback: Callable[[int, str], Any]) -> Any:
+        with subprocess.Popen(
+                command.split(),
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                close_fds=True,
+                universal_newlines=True,
+                bufsize=1,
+        ) as process:
+            try:
+                _, std_err = process.communicate(timeout=timeout_secs)
+                return callback(process.returncode, std_err)
+            except subprocess.TimeoutExpired as te:
+                process.kill()
+                raise TerminalException(timeout_msg) from te
+            except Exception as e:
+                process.kill()
+                if isinstance(e, TerminalException):
+                    raise e
+                else:
+                    raise TerminalException(error_msg) from e
+            finally:
+                os.system("stty sane")

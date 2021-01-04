@@ -3,7 +3,7 @@ Anatomy
 ########################
 
 Under the hood, a model has been trained with synchronised video and subtitle pairs and later used for predicating
-shifting offsets and directions under the guidance of a two-stage aligning approach.
+shifting offsets and directions under the guidance of a dual-stage aligning approach.
 
 The following figure depicts the primary workflow of the first-stage subtitle alignment. It also includes upfront
 network training and later-on subtitle shifting. The data set used for training contains pairs of a video clip and

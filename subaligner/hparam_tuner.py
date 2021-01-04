@@ -28,7 +28,8 @@ class HyperParameterTuner(object):
                  training_dump_dir: str,
                  num_of_trials: int = 5,
                  tuning_epochs: int = 5,
-                 network_type: str = Network.LSTM):
+                 network_type: str = Network.LSTM,
+                 **kwargs):
         """Hyperparameter tuner initialiser
 
         Arguments:
@@ -47,7 +48,7 @@ class HyperParameterTuner(object):
         hyperparameters.network_type = network_type
         self.__hyperparameters = hyperparameters
 
-        self.__trainer = Trainer(FeatureEmbedder())
+        self.__trainer = Trainer(FeatureEmbedder(**kwargs))
         self.__av_file_paths = av_file_paths
         self.__subtitle_file_paths = subtitle_file_paths
         self.__training_dump_dir = training_dump_dir

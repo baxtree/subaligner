@@ -12,21 +12,28 @@ Feature: Subaligner CLI
         |  aligner          |  mode     |  subtitle-in      |  subtitle-out             |
         |  subaligner       |  single   |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  single   |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner       |  single   |  "test.xml"       |  "test_aligned.xml"       |
+        |  subaligner       |  single   |  "test.dfxp"      |  "test_aligned.dfxp"      |
         |  subaligner       |  single   |  "test.vtt"       |  "test_aligned.vtt"       |
         |  subaligner       |  single   |  "test.ssa"       |  "test_aligned.ssa"       |
         |  subaligner       |  single   |  "test.ass"       |  "test_aligned.ass"       |
         |  subaligner       |  single   |  "test.sub"       |  "test_aligned.sub"       |
         |  subaligner       |  single   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner       |  single   |  "test.tmp"       |  "test_aligned.tmp"       |
+        |  subaligner       |  single   |  "test.smi"       |  "test_aligned.smi"       |
+        |  subaligner       |  single   |  "test.smi"       |  "test_aligned.sami"      |
         |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner       |  dual     |  "test.xml"       |  "test_aligned.xml"       |
+        |  subaligner       |  dual     |  "test.dfxp"      |  "test_aligned.dfxp"      |
         |  subaligner       |  dual     |  "test.vtt"       |  "test_aligned.vtt"       |
         |  subaligner       |  dual     |  "test.ssa"       |  "test_aligned.ssa"       |
         |  subaligner       |  dual     |  "test.ass"       |  "test_aligned.ass"       |
         |  subaligner       |  dual     |  "test.sub"       |  "test_aligned.sub"       |
         |  subaligner       |  dual     |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner       |  dual     |  "test.tmp"       |  "test_aligned.tmp"       |
-
+        |  subaligner       |  dual     |  "test.smi"       |  "test_aligned.smi"       |
+        |  subaligner       |  dual     |  "test.smi"       |  "test_aligned.sami"      |
 
     @video-input @without-mode
     Scenario Outline: Test alignments without modes
@@ -35,17 +42,31 @@ Feature: Subaligner CLI
         When I run the alignment with <aligner> on them with <mode> stage
         Then a new subtitle file <subtitle-out> is generated
     Examples:
-        |  aligner          |  mode     |  subtitle-in |  subtitle-out          |
-        |  subaligner_1pass |  <NULL>   |  "test.srt"  |  "test_aligned.srt"    |
-        |  subaligner_1pass |  <NULL>   |  "test.ttml" |  "test_aligned.ttml"   |
-        |  subaligner_1pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
-        |  subaligner_1pass |  <NULL>   |  "test.ssa"  |  "test_aligned.ssa"    |
-        |  subaligner_1pass |  <NULL>   |  "test.ass"  |  "test_aligned.ass"    |
-        |  subaligner_2pass |  <NULL>   |  "test.srt"  |  "test_aligned.srt"    |
-        |  subaligner_2pass |  <NULL>   |  "test.ttml" |  "test_aligned.ttml"   |
-        |  subaligner_2pass |  <NULL>   |  "test.vtt"  |  "test_aligned.vtt"    |
-        |  subaligner_2pass |  <NULL>   |  "test.ssa"  |  "test_aligned.ssa"    |
-        |  subaligner_2pass |  <NULL>   |  "test.ass"  |  "test_aligned.ass"    |
+        |  aligner          |  mode     |  subtitle-in      |  subtitle-out             |
+        |  subaligner_1pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
+        |  subaligner_1pass |  <NULL>   |  "test.dfxp"      |  "test_aligned.dfxp"      |
+        |  subaligner_1pass |  <NULL>   |  "test.vtt"       |  "test_aligned.vtt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
+        |  subaligner_1pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
+        |  subaligner_1pass |  <NULL>   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner_1pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
+        |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
+        |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.sami"      |
+        |  subaligner_2pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
+        |  subaligner_1pass |  <NULL>   |  "test.dfxp"      |  "test_aligned.dfxp"      |
+        |  subaligner_2pass |  <NULL>   |  "test.vtt"       |  "test_aligned.vtt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
+        |  subaligner_2pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
+        |  subaligner_2pass |  <NULL>   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner_2pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
+        |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
+        |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.sami"      |
 
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs
@@ -72,6 +93,23 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |
         |  subaligner       |  single   |
         |  subaligner       |  dual     |
+
+    @embedded-subtitle
+    Scenario Outline: Test alignments with embedded subtitles
+        Given I have a video file <video-in>
+        And I have selector <selector> for the embedded subtitle
+        When I run the alignment with <aligner> on them with <mode> stage and output <subtitle-out>
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |  aligner          |  mode     |  selector                     |  subtitle-out         |   video-in    |
+        |  subaligner_1pass |  <NULL>   |  "embedded:stream_index=0"    |  "test_aligned.srt"   |   "test.mkv"  |
+        |  subaligner_2pass |  <NULL>   |  "embedded:stream_index=0"    |  "test_aligned.srt"   |   "test.mkv"  |
+        |  subaligner       |  single   |  "embedded:stream_index=0"    |  "test_aligned.srt"   |   "test.mkv"  |
+        |  subaligner       |  dual     |  "embedded:stream_index=0"    |  "test_aligned.srt"   |   "test.mkv"  |
+#        |  subaligner_1pass |  <NULL>   |  "embedded:page_num=888"      |  "test_aligned.srt"   |   "test.ts"   |
+#        |  subaligner_2pass |  <NULL>   |  "embedded:page_num=888"      |  "test_aligned.srt"   |   "test.ts"   |
+#        |  subaligner       |  single   |  "embedded:page_num=888"      |  "test_aligned.srt"   |   "test.ts"   |
+#        |  subaligner       |  dual     |  "embedded:page_num=888"      |  "test_aligned.srt"   |   "test.ts"   |
 
     @custom-output
     Scenario Outline: Test alignments with custom output

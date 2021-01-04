@@ -339,7 +339,7 @@ class Trainer(object):
                     ignore_sound_effects=True,
                 )
 
-        # Some media file are malformed and on occurring they will be logged
+        # Some media files are malformed and on occurring they will be logged
         # However, the training shall continue after expensive embedding on healthy media files.
         except (UnsupportedFormatException, TerminalException) as e:
             # Log failed audio and subtitle files and continue
@@ -353,6 +353,9 @@ class Trainer(object):
                     audio_file_path, subtitle_file_path
                 )
             )
+
+        # Some media files are malformed and on occurring they will be logged
+        # However, the training shall continue after expensive embedding on healthy media files.
         except Exception as e:
             # Log failed audio and subtitle files and continue
             Trainer.__LOGGER.error(
