@@ -223,8 +223,8 @@ class UtilsTests(unittest.TestCase):
         self.assertFalse(Undertest.contains_embedded_subtitles(self.__mp4_file_path))
 
     def test_detect_encoding(self):
-        self.assertEqual("ascii", Undertest.detect_encoding(self.__real_srt_path))
-        self.assertIsNone(Undertest.detect_encoding(self.__mkv_file_path))
+        self.assertEqual("ASCII", Undertest.detect_encoding(self.__real_srt_path))
+        self.assertEqual("UTF-8", Undertest.detect_encoding(self.__mkv_file_path))
 
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):

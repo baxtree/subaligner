@@ -3,7 +3,7 @@ import subprocess
 import pysubs2
 import requests
 import shutil
-import chardet
+import cchardet
 
 from pycaption import (
     CaptionConverter,
@@ -14,7 +14,7 @@ from pycaption import (
     SAMIWriter,
     SAMIReader,
 )
-from typing import Optional, TextIO, BinaryIO, Union, Callable, Any
+from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple
 from .exception import TerminalException
 
 
@@ -296,7 +296,7 @@ class Utils(object):
                         ts_file_path, page_num, std_err
                     )
                 )
-            Utils.remove_trailing_newlines(output_file_path, "utf-8")
+            Utils.remove_trailing_newlines(output_file_path, None)
 
         Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
@@ -322,7 +322,7 @@ class Utils(object):
                         mkv_file_path, stream_index, std_err
                     )
                 )
-            Utils.remove_trailing_newlines(output_file_path, "utf-8")
+            Utils.remove_trailing_newlines(output_file_path, None)
         Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
@@ -334,7 +334,7 @@ class Utils(object):
         logging.getLogger("tensorflow").disabled = True
 
     @staticmethod
-    def remove_trailing_newlines(source_file_path: str, encoding: str, target_file_path: Optional[str] = None) -> None:
+    def remove_trailing_newlines(source_file_path: str, encoding: Optional[str], target_file_path: Optional[str] = None) -> None:
         with open(source_file_path, "r", encoding=encoding) as file:
             content = file.read()
         if target_file_path is not None:
@@ -385,11 +385,12 @@ class Utils(object):
         with open(subtitle_file_path, "rb") as file:
             raw = b"".join([file.readline() for _ in range(10)])
 
-        detected = chardet.detect(raw)
-        return detected["encoding"] if "encoding" in detected else "utf-8"
+        detected = cchardet.detect(raw)
+        detected = detected or {}
+        return detected["encoding"] if "encoding" in detected else None
 
     @staticmethod
-    def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> str:
+    def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> Tuple[str, str]:
         encoding = Utils.detect_encoding(source_file_path)
         subs = pysubs2.load(source_file_path, encoding=encoding)
         new_target_file_path = source_file_path.replace(".%s" % source_ext, ".%s" % target_ext) if target_file_path is None else target_file_path
