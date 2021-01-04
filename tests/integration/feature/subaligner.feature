@@ -21,7 +21,7 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner       |  single   |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner       |  single   |  "test.smi"       |  "test_aligned.smi"       |
-        |  subaligner       |  single   |  "test.smi"       |  "test_aligned.sami"      |
+        |  subaligner       |  single   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner       |  dual     |  "test.xml"       |  "test_aligned.xml"       |
@@ -33,7 +33,7 @@ Feature: Subaligner CLI
         |  subaligner       |  dual     |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner       |  dual     |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner       |  dual     |  "test.smi"       |  "test_aligned.smi"       |
-        |  subaligner       |  dual     |  "test.smi"       |  "test_aligned.sami"      |
+        |  subaligner       |  dual     |  "test.sami"      |  "test_aligned.sami"      |
 
     @video-input @without-mode
     Scenario Outline: Test alignments without modes
@@ -54,7 +54,7 @@ Feature: Subaligner CLI
         |  subaligner_1pass |  <NULL>   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner_1pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
-        |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.sami"      |
+        |  subaligner_1pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner_2pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
@@ -66,7 +66,7 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
         |  subaligner_2pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
-        |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.sami"      |
+        |  subaligner_2pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
 
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs
