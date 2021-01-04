@@ -17,6 +17,7 @@ $ brew install ffmpeg espeak
 ## Installation
 ```
 # Install from PyPI (pre-emptive NumPy)
+$ pip install -U pip
 $ pip install numpy 
 $ pip install subaligner
 ```

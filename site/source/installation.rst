@@ -15,6 +15,7 @@ Installation
 
 **Install Subaligner via PyPI (pre-emptive NumPy)**::
 
+    $ pip install -U pip
     $ pip install numpy
     $ pip install subaligner
 

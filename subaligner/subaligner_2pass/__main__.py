@@ -25,7 +25,7 @@ optional arguments:
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
-                        Path to the video file
+                        File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
                         File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
@@ -55,7 +55,7 @@ def main():
         "--video_path",
         type=str,
         default="",
-        help="Path to the video file",
+        help="File path or URL to the video file",
         required=True,
     )
     from subaligner.subtitle import Subtitle

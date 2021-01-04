@@ -66,7 +66,7 @@ def main():
         "--video_path",
         type=str,
         default="",
-        help="Path to the video file",
+        help="File path or URL to the video file",
         required=True,
     )
     from subaligner.subtitle import Subtitle

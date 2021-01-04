@@ -1,9 +1,21 @@
-# ArchLinux 20200705
-FROM archlinux:20200705
+# ArchLinux base-devel-20201206.0.10501
+FROM archlinux:base-devel-20201206.0.10501
+
+# As of December 2020, Tensorflow does not support python 3.9 which is however a default on Arch
+ARG PYTHON=python-3.8.6-1-x86_64.pkg.tar.zst
+ARG PYTHON_PIP=python-pip-20.0.1-1-any.pkg.tar.zst
 
 RUN pacman --noconfirm -Syu &&\
     pacman --noconfirm -Syu gcc ffmpeg espeak &&\
     pacman --noconfirm -Syu libsndfile &&\
-    pacman --noconfirm -Syu python python-pip &&\
+    pacman --noconfirm -Syu libnsl &&\
+    curl -o /var/cache/pacman/pkg/${PYTHON}  https://archive.archlinux.org/packages/p/python/${PYTHON}  &&\
+    pacman --noconfirm -U /var/cache/pacman/pkg/${PYTHON} &&\
+    curl -o /var/cache/pacman/pkg/${PYTHON_PIP} https://archive.archlinux.org/packages/p/python-pip/${PYTHON_PIP} &&\
+    pacman --noconfirm -U /var/cache/pacman/pkg/${PYTHON_PIP} &&\
+    curl -o /var/cache/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
+    ln -s /usr/lib/libffi.so.7 /usr/lib/libffi.so.6 &&\
+    python /var/cache/get-pip.py &&\
     python -m pip install numpy &&\
-    python -m pip install subaligner
+    python -m pip install subaligner &&\
+    subaligner -h
