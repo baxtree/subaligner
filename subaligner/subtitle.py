@@ -3,6 +3,7 @@ import tempfile
 import os
 import re
 import xml.etree.ElementTree as ElementTree
+import inspect
 from typing import Optional, List
 from pysrt import SubRipFile, SubRipItem
 from copy import deepcopy
@@ -367,15 +368,13 @@ class Subtitle(object):
 
             # Change single quotes in the XML header to double quotes
             with open(target_file_path, "w", encoding=encoding) as target:
-                normalised = (
-                    ElementTree.tostring(tt, xml_declaration=True, method="xml")
-                    .decode(encoding)
-                    .replace(
-                        "<?xml version='1.0' encoding='",
-                        '<?xml version="1.0" encoding="',
-                    )
+                if "xml_declaration" in inspect.getfullargspec(ElementTree.tostring).kwonlyargs:  # for >= python 3.8
+                    encoded = ElementTree.tostring(tt, encoding=encoding, method="xml", xml_declaration=True)
+                else:
+                    encoded = ElementTree.tostring(tt, encoding=encoding, method="xml")
+                normalised = encoded.decode(encoding) \
+                    .replace("<?xml version='1.0' encoding='", '<?xml version="1.0" encoding="',) \
                     .replace("'?>", '"?>')
-                )
                 target.write(normalised)
         elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
             try:

@@ -18,6 +18,7 @@ from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple
 from .exception import TerminalException
 from subaligner.lib.to_srt import STL, SRT
 
+
 class Utils(object):
     """Utility functions
     """
