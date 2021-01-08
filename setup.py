@@ -37,6 +37,7 @@ setup(name="subaligner",
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",
+          "subaligner.lib",
           "subaligner.subaligner_1pass",
           "subaligner.subaligner_2pass",
           "subaligner.subaligner_train",

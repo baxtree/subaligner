@@ -33,6 +33,7 @@ class Subtitle(object):
     MPL2_EXTENSIONS = [".txt"]
     TMP_EXTENSIONS = [".tmp"]
     SAMI_EXTENSIONS = [".smi", ".sami"]
+    STL_EXTENSIONS = [".stl"]
 
     def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str):
         """Subtitle object initialiser.
@@ -70,6 +71,8 @@ class Subtitle(object):
             self.__subs = self.__convert_tmp_to_subs(subtitle_file_path)
         elif subtitle_format == "sami":
             self.__subs = self.__convert_sami_to_subs(subtitle_file_path)
+        elif subtitle_format == "stl":
+            self.__subs = self.__convert_stl_to_subs(subtitle_file_path)
         else:
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -204,6 +207,19 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "sami")
 
     @classmethod
+    def load_stl(cls, subtitle_file_path: str) -> "Subtitle":
+        """Load an EBU STL subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            Subtitle -- Subtitle object.
+        """
+
+        return cls(cls.__secret, subtitle_file_path, "stl")
+
+    @classmethod
     def load(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip or TTML subtitle file based on the file extension.
 
@@ -233,6 +249,8 @@ class Subtitle(object):
             return cls(cls.__secret, subtitle_file_path, "tmp")
         elif file_extension in cls.SAMI_EXTENSIONS:
             return cls(cls.__secret, subtitle_file_path, "sami")
+        elif file_extension in cls.STL_EXTENSIONS:
+            return cls(cls.__secret, subtitle_file_path, "stl")
         else:
             return cls(cls.__secret, subtitle_file_path, "unknown")
 
@@ -276,7 +294,8 @@ class Subtitle(object):
                 shifted_subtitle_file_path = subtitle_file_path.replace(
                     file_extension, "{}{}".format(suffix, file_extension)
                 )
-            tree.write(shifted_subtitle_file_path, encoding="utf8")
+            encoding = Utils.detect_encoding(subtitle_file_path)
+            tree.write(shifted_subtitle_file_path, encoding=encoding)
             return shifted_subtitle_file_path
         elif file_extension.lower() in cls.WEBVTT_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "webvtt").subs
@@ -313,6 +332,10 @@ class Subtitle(object):
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
             return shifted_subtitle_file_path
+        elif file_extension.lower() in cls.STL_EXTENSIONS:
+            subs = cls(cls.__secret, subtitle_file_path, "stl").subs
+            subs.shift(seconds=seconds)
+            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, ".srt", suffix)
         else:
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -345,12 +368,13 @@ class Subtitle(object):
             # Change single quotes in the XML header to double quotes
             with open(target_file_path, "w", encoding=encoding) as target:
                 normalised = (
-                    ElementTree.tostring(tt, encoding=encoding, method="xml")
+                    ElementTree.tostring(tt, xml_declaration=True, method="xml")
                     .decode(encoding)
                     .replace(
-                        "<?xml version='1.0' encoding='utf8'?>",
-                        '<?xml version="1.0" encoding="utf8"?>',
+                        "<?xml version='1.0' encoding='",
+                        '<?xml version="1.0" encoding="',
                     )
+                    .replace("'?>", '"?>')
                 )
                 target.write(normalised)
         elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
@@ -400,6 +424,12 @@ class Subtitle(object):
                 _, path = tempfile.mkstemp()
                 SubRipFile(subs).save(path, encoding=encoding)
                 Utils.srt2sami(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.STL_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(target_file_path, encoding=encoding)
             finally:
                 os.remove(path)
         else:
@@ -478,7 +508,8 @@ class Subtitle(object):
         """
         return set(Subtitle.SUBRIP_EXTENTIONS + Subtitle.TTML_EXTENSIONS + Subtitle.WEBVTT_EXTENSIONS
                    + Subtitle.SSA_EXTENTIONS + Subtitle.ADVANCED_SSA_EXTENTIONS + Subtitle.MICRODVD_EXTENSIONS
-                   + Subtitle.MPL2_EXTENSIONS + Subtitle.TMP_EXTENSIONS + Subtitle.SAMI_EXTENSIONS)
+                   + Subtitle.MPL2_EXTENSIONS + Subtitle.TMP_EXTENSIONS + Subtitle.SAMI_EXTENSIONS
+                   + Subtitle.STL_EXTENSIONS)
 
     @property
     def subtitle_file_path(self) -> str:
@@ -630,6 +661,22 @@ class Subtitle(object):
 
         _, path = tempfile.mkstemp()
         Utils.sami2srt(sami_file_path, path)
+
+        return Subtitle.__get_srt_subs(path, housekeep=True)
+
+    @staticmethod
+    def __convert_stl_to_subs(stl_file_path: str) -> SubRipFile:
+        """Convert a subtitle file from the EBU STL format to the SubRip format
+
+        Arguments:
+            stl_file_path {string} -- The path to the STL subtitle file.
+
+        Returns:
+            {list} -- A list of SubRipItems.
+        """
+
+        _, path = tempfile.mkstemp()
+        Utils.stl2srt(stl_file_path, path)
 
         return Subtitle.__get_srt_subs(path, housekeep=True)
 

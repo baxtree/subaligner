@@ -29,6 +29,8 @@ class MediaHelper(object):
     subtitle files.
     """
 
+    FFMPEG_BIN = os.getenv("FFMPEG_PATH") or os.getenv("ffmpeg_path") or "ffmpeg"
+
     AUDIO_FILE_EXTENSION = [".wav", ".aac"]
 
     __LOGGER = Logger().get_logger(__name__)
@@ -69,12 +71,12 @@ class MediaHelper(object):
             )
 
         command = (
-            "ffmpeg -y -xerror -i {0} -ac 2 -ar {1} -vn {2}".format(
-                video_file_path, freq, audio_file_path
+            "{0} -y -xerror -i {1} -ac 2 -ar {2} -vn {3}".format(
+                MediaHelper.FFMPEG_BIN, video_file_path, freq, audio_file_path
             )
             if decompress
-            else "ffmpeg -y -xerror -i {0} -vn -acodec copy {1}".format(
-                video_file_path, audio_file_path
+            else "{0} -y -xerror -i {1} -vn -acodec copy {2}".format(
+                MediaHelper.FFMPEG_BIN, video_file_path, audio_file_path
             )
         )
         with subprocess.Popen(
@@ -181,12 +183,12 @@ class MediaHelper(object):
         segment_path = "{0}/{1}_{2}_{3}{4}".format(TEMP_DIR_PATH, filename, str(start), str(end), extension)
 
         if end is not None:
-            command = "ffmpeg -y -xerror -i {0} -ss {1} -to {2} -acodec copy {3}".format(
-                audio_file_path, start, end, segment_path
+            command = "{0} -y -xerror -i {1} -ss {2} -to {3} -acodec copy {4}".format(
+                MediaHelper.FFMPEG_BIN, audio_file_path, start, end, segment_path
             )
         else:
-            command = "ffmpeg -y -xerror -i {0} -ss {1} -acodec copy {2}".format(
-                audio_file_path, start, segment_path
+            command = "{0} -y -xerror -i {1} -ss {2} -acodec copy {3}".format(
+                MediaHelper.FFMPEG_BIN, audio_file_path, start, segment_path
             )
         with subprocess.Popen(
             command,
@@ -314,7 +316,7 @@ class MediaHelper(object):
         """
 
         with subprocess.Popen(
-                "ffmpeg -i {} -t 00:00:10 -f null /dev/null".format(file_path).split(),
+                "{0} -i {1} -t 00:00:10 -f null /dev/null".format(MediaHelper.FFMPEG_BIN, file_path).split(),
                 shell=False,
                 stderr=subprocess.PIPE,
                 close_fds=True,

@@ -43,6 +43,9 @@ class UtilsTests(unittest.TestCase):
         self.__real_tmp_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
         )
+        self.__real_stl_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.stl"
+        )
         self.__ts_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.ts"
         )
@@ -89,7 +92,7 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.__real_vtt_path, output_file_path))
 
     def test_vtt2srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.srt")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.vtt.srt")
 
         Undertest.vtt2srt(self.__real_vtt_path, output_file_path)
 
@@ -103,7 +106,7 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.__real_ass_path, output_file_path))
 
     def test_ass2srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.srt")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.ass.srt")
 
         Undertest.ass2srt(self.__real_ass_path, output_file_path)
 
@@ -117,7 +120,7 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.__real_ssa_path, output_file_path))
 
     def test_ssa2srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.ssa")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.ssa.srt")
 
         Undertest.ssa2srt(self.__real_ssa_path, output_file_path)
 
@@ -131,7 +134,7 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.__real_mircodvd_path, output_file_path))
 
     def test_microdvd2srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.sub")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.sub.srt")
 
         Undertest.microdvd2srt(self.__real_mircodvd_path, output_file_path)
 
@@ -145,21 +148,21 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.__real_mpl2_path, output_file_path))
 
     def test_mpl22srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.mpl2.txt")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.mpl2.txt.srt")
 
         Undertest.mpl22srt(self.__real_mpl2_path, output_file_path)
 
         self.assertTrue(os.path.isfile(output_file_path))
 
     def test_srt2tmp(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.tmp.txt")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.tmp")
 
         Undertest.srt2tmp(self.__real_srt_path, output_file_path)
 
         self.assertTrue(filecmp.cmp(self.__real_tmp_path, output_file_path))
 
     def test_tmp2srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "converted.tmp.txt")
+        output_file_path = os.path.join(self.__resource_tmp, "converted.tmp.srt")
 
         Undertest.mpl22srt(self.__real_mpl2_path, output_file_path)
 
@@ -181,16 +184,23 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(mock_read.called)
         self.assertTrue(mock_write.called)
 
+    def test_stl2srt(self):
+        output_file_path = os.path.join(self.__resource_tmp, "converted.stl.srt")
+
+        Undertest.stl2srt(self.__real_stl_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
     @unittest.skip("transport stream sample does not contain any teletext")
     def test_extract_teletext_as_srt(self):
-        output_file_path = os.path.join(self.__resource_tmp, "extracted.tmp.srt")
+        output_file_path = os.path.join(self.__resource_tmp, "extracted.teletext.srt")
 
         Undertest.extract_teletext_as_subtitle(self.__ts_file_path, 888, output_file_path)
 
         self.assertTrue(os.path.isfile(output_file_path))
 
     def test_extract_matroska_subtitle(self):
-        output_file_path = os.path.join(self.__resource_tmp, "extracted.tmp.srt")
+        output_file_path = os.path.join(self.__resource_tmp, "extracted.matroska.srt")
 
         Undertest.extract_matroska_subtitle(self.__mkv_file_path, 0, output_file_path)
 

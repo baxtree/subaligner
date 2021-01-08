@@ -16,11 +16,13 @@ from pycaption import (
 )
 from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple
 from .exception import TerminalException
-
+from subaligner.lib.to_srt import STL, SRT
 
 class Utils(object):
     """Utility functions
     """
+
+    FFMPEG_BIN = os.getenv("FFMPEG_PATH") or os.getenv("ffmpeg_path") or "ffmpeg"
 
     @staticmethod
     def srt2ttml(srt_file_path: str, ttml_file_path: Optional[str] = None) -> None:
@@ -72,7 +74,7 @@ class Utils(object):
 
         _vtt_file_path = srt_file_path.replace(".srt", ".vtt") if vtt_file_path is None else vtt_file_path
         encoding = Utils.detect_encoding(srt_file_path)
-        command = "ffmpeg -y -sub_charenc {0} -i {1} -f webvtt {2}".format(encoding, srt_file_path, _vtt_file_path)
+        command = "{0} -y -sub_charenc {1} -i {2} -f webvtt {3}".format(Utils.FFMPEG_BIN, encoding, srt_file_path, _vtt_file_path)
         timeout_msg = "Timeout on converting SubRip to WebVTT: {}".format(srt_file_path)
         error_msg = "Cannot convert SubRip to WebVTT: {}".format(srt_file_path)
 
@@ -99,7 +101,7 @@ class Utils(object):
 
         _srt_file_path = vtt_file_path.replace(".vtt", ".srt") if srt_file_path is None else srt_file_path
         encoding = Utils.detect_encoding(vtt_file_path)
-        command = "ffmpeg -y -sub_charenc {0} -i {1} -f srt {2}".format(encoding, vtt_file_path, _srt_file_path)
+        command = "{0} -y -sub_charenc {1} -i {2} -f srt {3}".format(Utils.FFMPEG_BIN, encoding, vtt_file_path, _srt_file_path)
         timeout_msg = "Timeout on converting WebVTT to SubRip: {}".format(vtt_file_path)
         error_msg = "Cannot convert WebVTT to SubRip: {}".format(vtt_file_path)
 
@@ -275,6 +277,27 @@ class Utils(object):
         Utils.remove_trailing_newlines(srt_file_path, encoding)
 
     @staticmethod
+    def stl2srt(stl_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert EBU-STL subtitles to SubRip subtitles.
+
+        Arguments:
+            stl_file_path {string} -- The path to the EBU-STL file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        encoding = Utils.detect_encoding(stl_file_path)
+        stl = STL(stl_file_path, True)
+        if srt_file_path is None:
+            srt_file_path = stl_file_path.replace(".stl", ".srt")
+        srt = SRT(srt_file_path)
+        for sub in stl:
+            (tci, tco, txt) = sub
+            srt.write(tci, tco, txt)
+        srt.file.close()
+        stl.file.close()
+        Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
     def extract_teletext_as_subtitle(ts_file_path: str, page_num: int, output_file_path: str, timeout_secs: int = 30) -> None:
         """Extract DVB Teletext from MPEG transport stream files and convert them into the output format.
 
@@ -285,7 +308,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
         """
 
-        command = "ffmpeg -y -fix_sub_duration -txt_page {0} -txt_format text -i {1} {2}".format(page_num, ts_file_path, output_file_path)
+        command = "{0} -y -fix_sub_duration -txt_page {1} -txt_format text -i {2} {3}".format(Utils.FFMPEG_BIN, page_num, ts_file_path, output_file_path)
         timeout_msg = "Timeout on extracting Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
         error_msg = "Cannot extract Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
 
@@ -311,7 +334,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
         """
 
-        command = "ffmpeg -y -i {} -map 0:s:{} {}".format(mkv_file_path, stream_index, output_file_path)
+        command = "{0} -y -i {1} -map 0:s:{2} {3}".format(Utils.FFMPEG_BIN, mkv_file_path, stream_index, output_file_path)
         timeout_msg = "Timeout on extracting the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
         error_msg = "Cannot extract the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
 
@@ -363,7 +386,7 @@ class Utils(object):
             bool -- True if the video contains embedded subtitles or False otherwise.
         """
 
-        command = "ffmpeg -y -i {0} -c copy -map 0:s -f null - -v 0 -hide_banner".format(video_file_path)
+        command = "{0} -y -i {1} -c copy -map 0:s -f null - -v 0 -hide_banner".format(Utils.FFMPEG_BIN, video_file_path)
         timeout_msg = "Timeout on detecting embedded subtitles from file: {}".format(video_file_path)
         error_msg = "Embedded subtitle detection failed for file: {}".format(video_file_path)
 
