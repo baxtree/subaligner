@@ -35,6 +35,8 @@ Installation
 
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 
+The following builds are available on dockerhub for several Linux distributions: CentOS 7 (latest and VERSION.el7), CentOS 8 (VERSION.el8), Ubuntu 18 (VERSION.u18), Ubuntu 20 (VERSION.u20), Debian 10 (VERSION.deb10), Fedora 31 (VERSION.fed31) and ArchLinux (VERSION.arch).
+
 You can also download the latest
 release on `GitHub <https://github.com/baxtree/subaligner>`_ and follow the steps down below
 to create a virtual environment and set up all the dependencies:
