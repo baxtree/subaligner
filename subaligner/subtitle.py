@@ -343,6 +343,88 @@ class Subtitle(object):
             )
 
     @staticmethod
+    def save_subs_as_target_format(subs: List[SubRipItem], source_file_path: str, target_file_path: str) -> None:
+        """Save SubRipItems with the format determined by the target file extension.
+
+        Arguments:
+            subs {list} -- A list of SubRipItems.
+            source_file_path {string} -- The path to the original subtitle file.
+            target_file_path {string} -- The path to the output subtitle file.
+        """
+
+        encoding = Utils.detect_encoding(source_file_path)
+        _, file_extension = os.path.splitext(target_file_path.lower())
+        if file_extension in Subtitle.SUBRIP_EXTENTIONS:
+            SubRipFile(subs).save(target_file_path, encoding=encoding)
+            Utils.remove_trailing_newlines(target_file_path, encoding)
+        elif file_extension in Subtitle.TTML_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2ttml(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2vtt(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.SSA_EXTENTIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2ssa(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.ADVANCED_SSA_EXTENTIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2ass(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.MICRODVD_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2microdvd(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.MPL2_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2mpl2(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.TMP_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2tmp(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.SAMI_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2sami(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.STL_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(target_file_path, encoding=encoding)
+            finally:
+                os.remove(path)
+        else:
+            raise UnsupportedFormatException(
+                "Unknown subtitle format for file: {}".format(source_file_path)
+            )
+
+    @staticmethod
     def export_subtitle(source_file_path: str, subs: List[SubRipItem], target_file_path: str, frame_rate: float = 25.0) -> None:
         """Export subtitle in the format determined by the file extension.
 

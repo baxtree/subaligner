@@ -440,6 +440,123 @@ class SubtitleTests(unittest.TestCase):
         target_line_num = j + 1
         self.assertEqual(32, target_line_num)
 
+    def test_save_subs_as_ttml(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.ttml")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(40, target_line_num)
+
+    def test_save_subs_as_vtt(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.vtt")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(26, target_line_num)
+
+    def test_save_subs_as_ssa(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.ssa")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(21, target_line_num)
+
+    def test_save_subs_as_ass(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.ass")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(21, target_line_num)
+
+    def test_save_subs_as_microdvd(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.sub")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(8, target_line_num)
+
+    def test_save_subs_as_mpl2(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.mpl2.txt")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(7, target_line_num)
+
+    def test_save_subs_as_tmp(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.tmp")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(11, target_line_num)
+
+    def test_save_subs_as_sami(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.smi")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(82, target_line_num)
+
+    def test_save_subs_as_stl(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.stl")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__stl_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(32, target_line_num)
+
     def test_remove_sound_effects_with_affixes(self):
         subtitle = Undertest.load(self.__srt_file_path)
         new_subs = Undertest.remove_sound_effects_by_affixes(
@@ -561,6 +678,20 @@ class SubtitleTests(unittest.TestCase):
                 unknown_file_path,
                 Undertest.load(self.__ttml_file_path).subs,
                 "target",
+            )
+        except Exception as e:
+            self.assertTrue(isinstance(e, UnsupportedFormatException))
+        else:
+            self.fail("Should have thrown exception")
+
+    def test_throw_exception_on_converting_to_unknown_subtitle(self):
+        try:
+            unknown_file_path = os.path.join(self.__resource_tmp, "subtitle_test.unknown")
+            Path(unknown_file_path).touch()
+            Undertest.save_subs_as_target_format(
+                Undertest.load(self.__stl_file_path).subs,
+                self.__srt_file_path,
+                unknown_file_path
             )
         except Exception as e:
             self.assertTrue(isinstance(e, UnsupportedFormatException))

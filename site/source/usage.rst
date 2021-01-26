@@ -65,11 +65,13 @@ Currently the stretching is experimental and only works for speech and subtitles
 
 The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows 10.
 
-**Re-configure FFmpeg path**::
+**Re-configure FFmpeg/Libav path**::
 
     (.venv) $ export FFMPEG_PATH=/path/to/ffmpeg
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
     or
     (.venv) $ FFMPEG_PATH=/path/to/ffmpeg subaligner -m dual -v video.mp4 -s subtitle.srt
+    or when using `Libav<https://libav.org/>`_
+    (.venv) $ FFMPEG_PATH=/path/to/avconv subaligner -m dual -v video.mp4 -s subtitle.srt
 
 The lower case "ffmpeg_path" is also supported.

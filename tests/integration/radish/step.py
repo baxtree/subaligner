@@ -272,6 +272,16 @@ def return_done_epochs(step, done_epochs):
     assert step.context.done_epochs == "Number of epochs done: %s\n" % format(done_epochs)
 
 
+@when('I run the converter with "{output_subtitle:S}" as the output')
+def run_subtitle_converter(step, output_subtitle):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_converter"),
+        "-i", step.context.subtitle_path_or_selector,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
+        "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @before.each_scenario(on_tags="train or hyperparameter-tuning")
 def create_training_output_dir(scenario):
     scenario.context.temp_dir = tempfile.mkdtemp()
