@@ -13,3 +13,7 @@ Test
 **Run tests with target Python versions**::
 
     $ make test-all
+
+**Run integration tests::
+
+    $ make test-int

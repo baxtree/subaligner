@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-usage: subaligner_converter [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-d] [-q] [-ver]
+usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-d] [-q] [-ver]
 
 Convert a subtitle from input format to output format (v0.1.1)
 

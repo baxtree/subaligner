@@ -183,8 +183,9 @@ class MediaHelper(object):
         segment_path = "{0}/{1}_{2}_{3}{4}".format(TEMP_DIR_PATH, filename, str(start), str(end), extension)
 
         if end is not None:
-            command = "{0} -y -xerror -i {1} -ss {2} -to {3} -acodec copy {4}".format(
-                MediaHelper.FFMPEG_BIN, audio_file_path, start, end, segment_path
+            duration = MediaHelper.get_duration_in_seconds(start, end)
+            command = "{0} -y -xerror -i {1} -ss {2} -t {3} -acodec copy {4}".format(
+                MediaHelper.FFMPEG_BIN, audio_file_path, start, duration, segment_path
             )
         else:
             command = "{0} -y -xerror -i {1} -ss {2} -acodec copy {3}".format(
@@ -324,7 +325,7 @@ class MediaHelper(object):
                 bufsize=1,
         ) as proc:
             with subprocess.Popen(
-                    ['sed', '-n', "s/" + r".*, \(.*\) fp.*" + "/\\1/p"],
+                    ['grep', '-o', r"[0-9]\{1,3\}\sfps"],
                     shell=False,
                     stdin=proc.stderr,
                     stdout=subprocess.PIPE,
@@ -341,7 +342,7 @@ class MediaHelper(object):
                         raise NoFrameRateException(
                             "Cannot extract the frame rate from video: {}".format(file_path)
                         )
-                    fps = float(std_out.split("\n")[0])
+                    fps = float(std_out.split(" ")[0])
                     MediaHelper.__LOGGER.info("[{}-{}] Extracted frame rate: {} fps".format(threading.current_thread().name, process.pid, fps))
                     return fps
                 except subprocess.TimeoutExpired as te:

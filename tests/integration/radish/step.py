@@ -275,7 +275,7 @@ def return_done_epochs(step, done_epochs):
 @when('I run the converter with "{output_subtitle:S}" as the output')
 def run_subtitle_converter(step, output_subtitle):
     process = subprocess.Popen([
-        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_converter"),
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_convert"),
         "-i", step.context.subtitle_path_or_selector,
         "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
         "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
