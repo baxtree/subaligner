@@ -28,6 +28,24 @@ class TrainerTests(unittest.TestCase):
         self.__vtt_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.vtt"
         )
+        self.__ass_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ass"
+        )
+        self.__ssa_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ssa"
+        )
+        self.__microdvd_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.sub"
+        )
+        self.__mpl2_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.mpl2.txt"
+        )
+        self.__tmp_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
+        )
+        self.__sami_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.smi"
+        )
         self.__training_dump_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource"
         )
@@ -49,46 +67,10 @@ class TrainerTests(unittest.TestCase):
 
     def test_train(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, self.__video_file_path],
-            [self.__srt_file_path, self.__srt_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
-        )
-        output_files = os.listdir(self.__resource_tmp)
-        model_files = [file for file in output_files if file.endswith(".hdf5")]
-        self.assertEqual(
-            4, len(model_files)
-        )  # one model file, one weights file, one combined file and one training dump
-        hyperparams_files = [file for file in output_files if file.endswith(".json")]
-        self.assertEqual(1, len(hyperparams_files))
-
-    def test_train_with_ttml(self):
-        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, self.__video_file_path],
-            [self.__ttml_file_path, self.__ttml_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
-        )
-        output_files = os.listdir(self.__resource_tmp)
-        model_files = [file for file in output_files if file.endswith(".hdf5")]
-        self.assertEqual(
-            4, len(model_files)
-        )  # one model file, one weights file, one combined file and one training dump
-        hyperparams_files = [file for file in output_files if file.endswith(".json")]
-        self.assertEqual(1, len(hyperparams_files))
-
-    def test_train_with_vtt(self):
-        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, self.__video_file_path],
-            [self.__vtt_file_path, self.__vtt_file_path],
+            [self.__video_file_path, self.__video_file_path, self.__video_file_path, self.__video_file_path, self.__video_file_path,
+             self.__video_file_path, self.__video_file_path, self.__video_file_path, self.__video_file_path],
+            [self.__srt_file_path, self.__ttml_file_path, self.__vtt_file_path, self.__ass_file_path, self.__ssa_file_path,
+             self.__microdvd_file_path, self.__mpl2_file_path, self.__tmp_file_path, self.__sami_file_path],
             model_dir=self.__resource_tmp,
             weights_dir=self.__resource_tmp,
             config_dir=self.__resource_tmp,

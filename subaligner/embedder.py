@@ -10,7 +10,7 @@ from .exception import UnsupportedFormatException, TerminalException
 from .logger import Logger
 
 
-class FeatureEmbedder(Singleton):
+class FeatureEmbedder():
     """Audio and subtitle feature embedding.
     """
 

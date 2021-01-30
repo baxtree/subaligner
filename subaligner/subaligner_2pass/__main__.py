@@ -2,14 +2,9 @@
 """
 usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so]
                         [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
-subaligner_2pass: error: the following arguments are required: -v/--video_path, -s/--subtitle_path
-(.3.8.5) subaligner-github baix01$ subaligner_2pass  -h
-usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so]
-                        [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q]
+                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q] [-ver]
 
-Run two-stage alignment
+Run dual-stage alignment
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -18,7 +13,7 @@ optional arguments:
   -so, --stretch_off    Switch off stretch on subtitles for non-English speech
   -sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --stretch_in_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Stretch the subtitle with the supported ISO 639-2 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes].
-                        NB: This will be ignored if -so or --stretch_off is present
+                        NB: This will be ignored if either -so or --stretch_off is present
   -fos, --exit_segfail  Exit on any segment alignment failures
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
@@ -26,12 +21,13 @@ optional arguments:
                         Path to the output subtitle file
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
+  -ver, --version       show program's version number and exit
 
 required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi, .stl) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -51,7 +47,8 @@ def main():
         print("Subaligner is not installed")
         sys.exit(20)
 
-    parser = argparse.ArgumentParser(description="Run two-stage alignment", formatter_class=argparse.RawTextHelpFormatter)
+    from subaligner._version import __version__
+    parser = argparse.ArgumentParser(description="Run dual-stage alignment (v%s)" % __version__, formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
         "-v",
@@ -61,12 +58,13 @@ def main():
         help="File path or URL to the video file",
         required=True,
     )
+    from subaligner.subtitle import Subtitle
     required_args.add_argument(
         "-s",
         "--subtitle_path",
         type=str,
         default="",
-        help="File path or URL to the subtitle file",
+        help="File path or URL to the subtitle file (Extensions of supported subtitles: {}) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)".format(", ".join(Subtitle.subtitle_extensions())),
         required=True,
     )
     parser.add_argument(
@@ -115,6 +113,7 @@ def main():
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
+    parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.video_path == "":
@@ -125,6 +124,9 @@ def main():
         sys.exit(21)
     if FLAGS.subtitle_path.lower().startswith("http") and FLAGS.output == "":
         print("--output was not passed in for alignment on a remote subtitle file")
+        sys.exit(21)
+    if FLAGS.subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
+        print("--output was not passed in for alignment on embedded subtitles")
         sys.exit(21)
 
     local_video_path = FLAGS.video_path
@@ -137,7 +139,6 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
-    from subaligner.subtitle import Subtitle
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
     from subaligner.utils import Utils
@@ -155,6 +156,21 @@ def main():
             local_subtitle_path = "{}{}".format(local_subtitle_path, subtitle_file_extension)
             Utils.download_file(FLAGS.subtitle_path, local_subtitle_path)
 
+        if FLAGS.subtitle_path.lower().startswith("embedded:"):
+            _, local_subtitle_path = tempfile.mkstemp()
+            _, subtitle_file_extension = os.path.splitext(FLAGS.output)
+            local_subtitle_path = "{}{}".format(local_subtitle_path, subtitle_file_extension)
+            params = FLAGS.subtitle_path.lower().split(":")[1].split(",")
+            if params and "=" in params[0]:
+                params = {param.split("=")[0]: param.split("=")[1] for param in params}
+                if "page_num" in params:
+                    Utils.extract_teletext_as_subtitle(local_video_path, int(params["page_num"]), local_subtitle_path)
+                elif "stream_index" in params:
+                    Utils.extract_matroska_subtitle(local_video_path, int(params["stream_index"]), local_subtitle_path)
+            else:
+                print("Embedded subtitle selector cannot be empty")
+                sys.exit(21)
+
         predictor = Predictor()
         subs_list, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
             video_file_path=local_video_path,
@@ -165,9 +181,9 @@ def main():
             exit_segfail=exit_segfail,
         )
 
-        aligned_subtitle_path = "_aligned.".join(FLAGS.subtitle_path.rsplit(".", 1)) if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(FLAGS.subtitle_path, subs_list, aligned_subtitle_path, frame_rate)
-        print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
+        aligned_subtitle_path = "_aligned.".join(
+            FLAGS.subtitle_path.rsplit(".", 1)).replace(".stl", ".srt") if FLAGS.output == "" else FLAGS.output
+        Subtitle.export_subtitle(local_subtitle_path, subs_list, aligned_subtitle_path, frame_rate)
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs_list)
         if log_loss is None or log_loss > FLAGS.max_logloss:
@@ -176,6 +192,8 @@ def main():
             )
             _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
             sys.exit(22)
+
+        print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
     except UnsupportedFormatException as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")

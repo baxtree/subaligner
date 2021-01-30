@@ -17,5 +17,4 @@ RUN pacman --noconfirm -Syu &&\
     ln -s /usr/lib/libffi.so.7 /usr/lib/libffi.so.6 &&\
     python /var/cache/get-pip.py &&\
     python -m pip install numpy &&\
-    python -m pip install subaligner &&\
-    subaligner -h
+    python -m pip install subaligner

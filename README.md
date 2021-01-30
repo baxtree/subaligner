@@ -14,6 +14,7 @@ or
 ```
 $ brew install ffmpeg espeak
 ```
+
 ## Installation
 ```
 # Install from PyPI (pre-emptive NumPy)
@@ -62,11 +63,13 @@ docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash
 # Single-stage alignment (high-level shift with lower latency)
 
 $ subaligner_1pass -v video.mp4 -s subtitle.srt
+$ subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
 # Dual-stage alignment (low-level shift with higher latency)
 
 $ subaligner_2pass -v video.mp4 -s subtitle.srt
+$ subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 or
 ```
@@ -74,6 +77,8 @@ or
 
 $ subaligner -m single -v video.mp4 -s subtitle.srt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt
+$ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+$ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
 # Run alignments with pipx
@@ -94,14 +99,16 @@ $ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
 $ docker pull baxtree/subaligner
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
+$ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+$ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help`, `subaligner_2pass --help` or `subaligner --help`.
 
 ![](figures/screencast.gif)
 ## Supported Formats
-Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2 and TMP
+Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, and SAMI.
 
-Video: MP4, WebM, Ogg, 3GP, FLV and MOV
+Video: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, etc.
 
 ## Advanced Usage
 You can train a new model with your own audiovisual files and subtitle files:
@@ -113,7 +120,7 @@ Then you can apply it to your subtitle synchronisation with the aforementioned c
 ## Anatomy
 Subtitles can be out of sync with their companion audiovisual media files for a variety of causes including latency introduced by Speech-To-Text on live streams or calibration and rectification involving human intervention during post-production.
 
-A model has been trained with synchronised video and subtitle pairs and later used for predicating shifting offsets and directions under the guidance of a two-stage aligning approach. 
+A model has been trained with synchronised video and subtitle pairs and later used for predicating shifting offsets and directions under the guidance of a dual-stage aligning approach. 
 
 First Stage (Global Alignment):
 ![](figures/1st_stage.png)

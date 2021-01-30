@@ -36,3 +36,15 @@ services:
       context: ./
       dockerfile: Dockerfile-ArchLinux
     image: baxtree/subaligner:${SUBALIGNER_VERSION}.arch
+
+  subaligner-debian10:
+    build:
+      context: ./
+      dockerfile: Dockerfile-Debian10
+    image: baxtree/subaligner:${SUBALIGNER_VERSION}.deb10
+
+  subaligner-fedora31:
+    build:
+      context: ./
+      dockerfile: Dockerfile-Fedora31
+    image: baxtree/subaligner:${SUBALIGNER_VERSION}.fed31

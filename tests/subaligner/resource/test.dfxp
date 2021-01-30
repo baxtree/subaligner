@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ASCII"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ns3="http://www.w3.org/ns/ttml#style" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xml:lang="en" ttp:timeBase="media">
+  <head>
+    <metadata>
+      <ttm:title />
+    </metadata>
+    <styling>
+      <style id="s0" ns3:backgroundColor="black" ns3:color="white" ns3:fontFamily="sansSerif" ns3:fontSize="16" ns3:fontStyle="normal" />
+    </styling>
+  </head>
+  <body style="s0">
+    <div>
+      <p begin="00:00:14.440" end="00:00:16.955" id="p0">I've spent nearly two decades</p>
+      <p begin="00:00:16.979" end="00:00:20.532" id="p1">observing what makes people luckier than others</p>
+      <p begin="00:00:20.556" end="00:00:24.119" id="p2">and trying to help people increase their luck.</p>
+      <p begin="00:00:24.675" end="00:00:27.567" id="p3">You see, I teach entrepreneurship,</p>
+      <p begin="00:00:27.591" end="00:00:31.140" id="p4">and we all know that most new ventures fail,</p>
+      <p begin="00:00:31.164" end="00:00:34.796" id="p5">and innovators and entrepreneurs need all the luck they can get.</p>
+      <p begin="00:00:35.846" end="00:00:37.136" id="p6">So what is luck?</p>
+      <p begin="00:00:37.160" end="00:00:43.200" id="p7">Luck is defined as success or failure apparently caused by chance.</p>
+      <p begin="00:00:44.295" end="00:00:45.662" id="p8">Apparently.</p>
+      <p begin="00:00:45.686" end="00:00:47.321" id="p9">That's the operative word.</p>
+      <p begin="00:00:48.353" end="00:00:50.362" id="p10">It looks like it's chance</p>
+      <p begin="00:00:50.386" end="00:00:55.544" id="p11">because we rarely see all the levers that come into play to make people lucky.</p>
+      <p begin="00:00:55.568" end="00:00:58.561" id="p12">But I've realized, by watching so long,</p>
+      <p begin="00:00:58.585" end="00:01:01.918" id="p13">that luck is rarely a lightning strike,</p>
+      <p begin="00:01:01.942" end="00:01:03.696" id="p14">isolated and dramatic.</p>
+      <p begin="00:01:03.696" end="00:01:03.697" id="p224">(SOUND EFFECT)</p>
+      <p begin="00:01:03.697" end="00:01:03.698" id="p225">(SOUND EFFECT)</p>
+    </div>
+  </body>
+</tt>

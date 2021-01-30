@@ -1,4 +1,4 @@
 [run]
 include = */subaligner/*
-omit = *__main__.py*, *__init__.py*, *_version.py*, */tests/*
+omit = *__main__.py*, *__init__.py*, *_version.py*, */tests/*, */subaligner/lib/*
 concurrency = multiprocessing

@@ -21,9 +21,14 @@ def video_file(step, file_name):
 @given('I have a subtitle file "{file_name:S}"')
 def subtitle_file(step, file_name):
     if file_name.lower().startswith("http"):
-        step.context.subtitle_file_path = file_name
+        step.context.subtitle_path_or_selector = file_name
     else:
-        step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+        step.context.subtitle_path_or_selector = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+
+
+@given('I have selector "{selector:S}" for the embedded subtitle')
+def subtitle_selector(step, selector):
+    step.context.subtitle_path_or_selector = selector
 
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage")
@@ -32,14 +37,14 @@ def run_subaligner(step, aligner, mode):
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-q"], shell=False)
     else:
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-m", mode,
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
@@ -50,7 +55,7 @@ def run_subaligner_with_output(step, aligner, mode, file_name):
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
             "-q"], shell=False)
     else:
@@ -58,7 +63,7 @@ def run_subaligner_with_output(step, aligner, mode, file_name):
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-m", mode,
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
@@ -70,7 +75,7 @@ def run_subaligner_with_exit_segfail(step, aligner, mode):
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-es",
             "-q"], shell=False)
     else:
@@ -78,7 +83,7 @@ def run_subaligner_with_exit_segfail(step, aligner, mode):
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-m", mode,
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-es",
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
@@ -90,7 +95,7 @@ def run_subaligner_without_stretch(step, aligner, mode):
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-so",
             "-sil", "eng",
             "-q"], shell=False)
@@ -99,7 +104,7 @@ def run_subaligner_without_stretch(step, aligner, mode):
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-m", mode,
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-so",
             "-sil", "eng",
             "-q"], shell=False)
@@ -112,7 +117,7 @@ def run_subaligner_with_custom_model(step, aligner, mode):
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-tod", os.path.join(PWD, "..", "..", "..", "subaligner"),
             "-q"], shell=False)
     else:
@@ -120,7 +125,7 @@ def run_subaligner_with_custom_model(step, aligner, mode):
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
             "-m", mode,
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-tod", os.path.join(PWD, "..", "..", "..", "subaligner"),
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
@@ -144,7 +149,7 @@ def run_subaligner_with_max_loss(step, alginer, mode):
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", alginer),
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-l", str(step.context.max_log_loss),
             "-q"], shell=False)
     else:
@@ -152,7 +157,7 @@ def run_subaligner_with_max_loss(step, alginer, mode):
             os.path.join(PWD, "..", "..", "..", "bin", alginer),
             "-m", mode,
             "-v", step.context.video_file_path,
-            "-s", step.context.subtitle_file_path,
+            "-s", step.context.subtitle_path_or_selector,
             "-l", str(step.context.max_log_loss),
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
@@ -184,7 +189,7 @@ def expect_dual_stage_help_information(step):
 
 @given("I have an unsupported subtitle file")
 def unsupported_subtitle(step):
-    step.context.subtitle_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported")
+    step.context.subtitle_path_or_selector = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported")
 
 
 @given("I have an unsupported video file")
@@ -265,6 +270,16 @@ def run_train_display(step):
 @then("it shows the done epochs equal to {done_epochs:S}")
 def return_done_epochs(step, done_epochs):
     assert step.context.done_epochs == "Number of epochs done: %s\n" % format(done_epochs)
+
+
+@when('I run the converter with "{output_subtitle:S}" as the output')
+def run_subtitle_converter(step, output_subtitle):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_convert"),
+        "-i", step.context.subtitle_path_or_selector,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
+        "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
 @before.each_scenario(on_tags="train or hyperparameter-tuning")

@@ -11,25 +11,27 @@ Make sure you have got the virtual environment activated upfront.
 **Single-stage alignment**::
 
     (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner_1pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
+    (.venv) $ subaligner_1pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
 **Dual-stage alignment**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner_2pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
+    (.venv) $ subaligner_2pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
 **Pass in single-stage or dual-stage as the alignment mode**::
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
+    (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt
+    (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
 **Run alignments with the docker image**::
 
     $ docker pull baxtree/subaligner
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
     $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
+    $ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+    $ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 
 **Run alignments with pipx**::
 
@@ -62,3 +64,14 @@ Currently the stretching is experimental and only works for speech and subtitles
     docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner COMMAND
 
 The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows 10.
+
+**Re-configure FFmpeg/Libav path**::
+
+    (.venv) $ export FFMPEG_PATH=/path/to/ffmpeg
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
+    or
+    (.venv) $ FFMPEG_PATH=/path/to/ffmpeg subaligner -m dual -v video.mp4 -s subtitle.srt
+    or when using `Libav<https://libav.org/>`_
+    (.venv) $ FFMPEG_PATH=/path/to/avconv subaligner -m dual -v video.mp4 -s subtitle.srt
+
+The lower case "ffmpeg_path" is also supported.
