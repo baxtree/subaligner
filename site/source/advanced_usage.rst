@@ -94,6 +94,10 @@ flags to customise the configuration on tuning:
     -utd, --use_training_dump
         Use training dump instead of files in the video or subtitle directory
 
+**Convert the subtitle to another format**::
+
+    (.venv) $ subaligner_convert -i subtitle.srt -o subtitle.vtt
+
 **On Windows**::
 
     docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner COMMAND
