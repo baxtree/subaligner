@@ -8,7 +8,7 @@ import math
 import numpy as np
 import multiprocessing as mp
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from .network import Network
 from .media_helper import MediaHelper
 from .hyperparameters import Hyperparameters
@@ -56,6 +56,8 @@ class Trainer(object):
         hyperparameters: Hyperparameters,
         training_log: str = "training.log",
         resume: bool = False,
+        sound_effect_start_marker: Optional[str] = "(",
+        sound_effect_end_marker: Optional[str] = ")"
     ) -> None:
         """Trigger the training process.
 
@@ -70,6 +72,8 @@ class Trainer(object):
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
+            sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect (default: {"("}).
+            sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect (default: {")"}).
         """
 
         training_start = datetime.datetime.now()
@@ -117,7 +121,7 @@ class Trainer(object):
                 )
         else:
             train_data, labels = Trainer.__extract_data_and_label_from_avs(
-                self, av_file_paths, subtitle_file_paths
+                self, av_file_paths, subtitle_file_paths, sound_effect_start_marker, sound_effect_end_marker
             )
 
             # Dump extracted data and labels to files for re-training
@@ -172,6 +176,8 @@ class Trainer(object):
         subtitle_file_paths: List[str],
         training_dump_dir: str,
         hyperparameters: Hyperparameters,
+        sound_effect_start_marker: Optional[str] = "(",
+        sound_effect_end_marker: Optional[str] = ")"
     ) -> Tuple[List[float], List[float]]:
         """Trigger the training process.
 
@@ -180,6 +186,8 @@ class Trainer(object):
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
             training_dump_dir {string} --  The directory of the training data dump file.
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
+            sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect (default: {"("}).
+            sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect (default: {")"}).
         """
 
         training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
@@ -199,7 +207,7 @@ class Trainer(object):
                 )
         else:
             train_data, labels = Trainer.__extract_data_and_label_from_avs(
-                self, av_file_paths, subtitle_file_paths
+                self, av_file_paths, subtitle_file_paths, sound_effect_start_marker, sound_effect_end_marker
             )
             with h5py.File(training_dump, "w") as hf:
                 hf.create_dataset("train_data", data=train_data)
@@ -241,13 +249,19 @@ class Trainer(object):
         return epochs_done if epochs_done >= 0 else 0
 
     def __extract_data_and_label_from_avs(
-        self, av_file_paths: List[str], subtitle_file_paths: List[str]
+        self,
+        av_file_paths: List[str],
+        subtitle_file_paths: List[str],
+        sound_effect_start_marker: Optional[str],
+        sound_effect_end_marker: Optional[str],
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Generate a training dataset and labels from audio/video files.
 
         Arguments:
             av_file_paths {list} -- A list of paths to the input audio/video files.
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
+            sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect.
+            sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect.
 
         Returns:
             tuple -- The training data and labels.
@@ -272,6 +286,8 @@ class Trainer(object):
                     subtitle_file_paths[index],
                     train_data,
                     labels,
+                    sound_effect_start_marker,
+                    sound_effect_end_marker
                 )
                 for index in range(len(av_file_paths))
             ]
@@ -312,7 +328,14 @@ class Trainer(object):
         return train_data, labels
 
     def __extract_in_multithreads(
-        self, index: int, av_file_path: str, subtitle_file_path: str, train_data: np.ndarray, labels: np.ndarray
+        self,
+        index: int,
+        av_file_path: str,
+        subtitle_file_path: str,
+        train_data: np.ndarray,
+        labels: np.ndarray,
+        sound_effect_start_marker: Optional[str],
+        sound_effect_end_marker: Optional[str]
     ) -> Tuple[str, str]:
         _, file_ext = os.path.splitext(av_file_path)
 
@@ -334,7 +357,8 @@ class Trainer(object):
                     audio_file_path,
                     subtitle_file_path,
                     subtitles=None,
-                    ignore_sound_effects=True,
+                    sound_effect_start_marker=sound_effect_start_marker,
+                    sound_effect_end_marker=sound_effect_end_marker
                 )
 
         # Some media files are malformed and on occurring they will be logged

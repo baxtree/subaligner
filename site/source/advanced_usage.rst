@@ -2,7 +2,7 @@
 Advanced Usage
 ########################
 
-You can train a new model with your own audiovisual files and in-sync subtitle files with Subaligner CLI. Thereafter,
+You can train a new model with your own audiovisual files and in-sync subtitle files using Subaligner CLI. Thereafter,
 the model can be imported and used for synchronising out-of-sync subtitles.
 
 **Start fresh training**::
