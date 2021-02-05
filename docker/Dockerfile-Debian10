@@ -1,6 +1,8 @@
 # Subaligner Debian docker image
 FROM debian:stable-20201209
 
+ARG SOURCE_BRANCH
+
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
 RUN apt-get -y update &&\
@@ -12,4 +14,4 @@ RUN apt-get -y update &&\
     apt-get -y install python3-pip &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install numpy &&\
-    python3 -m pip install subaligner
+    python3 -m pip install subaligner==${SOURCE_BRANCH:1}

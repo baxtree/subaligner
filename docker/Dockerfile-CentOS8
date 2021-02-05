@@ -1,6 +1,8 @@
 # Subaligner CentOS 8 Docker Image
 From centos:8
 
+ARG SOURCE_BRANCH
+
 RUN dnf install -y epel-release dnf-utils &&\
     yum install dnf-plugins-core &&\
     yum-config-manager --set-enabled powertools &&\
@@ -16,4 +18,4 @@ RUN dnf install -y epel-release dnf-utils &&\
     dnf install -y python3-pip &&\
     pip3 install --upgrade pip &&\
     python3 -m pip install numpy &&\
-    python3 -m pip install subaligner
+    python3 -m pip install subaligner==${SOURCE_BRANCH:1}
