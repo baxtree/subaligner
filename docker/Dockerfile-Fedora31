@@ -2,6 +2,7 @@
 From fedora:31
 
 ARG SOURCE_BRANCH
+ENV SOURCE_BRANCH $SOURCE_BRANCH
 
 RUN dnf install -y dnf-utils &&\
     yum install -y dnf-plugins-core &&\

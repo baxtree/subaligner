@@ -2,6 +2,7 @@
 From centos:7
 
 ARG SOURCE_BRANCH
+ENV SOURCE_BRANCH $SOURCE_BRANCH
 
 RUN yum update -y &&\
     yum install -y epel-release &&\
