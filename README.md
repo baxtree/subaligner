@@ -25,7 +25,9 @@ $ pip install subaligner
 or
 ```
 # Install via pipx
-pipx install subaligner
+$ pip install -U pip pipx
+$ pipx install numpy
+$ pipx install subaligner
 ```
 or
 ```

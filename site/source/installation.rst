@@ -21,6 +21,8 @@ Installation
 
 **Install Subaligner via pipx**::
 
+    $ pip install -U pip pipx
+    $ pipx install numpy
     $ pipx install subaligner
 
 **Install from GitHub via Pipenv**::

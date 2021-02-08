@@ -109,6 +109,20 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         action="store_true",
         help="Display the number of completed epochs",
     )
+    parser.add_argument(
+        "-sesm",
+        "--sound_effect_start_marker",
+        type=str,
+        default=None,
+        help="Marker indicating the start of the sound effect which will be ignored during training",
+    )
+    parser.add_argument(
+        "-seem",
+        "--sound_effect_end_marker",
+        type=str,
+        default=None,
+        help="Marker indicating the end of the sound effect which will be ignored during training and used with sound_effect_start_marker",
+    )
     hyperparameter_args = parser.add_argument_group("optional hyperparameters")
     hyperparameter_args.add_argument(
         "-bs",
@@ -182,20 +196,6 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         default="adam",
         help="TensorFlow optimizer",
     )
-    hyperparameter_args.add_argument(
-        "-sesm",
-        "--sound_effect_start_marker",
-        type=str,
-        default="(",
-        help="Marker indicating the start of the sound effect which will be ignored during training",
-    )
-    hyperparameter_args.add_argument(
-        "-seem",
-        "--sound_effect_end_marker",
-        type=str,
-        default=")",
-        help="Marker indicating the end of the sound effect which will be ignored during training",
-    )
 
     parser.add_argument("-utd", "--use_training_dump", action="store_true",
                         help="Use training dump instead of files in the video or subtitle directory")
@@ -208,6 +208,9 @@ Each subtitle file and its companion audiovisual file need to share the same bas
 
     if FLAGS.training_output_directory == "":
         print("--training_output_directory was not passed in")
+        sys.exit(21)
+    if FLAGS.sound_effect_end_marker is not None and FLAGS.sound_effect_start_marker is None:
+        print("--sound_effect_start_marker was not passed in when --sound_effect_end_marker was in use")
         sys.exit(21)
 
     verbose = FLAGS.debug

@@ -407,6 +407,9 @@ class Utils(object):
         """
 
         with open(subtitle_file_path, "rb") as file:
+            # raw = b"".join([file.readline() for _ in range(10)])
+            # Sampling with 10 lines did not work well enough for large subtitle files
+            # and hence this less memory-efficient solution:
             raw = b"".join(file.readlines())
 
         detected = cchardet.detect(raw)

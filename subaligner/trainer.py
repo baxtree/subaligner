@@ -56,8 +56,8 @@ class Trainer(object):
         hyperparameters: Hyperparameters,
         training_log: str = "training.log",
         resume: bool = False,
-        sound_effect_start_marker: Optional[str] = "(",
-        sound_effect_end_marker: Optional[str] = ")"
+        sound_effect_start_marker: Optional[str] = None,
+        sound_effect_end_marker: Optional[str] = None
     ) -> None:
         """Trigger the training process.
 
@@ -176,8 +176,8 @@ class Trainer(object):
         subtitle_file_paths: List[str],
         training_dump_dir: str,
         hyperparameters: Hyperparameters,
-        sound_effect_start_marker: Optional[str] = "(",
-        sound_effect_end_marker: Optional[str] = ")"
+        sound_effect_start_marker: Optional[str] = None,
+        sound_effect_end_marker: Optional[str] = None
     ) -> Tuple[List[float], List[float]]:
         """Trigger the training process.
 

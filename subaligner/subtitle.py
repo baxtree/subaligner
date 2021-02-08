@@ -281,7 +281,6 @@ class Subtitle(object):
             subs = cls(cls.__secret, subtitle_file_path, "subrip").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.TTML_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "ttml").subs
             subs.shift(seconds=seconds)
@@ -297,42 +296,34 @@ class Subtitle(object):
                 )
             encoding = Utils.detect_encoding(subtitle_file_path)
             tree.write(shifted_subtitle_file_path, encoding=encoding)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.WEBVTT_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "webvtt").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.SSA_EXTENTIONS:
             subs = cls(cls.__secret, subtitle_file_path, "ssa").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.ADVANCED_SSA_EXTENTIONS:
             subs = cls(cls.__secret, subtitle_file_path, "ass").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.MICRODVD_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "microdvd").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.MPL2_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "mpl2").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.TMP_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "tmp").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.SAMI_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "sami").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-            return shifted_subtitle_file_path
         elif file_extension.lower() in cls.STL_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "stl").subs
             subs.shift(seconds=seconds)
@@ -341,6 +332,7 @@ class Subtitle(object):
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
             )
+        return shifted_subtitle_file_path
 
     @staticmethod
     def save_subs_as_target_format(subs: List[SubRipItem], source_file_path: str, target_file_path: str) -> None:
