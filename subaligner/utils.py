@@ -407,7 +407,7 @@ class Utils(object):
         """
 
         with open(subtitle_file_path, "rb") as file:
-            raw = b"".join([file.readline() for _ in range(10)])
+            raw = b"".join(file.readlines())
 
         detected = cchardet.detect(raw)
         detected = detected or {}
