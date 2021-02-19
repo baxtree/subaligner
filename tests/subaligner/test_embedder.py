@@ -52,7 +52,7 @@ class FeatureEmbedderTests(unittest.TestCase):
         train_data, labels = Undertest(
             n_mfcc=20, step_sample=0.05
         ).extract_data_and_label_from_audio(
-            self.__audio_file_path, self.__subtitle_file_path
+            self.__audio_file_path, self.__subtitle_file_path, sound_effect_end_marker="(", sound_effect_start_marker=")"
         )
         self.assertEqual(len(train_data), len(labels))
         for i in labels:

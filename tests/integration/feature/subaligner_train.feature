@@ -7,7 +7,7 @@ Feature: Subaligner CLI
         Given I have an audiovisual file directory "av"
         And I have a subtitle file directory "sub"
         And I want to save the output in directory "output"
-        When I run the subaligner_train against them with the following hyperparameters
+        When I run the subaligner_train against them with the following options
             """
             -bs 10 -do 0.5 -e 2 -p 1 -fhs 10 -bhs 5,2 -lr 0.01 -nt lstm -vs 0.3 -o adam
             """
@@ -20,7 +20,7 @@ Feature: Subaligner CLI
         Given I have an audiovisual file directory "av"
         And I have a subtitle file directory "sub"
         And I want to save the output in directory "output"
-        When I run the subaligner_train against them with the following hyperparameters
+        When I run the subaligner_train against them with the following options
             """
             -bs 10 -do 0.5 -e 3 -p 1 -fhs 10 -bhs 5,2 -lr 0.01 -nt bi_lstm -vs 0.3 -o adam
             """
@@ -33,13 +33,37 @@ Feature: Subaligner CLI
         Given I have an audiovisual file directory "av"
         And I have a subtitle file directory "sub"
         And I want to save the output in directory "output"
-        When I run the subaligner_train against them with the following hyperparameters
+        When I run the subaligner_train against them with the following options
             """
             -bs 10 -do 0.5 -e 2 -p 1 -fhs 10 -bhs 5,2 -lr 0.01 -nt conv_1d -vs 0.3 -o adam
             """
         Then a model and a training log file are generated
         When I run the subaligner_train to display the finished epochs
         Then it shows the done epochs equal to 2
+
+    @train @ignore-sound-effects
+    Scenario: Test ignoring sound effects during on training
+        Given I have an audiovisual file directory "av"
+        And I have a subtitle file directory "sub"
+        And I want to save the output in directory "output"
+        When I run the subaligner_train against them with the following options
+            """
+            -e 2 -nt lstm --sound_effect_start_marker "(" --sound_effect_end_marker ")"
+            """
+        Then a model and a training log file are generated
+        When I run the subaligner_train to display the finished epochs
+        Then it shows the done epochs equal to 2
+
+    @train @ignore-sound-effects
+    Scenario: Test erroring on sound_effect_end_marker used alone
+        Given I have an audiovisual file directory "av"
+        And I have a subtitle file directory "sub"
+        And I want to save the output in directory "output"
+        When I run the subaligner_train against them with the following options
+            """
+            -e 2 -nt lstm --sound_effect_end_marker ")"
+            """
+        Then it exits with code "21"
 
     @hyperparameter-tuning @lstm
     Scenario: Test hyperparameter tuning on the LSTM network

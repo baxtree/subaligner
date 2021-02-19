@@ -325,7 +325,7 @@ class MediaHelper(object):
                 bufsize=1,
         ) as proc:
             with subprocess.Popen(
-                    ['grep', '-o', r"[0-9]\{1,3\}\sfps"],
+                    ['grep', '-Eo', r"[0-9]{1,3}(\.[0-9]{1,3})?\sfps,"],
                     shell=False,
                     stdin=proc.stderr,
                     stdout=subprocess.PIPE,
@@ -343,6 +343,8 @@ class MediaHelper(object):
                             "Cannot extract the frame rate from video: {}".format(file_path)
                         )
                     fps = float(std_out.split(" ")[0])
+                    # ffmpeg uses two decimal places so be this hack
+                    fps = fps if fps != 23.98 else 23.976
                     MediaHelper.__LOGGER.info("[{}-{}] Extracted frame rate: {} fps".format(threading.current_thread().name, process.pid, fps))
                     return fps
                 except subprocess.TimeoutExpired as te:
@@ -369,6 +371,40 @@ class MediaHelper(object):
                     process.kill()
                     proc.kill()
                     os.system("stty sane")
+
+    @staticmethod
+    def refragment_with_min_duration(subs: List[SubRipItem], minimum_segment_duration: float) -> List[SubRipItem]:
+        """Re-fragment a list of subtitle cues into new cues each of spans a minimum duration
+
+        Arguments:
+            subs {list} -- A list of SupRip cues.
+            minimum_segment_duration {float} -- The minimum duration in seconds for each output subtitle cue.
+        Returns:
+            list -- A list of new SupRip cues after fragmentation.
+        """
+        new_segment = []
+        new_segment_index = 0
+        new_segment_duration = 0.0
+        new_segment_text = ""
+        new_subs = []
+        for sub in subs:
+            if minimum_segment_duration > new_segment_duration:
+                new_segment.append(sub)
+                new_segment_duration += MediaHelper.get_duration_in_seconds(str(sub.start), str(sub.end)) or 0.0
+                new_segment_text += "{}\n".format(sub.text)
+            else:
+                concatenated_item = SubRipItem(new_segment_index, new_segment[0].start, new_segment[-1].end,
+                                               new_segment_text, new_segment[0].position)
+                new_subs.append(concatenated_item)
+                new_segment_index += 1
+                new_segment = [sub]
+                new_segment_duration = MediaHelper.get_duration_in_seconds(str(sub.start), str(sub.end)) or 0.0
+                new_segment_text = "{}\n".format(sub.text)
+        if new_segment:
+            concatenated_item = SubRipItem(new_segment_index, new_segment[0].start, new_segment[-1].end,
+                                           new_segment_text, new_segment[0].position)
+            new_subs.append(concatenated_item)
+        return new_subs
 
     @staticmethod
     def __preprocess_subs(subs: List[SubRipItem]) -> List[SubRipItem]:

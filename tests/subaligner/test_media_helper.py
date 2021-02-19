@@ -87,6 +87,13 @@ class MediaHelperTests(unittest.TestCase):
     def test_get_frame_rate(self):
         self.assertEqual(24.0, Undertest.get_frame_rate(self.__video_file_path))
 
+    def test_refragment_with_min_duration(self):
+        subs = pysrt.open(self.__subtitle_file_path, encoding="utf-8")
+        new_subs = Undertest.refragment_with_min_duration(subs, 20)
+        self.assertTrue(len(new_subs) < len(subs))
+        self.assertEqual(new_subs[0].start, subs[0].start)
+        self.assertTrue(new_subs[-1].end, subs[-1].end)
+
     def test_throw_terminal_exception_on_bad_video(self):
         try:
             Undertest.extract_audio("bad_video_file_path", True, 16000)

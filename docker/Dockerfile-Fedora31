@@ -1,6 +1,9 @@
 # Subaligner Fedora Docker Image
 From fedora:31
 
+ARG SOURCE_BRANCH
+ENV SOURCE_BRANCH $SOURCE_BRANCH
+
 RUN dnf install -y dnf-utils &&\
     yum install -y dnf-plugins-core &&\
     dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm &&\
@@ -15,4 +18,4 @@ RUN dnf install -y dnf-utils &&\
     dnf install -y python3-pip &&\
     pip3 install --upgrade pip &&\
     python3 -m pip install numpy &&\
-    python3 -m pip install subaligner
+    python3 -m pip install subaligner==${SOURCE_BRANCH:1}

@@ -3,7 +3,7 @@ import gc
 import numpy as np
 from datetime import datetime, timedelta
 from pysrt import SubRipTime, SubRipFile
-from typing import Tuple
+from typing import Tuple, Optional
 from .singleton import Singleton
 from .subtitle import Subtitle
 from .exception import UnsupportedFormatException, TerminalException
@@ -244,8 +244,9 @@ class FeatureEmbedder():
         self,
         audio_file_path: str,
         subtitle_file_path: str,
-        subtitles: SubRipFile = None,
-        ignore_sound_effects: bool = False,
+        subtitles: Optional[SubRipFile] = None,
+        sound_effect_start_marker: Optional[str] = None,
+        sound_effect_end_marker: Optional[str] = None,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Generate a train dataset from an audio file and its subtitles
 
@@ -254,8 +255,9 @@ class FeatureEmbedder():
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Keyword Arguments:
-            subtitles {pysrt.SubRipFile} -- The SubRipFile object (default: {None})
-            ignore_sound_effects {boolean} -- Ignore subtitles which are sound effects.
+            subtitles {pysrt.SubRipFile} -- The SubRipFile object (default: {None}).
+            sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect (default: {None}).
+            sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect (default: {None}).
 
         Returns:
             tuple -- The training data and the training lables.
@@ -280,10 +282,10 @@ class FeatureEmbedder():
         else:
             raise TerminalException("Subtitles are missing")
 
-        if ignore_sound_effects:
+        if sound_effect_start_marker is not None:
             original_size = len(subs)
             subs = Subtitle.remove_sound_effects_by_affixes(
-                subs, se_prefix="(", se_suffix=")"
+                subs, se_prefix=sound_effect_start_marker, se_suffix=sound_effect_end_marker
             )
             subs = Subtitle.remove_sound_effects_by_case(
                 subs, se_uppercase=True

@@ -212,7 +212,7 @@ def output_dir(step, output_dir):
     step.context.training_output = os.path.join(step.context.temp_dir, output_dir)
 
 
-@when('I run the subaligner_train against them with the following hyperparameters')
+@when('I run the subaligner_train against them with the following options')
 def train(step):
     process = subprocess.Popen([
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
@@ -233,6 +233,13 @@ def model_trained(step):
     assert os.path.join(step.context.training_output, "models", "training", "weights", "weights.hdf5") in output_files
     assert os.path.join(step.context.training_output, "training.log") in output_files
     assert os.path.join(step.context.training_output, "training_dump.hdf5") in output_files
+
+
+@then("a model and a training log file are not generated")
+def model_trained(step):
+    output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
+    assert step.context.exit_code == 21
+    assert output_files == []
 
 
 @then("a hyperparameter file is generated")

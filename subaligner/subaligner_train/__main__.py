@@ -2,7 +2,7 @@
 """
 usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
                         [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
-                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q] [-ver]
+                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-sesm SOUND_EFFECT_START_MARKER] [-seem SOUND_EFFECT_END_MARKER] [-utd] [-d] [-q] [-ver]
 
 Train the Subaligner model
 
@@ -48,6 +48,10 @@ optional hyperparameters:
                         Fraction between 0 and 1 of the training data to be used as validation data
   -o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}, --optimizer {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}
                         TensorFlow optimizer
+  -sesm SOUND_EFFECT_START_MARKER, --sound_effect_start_marker SOUND_EFFECT_START_MARKER
+                        Marker indicating the start of the sound effect which will be ignored during training
+  -seem SOUND_EFFECT_END_MARKER, --sound_effect_end_marker SOUND_EFFECT_END_MARKER
+                        Marker indicating the end of the sound effect which will be ignored during training
 """
 
 import os
@@ -104,6 +108,20 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         "--display_done_epochs",
         action="store_true",
         help="Display the number of completed epochs",
+    )
+    parser.add_argument(
+        "-sesm",
+        "--sound_effect_start_marker",
+        type=str,
+        default=None,
+        help="Marker indicating the start of the sound effect which will be ignored during training",
+    )
+    parser.add_argument(
+        "-seem",
+        "--sound_effect_end_marker",
+        type=str,
+        default=None,
+        help="Marker indicating the end of the sound effect which will be ignored during training and used with sound_effect_start_marker",
     )
     hyperparameter_args = parser.add_argument_group("optional hyperparameters")
     hyperparameter_args.add_argument(
@@ -191,6 +209,9 @@ Each subtitle file and its companion audiovisual file need to share the same bas
     if FLAGS.training_output_directory == "":
         print("--training_output_directory was not passed in")
         sys.exit(21)
+    if FLAGS.sound_effect_end_marker is not None and FLAGS.sound_effect_start_marker is None:
+        print("--sound_effect_start_marker was not passed in when --sound_effect_end_marker was in use")
+        sys.exit(21)
 
     verbose = FLAGS.debug
 
@@ -253,7 +274,9 @@ Each subtitle file and its companion audiovisual file need to share the same bas
                       output_dir,
                       hyperparameters,
                       os.path.join(output_dir, "training.log"),
-                      FLAGS.resume)
+                      FLAGS.resume,
+                      FLAGS.sound_effect_start_marker,
+                      FLAGS.sound_effect_end_marker)
     except UnsupportedFormatException as e:
         print(
             "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")

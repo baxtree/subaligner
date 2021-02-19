@@ -3,7 +3,7 @@ Acknowledgement
 ########################
 
 
-**Required modules**:
+**This tool wouldn't be possible without the following packages**:
 
     - `librosa <https://librosa.github.io/librosa/>`_
     - `tensorflow <https://www.tensorflow.org/>`_
