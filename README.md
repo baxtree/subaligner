@@ -110,7 +110,7 @@ The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI
 ## Supported Formats
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, and SAMI.
 
-Video: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, etc.
+Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
 
 ## Advanced Usage
 You can train a new model with your own audiovisual files and subtitle files:

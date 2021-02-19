@@ -577,8 +577,7 @@ class Network(object):
                 for gpu in physical_devices:
                     tf.config.experimental.set_memory_growth(gpu, True)
             except Exception:
-                # Invalid device or cannot modify virtual devices once initialized.
-                pass
+                Network.__LOGGER.warning("Invalid device or cannot modify virtual devices once initialised")
             K.clear_session()
         elif backend.lower() == "theano" or backend.lower() == "cntk":
             #  Backends other than tensorflow require separate installations before being used.
