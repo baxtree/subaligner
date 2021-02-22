@@ -5,7 +5,7 @@ ARG SOURCE_BRANCH
 ENV SOURCE_BRANCH $SOURCE_BRANCH
 
 RUN dnf install -y epel-release dnf-utils &&\
-    dnf upgrade -y openssl-libs &&\
+    dnf update-to -y openssl-libs-1:1.1.1g-12.el8_3 &&\
     yum install dnf-plugins-core &&\
     yum-config-manager --set-enabled powertools &&\
     yum-config-manager --add-repo=https://negativo17.org/repos/epel-multimedia.repo &&\
