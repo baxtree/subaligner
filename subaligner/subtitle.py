@@ -83,13 +83,6 @@ class Subtitle(object):
                 "No subtitle found in file: {}".format(subtitle_file_path)
             )
 
-        # freeze the object after creation
-        def __setattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
-
-        def __delattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
-
     @classmethod
     def load_subrip(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip subtitle file.
@@ -277,144 +270,64 @@ class Subtitle(object):
             string -- The path to the shifted subtitle file.
         """
         _, file_extension = os.path.splitext(subtitle_file_path)
-        if file_extension.lower() in cls.SUBRIP_EXTENTIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "subrip").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.TTML_EXTENSIONS:
+        if file_extension.lower() in cls.TTML_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "ttml").subs
             subs.shift(seconds=seconds)
             tree = ElementTree.parse(subtitle_file_path)
             tt = tree.getroot()
             cues = (tt.find("tt:body", Subtitle.TT_NS).find("tt:div", Subtitle.TT_NS).findall("tt:p", Subtitle.TT_NS))  # type: ignore
             for index, cue in enumerate(cues):
-                cue.attrib["begin"] = subs[index].start
-                cue.attrib["end"] = subs[index].end
+                cue.attrib["begin"] = str(subs[index].start).replace(",", ".")
+                cue.attrib["end"] = str(subs[index].end).replace(",", ".")
             if shifted_subtitle_file_path is None:
                 shifted_subtitle_file_path = subtitle_file_path.replace(
                     file_extension, "{}{}".format(suffix, file_extension)
                 )
             encoding = Utils.detect_encoding(subtitle_file_path)
             tree.write(shifted_subtitle_file_path, encoding=encoding)
-        elif file_extension.lower() in cls.WEBVTT_EXTENSIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "webvtt").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.SSA_EXTENTIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "ssa").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.ADVANCED_SSA_EXTENTIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "ass").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.MICRODVD_EXTENSIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "microdvd").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.MPL2_EXTENSIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "mpl2").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.TMP_EXTENSIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "tmp").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
-        elif file_extension.lower() in cls.SAMI_EXTENSIONS:
-            subs = cls(cls.__secret, subtitle_file_path, "sami").subs
-            subs.shift(seconds=seconds)
-            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
         elif file_extension.lower() in cls.STL_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "stl").subs
             subs.shift(seconds=seconds)
             Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, ".srt", suffix)
         else:
-            raise UnsupportedFormatException(
-                "Unknown subtitle format for file: {}".format(subtitle_file_path)
-            )
+            if file_extension.lower() in cls.SUBRIP_EXTENTIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "subrip").subs
+            elif file_extension.lower() in cls.WEBVTT_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "webvtt").subs
+            elif file_extension.lower() in cls.SSA_EXTENTIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "ssa").subs
+            elif file_extension.lower() in cls.ADVANCED_SSA_EXTENTIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "ass").subs
+            elif file_extension.lower() in cls.MICRODVD_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "microdvd").subs
+            elif file_extension.lower() in cls.MPL2_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "mpl2").subs
+            elif file_extension.lower() in cls.TMP_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "tmp").subs
+            elif file_extension.lower() in cls.SAMI_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "sami").subs
+            else:
+                raise UnsupportedFormatException(
+                    "Unknown subtitle format for file: {}".format(subtitle_file_path)
+                )
+            subs.shift(seconds=seconds)
+            Subtitle.__export_with_format(subs, subtitle_file_path, shifted_subtitle_file_path, file_extension, suffix)
         return shifted_subtitle_file_path
 
     @staticmethod
-    def save_subs_as_target_format(subs: List[SubRipItem], source_file_path: str, target_file_path: str) -> None:
+    def save_subs_as_target_format(subs: List[SubRipItem], source_file_path: str, target_file_path: str, frame_rate: Optional[float] = None) -> None:
         """Save SubRipItems with the format determined by the target file extension.
 
         Arguments:
             subs {list} -- A list of SubRipItems.
             source_file_path {string} -- The path to the original subtitle file.
             target_file_path {string} -- The path to the output subtitle file.
+            frame_rate {float} -- The frame rate used by conversion to formats such as MicroDVD
         """
 
         encoding = Utils.detect_encoding(source_file_path)
         _, file_extension = os.path.splitext(target_file_path.lower())
-        if file_extension in Subtitle.SUBRIP_EXTENTIONS:
-            SubRipFile(subs).save(target_file_path, encoding=encoding)
-            Utils.remove_trailing_newlines(target_file_path, encoding)
-        elif file_extension in Subtitle.TTML_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2ttml(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2vtt(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.SSA_EXTENTIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2ssa(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.ADVANCED_SSA_EXTENTIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2ass(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.MICRODVD_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2microdvd(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.MPL2_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2mpl2(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.TMP_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2tmp(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.SAMI_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2sami(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.STL_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(target_file_path, encoding=encoding)
-            finally:
-                os.remove(path)
-        else:
-            raise UnsupportedFormatException(
-                "Unknown subtitle format for file: {}".format(source_file_path)
-            )
+        Subtitle.__save_subtitle_by_extension(file_extension, subs, source_file_path, target_file_path, encoding, frame_rate)
 
     @staticmethod
     def export_subtitle(source_file_path: str, subs: List[SubRipItem], target_file_path: str, frame_rate: float = 25.0) -> None:
@@ -429,86 +342,7 @@ class Subtitle(object):
 
         encoding = Utils.detect_encoding(source_file_path)
         _, file_extension = os.path.splitext(source_file_path.lower())
-        if file_extension in Subtitle.SUBRIP_EXTENTIONS:
-            SubRipFile(subs).save(target_file_path, encoding=encoding)
-            Utils.remove_trailing_newlines(target_file_path, encoding)
-        elif file_extension in Subtitle.TTML_EXTENSIONS:
-            tree = ElementTree.parse(source_file_path)
-            tt = tree.getroot()
-            cues = (tt.find("tt:body", Subtitle.TT_NS).find("tt:div", Subtitle.TT_NS).findall("tt:p", Subtitle.TT_NS))  # type: ignore
-            for index, cue in enumerate(cues):
-                cue.attrib["begin"] = str(subs[index].start).replace(",", ".")
-                cue.attrib["end"] = str(subs[index].end).replace(",", ".")
-
-            # Change single quotes in the XML header to double quotes
-            with open(target_file_path, "w", encoding=encoding) as target:
-                if "xml_declaration" in inspect.getfullargspec(ElementTree.tostring).kwonlyargs:  # for >= python 3.8
-                    encoded = ElementTree.tostring(tt, encoding=encoding, method="xml", xml_declaration=True)
-                else:
-                    encoded = ElementTree.tostring(tt, encoding=encoding, method="xml")
-                normalised = encoded.decode(encoding) \
-                    .replace("<?xml version='1.0' encoding='", '<?xml version="1.0" encoding="',) \
-                    .replace("'?>", '"?>')
-                target.write(normalised)
-        elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2vtt(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.SSA_EXTENTIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2ssa(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.ADVANCED_SSA_EXTENTIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2ass(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.MICRODVD_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2microdvd(path, target_file_path, frame_rate=frame_rate)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.MPL2_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2mpl2(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.TMP_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2tmp(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.SAMI_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(path, encoding=encoding)
-                Utils.srt2sami(path, target_file_path)
-            finally:
-                os.remove(path)
-        elif file_extension in Subtitle.STL_EXTENSIONS:
-            try:
-                _, path = tempfile.mkstemp()
-                SubRipFile(subs).save(target_file_path, encoding=encoding)
-            finally:
-                os.remove(path)
-        else:
-            raise UnsupportedFormatException(
-                "Unknown subtitle format for file: {}".format(source_file_path)
-            )
+        Subtitle.__save_subtitle_by_extension(file_extension, subs, source_file_path, target_file_path, encoding, frame_rate, is_exporting=True)
 
     @staticmethod
     def remove_sound_effects_by_case(subs: List[SubRipItem], se_uppercase: bool = True) -> List[SubRipItem]:
@@ -772,3 +606,100 @@ class Subtitle(object):
             if housekeep:
                 os.remove(subrip_file_path)
         return subs
+
+    @staticmethod
+    def __save_subtitle_by_extension(file_extension: str,
+                                     subs: List[SubRipItem],
+                                     source_file_path: str,
+                                     target_file_path: str,
+                                     encoding: str,
+                                     frame_rate: Optional[float],
+                                     is_exporting: bool = False):
+        if file_extension in Subtitle.SUBRIP_EXTENTIONS:
+            SubRipFile(subs).save(target_file_path, encoding=encoding)
+            Utils.remove_trailing_newlines(target_file_path, encoding)
+        elif file_extension in Subtitle.TTML_EXTENSIONS:
+            if is_exporting:
+                tree = ElementTree.parse(source_file_path)
+                tt = tree.getroot()
+                cues = (tt.find("tt:body", Subtitle.TT_NS).find("tt:div", Subtitle.TT_NS).findall("tt:p", Subtitle.TT_NS))  # type: ignore
+                for index, cue in enumerate(cues):
+                    cue.attrib["begin"] = str(subs[index].start).replace(",", ".")
+                    cue.attrib["end"] = str(subs[index].end).replace(",", ".")
+
+                # Change single quotes in the XML header to double quotes
+                with open(target_file_path, "w", encoding=encoding) as target:
+                    if "xml_declaration" in inspect.getfullargspec(ElementTree.tostring).kwonlyargs:  # for >= python 3.8
+                        encoded = ElementTree.tostring(tt, encoding=encoding, method="xml", xml_declaration=True)
+                    else:
+                        encoded = ElementTree.tostring(tt, encoding=encoding, method="xml")
+                    normalised = encoded.decode(encoding) \
+                        .replace("<?xml version='1.0' encoding='", '<?xml version="1.0" encoding="',) \
+                        .replace("'?>", '"?>')
+                    target.write(normalised)
+            else:
+                try:
+                    _, path = tempfile.mkstemp()
+                    SubRipFile(subs).save(path, encoding=encoding)
+                    Utils.srt2ttml(path, target_file_path)
+                finally:
+                    os.remove(path)
+        elif file_extension in Subtitle.WEBVTT_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2vtt(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.SSA_EXTENTIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2ssa(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.ADVANCED_SSA_EXTENTIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2ass(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.MICRODVD_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2microdvd(path, target_file_path, frame_rate=frame_rate)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.MPL2_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2mpl2(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.TMP_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2tmp(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.SAMI_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2sami(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.STL_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(target_file_path, encoding=encoding)
+            finally:
+                os.remove(path)
+        else:
+            raise UnsupportedFormatException(
+                "Unknown subtitle format for file: {}".format(source_file_path)
+            )
