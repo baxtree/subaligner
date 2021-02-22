@@ -158,6 +158,7 @@ class Predictor(Singleton):
         # so we can have room to shift the subtitle back and forth based on losses.
         head_room = len(voice_probabilities) - len(subtitle_mask)
         if head_room < 0:
+            Predictor.__LOGGER.warning("Audio duration is shorter than the subtitle duration")
             local_vp = np.vstack(
                 [
                     voice_probabilities,
@@ -546,11 +547,6 @@ class Predictor(Singleton):
         weights_path = os.path.join(weights_dir, weights_files[0])
 
         return os.path.abspath(weights_path)
-
-    @staticmethod
-    def __normalise_seconds_to_shift(seconds_to_shift: float, step_sample: int):
-        # Make sure each cue starts right on the beginning of a frame
-        return round(seconds_to_shift / step_sample) * step_sample
 
     def __predict(
             self,

@@ -14,11 +14,12 @@ class FeatureEmbedderTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
         )
 
-    def test_get_len_mfcc(self):
+    def test_get_mfcc(self):
         self.assertEqual(2.34375, Undertest(n_mfcc=20, step_sample=0.05).get_len_mfcc())
-
-    def test_get_step_mfcc(self):
+        self.assertEqual(20, Undertest(n_mfcc=20, step_sample=0.05).n_mfcc)
+        self.assertEqual(512, Undertest(n_mfcc=20, step_sample=0.05).hop_len)
         self.assertEqual(1.5625, Undertest(n_mfcc=20, step_sample=0.05).get_step_mfcc())
+        self.assertEqual(0.032, Undertest(n_mfcc=20, step_sample=0.05).len_sample)
 
     def test_time_to_sec(self):
         subs = pysrt.open(self.__subtitle_file_path, encoding="utf-8")

@@ -87,7 +87,11 @@ class NetworkTests(unittest.TestCase):
 
     def test_summary(self):
         network = Undertest.get_network((2, 20), self.__hyperparameters)
-        self.assertTrue(network.summary is None)  # Why this is None
+        self.assertTrue(network.summary is None)
+
+    def test_layers(self):
+        network = Undertest.get_network((2, 20), self.__hyperparameters)
+        self.assertEqual(16, len(network.layers))
 
     def test_get_predictions(self):
         network = Undertest.get_from_model("{}/model.hdf5".format(self.__model_dir), self.__hyperparameters)
@@ -174,6 +178,16 @@ class NetworkTests(unittest.TestCase):
         )
         self.assertEqual(list, type(val_loss))
         self.assertEqual(list, type(val_acc))
+
+    def test_exception_on_creating_an_unknown_network(self):
+        self.__hyperparameters.network_type = "unknown"
+        try:
+            Undertest.get_network((2, 20), self.__hyperparameters)
+        except Exception as e:
+            self.assertTrue(isinstance(e, ValueError))
+            self.assertTrue("Unknown network type" in str(e))
+        else:
+            self.fail("Should have thrown exception")
 
     def test_exception_on_resume_with_no_extra_epochs(self):
         self.__hyperparameters.epochs = 2

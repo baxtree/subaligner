@@ -21,6 +21,7 @@ class Trainer(object):
     """Network trainer.
     """
 
+    EMBEDDING_TIMEOUT = 300  # time out for feature embedding of media files
     __LOGGER = Logger().get_logger(__name__)
     __MAX_BYTES = 2 ** 31 - 1
 
@@ -36,13 +37,6 @@ class Trainer(object):
 
         self.__feature_embedder = feature_embedder
         self.__lock = threading.RLock()
-
-        # freeze the object after creation
-        def __setattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
-
-        def __delattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
 
     def train(
         self,
@@ -292,21 +286,23 @@ class Trainer(object):
                 for index in range(len(av_file_paths))
             ]
             try:
-                done, not_done = concurrent.futures.wait(futures)
+                done, not_done = concurrent.futures.wait(futures, timeout=Trainer.EMBEDDING_TIMEOUT)
             except KeyboardInterrupt:
                 for future in futures:
-                    future.cancel()
-                # concurrent.futures.wait(futures)
-                raise TerminalException("Training data embedding interrupted by the user")
+                    if not future.cancel():
+                        Trainer.__LOGGER.warning("Data and label extraction job cannot be cancelled")
+                raise TerminalException("Data and label extraction interrupted by the user")
             for future in not_done:
                 # Log undone audio files and continue
                 try:
                     audio_file_path, subtitle_file_path = future.result()
-                    Trainer.__LOGGER.error(
+                    Trainer.__LOGGER.warning(
                         "Data and label extraction failed for: [Audio: {}, Subtitle: {}]".format(
                             audio_file_path, subtitle_file_path
                         )
                     )
+                    if not future.cancel():
+                        Trainer.__LOGGER.warning("Data and label extraction job cannot be cancelled")
                 except Exception as e:
                     Trainer.__LOGGER.error(
                         "Unexpected exception during data and label extraction: {} stacktrace: {}".format(
@@ -363,29 +359,14 @@ class Trainer(object):
 
         # Some media files are malformed and on occurring they will be logged
         # However, the training shall continue after expensive embedding on healthy media files.
-        except (UnsupportedFormatException, TerminalException) as e:
+        except Exception as e:
             # Log failed audio and subtitle files and continue
-            Trainer.__LOGGER.error(
+            Trainer.__LOGGER.warning(
                 "Exception: {}; stacktrace: {}".format(
                     str(e), "".join(traceback.format_stack())
                 )
             )
-            Trainer.__LOGGER.error(
-                "[Audio: {}, Subtitle: {}]".format(
-                    audio_file_path, subtitle_file_path
-                )
-            )
-
-        # Some media files are malformed and on occurring they will be logged
-        # However, the training shall continue after expensive embedding on healthy media files.
-        except Exception as e:
-            # Log failed audio and subtitle files and continue
-            Trainer.__LOGGER.error(
-                "Unexpected exception: {}; stacktrace: {}".format(
-                    str(e), "".join(traceback.format_stack())
-                )
-            )
-            Trainer.__LOGGER.error(
+            Trainer.__LOGGER.warning(
                 "[Audio: {}, Subtitle: {}]".format(
                     audio_file_path, subtitle_file_path
                 )

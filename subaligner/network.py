@@ -26,7 +26,6 @@ from tensorflow.keras.callbacks import (
     CSVLogger,
 )
 from tensorflow.keras.models import Model, load_model, save_model
-from tensorflow.keras.utils import plot_model
 from tensorflow.keras import backend as K
 from .utils import Utils
 from .logger import Logger
@@ -36,7 +35,7 @@ Utils.suppress_lib_logs()
 
 
 class Network(object):
-    """ Network factory creates immutable DNNs.
+    """ Network factory creates DNNs.
     Not thread safe since the session of keras_backend is global.
     Only factory methods are allowed when generating DNN objects.
     """
@@ -100,13 +99,6 @@ class Network(object):
 
         self.__n_type = hyperparameters.network_type
         self.hyperparameters = hyperparameters
-
-        # freeze the object after creation
-        def __setattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
-
-        def __delattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
 
     @classmethod
     def get_network(cls, input_shape: Tuple, hyperparameters: Hyperparameters) -> "Network":
@@ -196,14 +188,11 @@ class Network(object):
         return self.__n_type
 
     @property
-    def summary(self) -> str:
-        """Get the summary of the network.
-
-        Returns:
-            string -- The summary of the network.
+    def summary(self) -> None:
+        """Print out the summary of the network.
         """
 
-        return self.__model.summary()
+        self.__model.summary()
 
     @property
     def layers(self) -> List[Any]:
@@ -498,17 +487,6 @@ class Network(object):
         )
 
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
-
-    # To make this work, need to change model._network_nodes to model._container_nodes
-    # in tensorflow/python/keras/_impl/keras/utils/vis_utils.py
-    def plot_model(self, file_path: str) -> None:
-        """Plot the network architecture in the dot format.
-
-        Arguments:
-            file_path {string} -- The path of the saved image.
-        """
-
-        plot_model(self.__model, to_file=file_path, show_shapes=True)
 
     @staticmethod
     def reset() -> None:

@@ -129,7 +129,7 @@ class UtilsTests(unittest.TestCase):
     def test_srt2microdvd(self):
         output_file_path = os.path.join(self.__resource_tmp, "converted.sub")
 
-        Undertest.srt2microdvd(self.__real_srt_path, output_file_path)
+        Undertest.srt2microdvd(self.__real_srt_path, output_file_path, 25.0)
 
         self.assertTrue(filecmp.cmp(self.__real_mircodvd_path, output_file_path))
 

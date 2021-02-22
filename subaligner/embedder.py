@@ -4,13 +4,12 @@ import numpy as np
 from datetime import datetime, timedelta
 from pysrt import SubRipTime, SubRipFile
 from typing import Tuple, Optional
-from .singleton import Singleton
 from .subtitle import Subtitle
-from .exception import UnsupportedFormatException, TerminalException
+from .exception import TerminalException
 from .logger import Logger
 
 
-class FeatureEmbedder():
+class FeatureEmbedder(object):
     """Audio and subtitle feature embedding.
     """
 
@@ -46,13 +45,6 @@ class FeatureEmbedder():
         self.__item_time = (
             1.0 / frequency
         ) * hop_len  # 1 item = 1/16000 seg = 32 ms
-
-        # freeze the object after creation
-        def __setattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
-
-        def __delattr__(self, *args):
-            raise NotImplementedError("Cannot modify the immutable object")
 
     @property
     def n_mfcc(self) -> int:
@@ -272,14 +264,10 @@ class FeatureEmbedder():
         if subtitle_file_path is None and subtitles is not None:
             subs = subtitles
         elif subtitle_file_path is not None:
-            try:
-                subs = Subtitle.load(subtitle_file_path).subs
-                FeatureEmbedder.__LOGGER.info(
-                    "Subtitle file loaded: {}".format(subtitle_file_path)
-                )
-            except UnsupportedFormatException:
-                raise
+            subs = Subtitle.load(subtitle_file_path).subs
+            FeatureEmbedder.__LOGGER.info("Subtitle file loaded: {}".format(subtitle_file_path))
         else:
+            FeatureEmbedder.__LOGGER.error("Subtitles are missing")
             raise TerminalException("Subtitles are missing")
 
         if sound_effect_start_marker is not None:
