@@ -1,8 +1,8 @@
 # Subaligner Debian docker image
 FROM debian:stable-20201209
 
-ARG SOURCE_BRANCH
-ENV SOURCE_BRANCH $SOURCE_BRANCH
+# ARG SOURCE_BRANCH
+ENV SOURCE_BRANCH v0.1.2
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London

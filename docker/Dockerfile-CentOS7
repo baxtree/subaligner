@@ -1,8 +1,8 @@
 # Subaligner CentOS 7 Docker Image
 From centos:7
 
-ARG SOURCE_BRANCH
-ENV SOURCE_BRANCH $SOURCE_BRANCH
+# ARG SOURCE_BRANCH
+ENV SOURCE_BRANCH v0.1.2
 
 RUN yum update -y &&\
     yum update-to -y openssl-libs-1:1.0.2k-21.el7_9 &&\
