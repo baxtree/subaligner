@@ -16,7 +16,7 @@ actually spoke in the companion audiovisual content.
 
 Subligner has been shifted with a command-line interface which helps users to conduct various tasks around subtitle synchronisation
 without writing any code as well as APIs targeting developers. With existing audiovisual and in-sync subtitle files at
-hand, users can train their own synchroniser with a single command and zero setup. A handful of subtitles formats are supported
+hand, users can train their own synchroniser with a single command and zero setup. A handful of subtitle formats are supported
 and can be converted from one to another either during synchronisation or on on-demand.
 
 The source code can be found on GitHub: `subaligner <https://github.com/baxtree/subaligner>`_.

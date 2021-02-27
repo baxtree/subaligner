@@ -45,6 +45,7 @@ def main():
         sys.exit(20)
     try:
         import subaligner
+        del subaligner
     except ModuleNotFoundError:
         print("Subaligner is not installed")
         sys.exit(20)
