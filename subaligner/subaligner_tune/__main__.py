@@ -39,6 +39,7 @@ def main():
         sys.exit(20)
     try:
         import subaligner
+        del subaligner
     except ModuleNotFoundError:
         print("Subaligner is not installed")
         sys.exit(20)
@@ -119,7 +120,6 @@ def main():
         Logger.QUIET = FLAGS.quiet
         from subaligner.exception import UnsupportedFormatException
         from subaligner.exception import TerminalException
-        from subaligner.hyperparameters import Hyperparameters
         from subaligner.hparam_tuner import HyperParameterTuner
         output_dir = os.path.abspath(FLAGS.training_output_directory)
         os.makedirs(FLAGS.training_output_directory, exist_ok=True)

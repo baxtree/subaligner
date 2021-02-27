@@ -166,7 +166,7 @@ class Utils(object):
         Utils.remove_trailing_newlines(new_srt_file_path, encoding)
 
     @staticmethod
-    def srt2microdvd(srt_file_path: str, microdvd_file_path: Optional[str] = None, frame_rate: float = 25.0):
+    def srt2microdvd(srt_file_path: str, microdvd_file_path: Optional[str] = None, frame_rate: Optional[float] = 25.0):
         """Convert SubRip subtitles to MicroDVD subtitles.
 
         Arguments:

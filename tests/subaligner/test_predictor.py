@@ -5,6 +5,8 @@ import sys
 from concurrent.futures._base import Future
 from mock import patch
 from subaligner.exception import TerminalException
+from subaligner.logger import Logger
+from subaligner.media_helper import MediaHelper
 from subaligner.predictor import Predictor as Undertest
 
 
@@ -133,6 +135,20 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
         self.assertIsNone(frame_rate)
 
+    def test_predict_dual_pass_without_stretching_logs(self):
+        quiet = Logger.QUIET
+        Logger.QUIET = True
+        undertest_obj = Undertest(n_mfcc=20)
+        new_subs, subs, voice_probabilities, frame_rate = undertest_obj.predict_dual_pass(
+            self.__audio_file_path, self.__srt_file_path, self.__weights_dir
+        )
+
+        self.assertGreater(len(new_subs), 0)
+        self.assertEqual(len(new_subs), len(subs))
+        self.assertGreater(len(voice_probabilities), 0)
+        self.assertIsNone(frame_rate)
+        Logger.QUIET = quiet
+
     def test_predict_dual_pass_with_stretching(self):
         undertest_obj = Undertest(n_mfcc=20)
 
@@ -177,6 +193,17 @@ class PredictorTests(unittest.TestCase):
         log_loss = undertest_obj.get_log_loss(voice_probabilities, subs)
         self.assertGreater(log_loss, 0)
         self.assertEqual(24.0, frame_rate)
+
+    def test_get_log_loss_on_speech_shorter_than_subtitle(self):
+        undertest_obj = Undertest(n_mfcc=20)
+        shorter_audio_file_path, _ = MediaHelper.extract_audio_from_start_to_end(self.__audio_file_path, "00:00:00,000", "00:00:32,797")
+        self.__audio_file_paths.append(shorter_audio_file_path)
+        subs, audio_file_path, voice_probabilities, frame_rate = undertest_obj.predict_single_pass(
+            shorter_audio_file_path, self.__srt_file_path, self.__weights_dir
+        )
+        log_loss = undertest_obj.get_log_loss(voice_probabilities, subs)
+        self.assertGreater(log_loss, 0)
+        self.assertIsNone(frame_rate)
 
     def test_get_min_log_loss_and_index(self):
         undertest_obj = Undertest(n_mfcc=20)

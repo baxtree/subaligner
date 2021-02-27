@@ -5,7 +5,7 @@ ARG SOURCE_BRANCH
 ENV SOURCE_BRANCH $SOURCE_BRANCH
 
 RUN yum update -y &&\
-    yum upgrade -y openssl-libs &&\
+    yum update-to -y openssl-libs-1:1.0.2k-21.el7_9 &&\
     yum install -y epel-release &&\
     rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm &&\
     yum install -y ffmpeg &&\

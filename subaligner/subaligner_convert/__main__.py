@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """
-usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-d] [-q] [-ver]
+usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-f FRAME_RATE] [-d] [-q] [-ver]
 
-Convert a subtitle from input format to output format (v0.1.1)
+Convert a subtitle from input format to output format
 
 optional arguments:
   -h, --help            show this help message and exit
+  -f FRAME_RATE, --frame_rate FRAME_RATE
+                        Frame rate used by conversion to formats such as MicroDVD
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
@@ -30,6 +32,7 @@ def main():
         sys.exit(20)
     try:
         import subaligner
+        del subaligner
     except ModuleNotFoundError:
         print("Subaligner is not installed")
         sys.exit(20)
@@ -54,6 +57,13 @@ def main():
         help="File path to the output subtitle file",
         required=True,
     )
+    parser.add_argument(
+        "-f",
+        "--frame_rate",
+        type=float,
+        default=None,
+        help="Frame rate used by conversion to formats such as MicroDVD",
+    )
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
@@ -66,6 +76,8 @@ def main():
     if FLAGS.output_subtitle_path == "":
         print("--output_subtitle_path was not passed in")
         sys.exit(21)
+    if FLAGS.output_subtitle_path.endswith(".sub") and FLAGS.frame_rate is None:
+        print("--frame_rate was not passed in for conversion to MicroDVD")
 
     local_subtitle_path = FLAGS.input_subtitle_path
 
@@ -84,7 +96,7 @@ def main():
             Utils.download_file(FLAGS.input_subtitle_path, local_subtitle_path)
 
         subtitle = Subtitle.load(local_subtitle_path)
-        Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path)
+        Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate)
         print("Subtitle converted and saved to: {}".format(FLAGS.output_subtitle_path))
     except UnsupportedFormatException as e:
         print(

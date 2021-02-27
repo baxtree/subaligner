@@ -235,6 +235,21 @@ class SubtitleTests(unittest.TestCase):
         shifted_line_num = j + 1
         self.assertEqual(original_line_num, shifted_line_num)
 
+    def test_shift_microdvd_subtitle(self):
+        shifted_microdvd_file_path = os.path.join(self.__resource_tmp, "subtitle_test.sub")
+        Undertest.shift_subtitle(
+            self.__microdvd_file_path, 2, shifted_microdvd_file_path, suffix="_test"
+        )
+        with open(self.__microdvd_file_path) as original:
+            for i, lo in enumerate(original):
+                pass
+        with open(shifted_microdvd_file_path) as shifted:
+            for j, ls in enumerate(shifted):
+                pass
+        original_line_num = i + 1
+        shifted_line_num = j + 1
+        self.assertEqual(original_line_num, shifted_line_num)
+
     def test_shift_mpl2_subtitle(self):
         shifted_mpl2_file_path = os.path.join(self.__resource_tmp, "subtitle_test.mpl2.txt")
         Undertest.shift_subtitle(
@@ -290,6 +305,45 @@ class SubtitleTests(unittest.TestCase):
                 pass
         shifted_line_num = j + 1
         self.assertEqual(32, shifted_line_num)
+
+    def test_shift_srt_subtitle_without_destination_file_path(self):
+        shifted_srt_file_path = os.path.join(self.__resource_tmp, "subtitle_test.srt")
+        another_shifted_srt_file_path = os.path.join(self.__resource_tmp, "subtitle_test_aligned.srt")
+        Undertest.shift_subtitle(
+            self.__srt_file_path, 2, shifted_srt_file_path, suffix="_test"
+        )
+        Undertest.shift_subtitle(
+            shifted_srt_file_path, 2, None, suffix="_aligned"
+        )
+        with open(shifted_srt_file_path) as original:
+            for i, lo in enumerate(original):
+                pass
+        with open(another_shifted_srt_file_path) as shifted:
+            for j, ls in enumerate(shifted):
+                pass
+        original_line_num = i + 1
+        shifted_line_num = j + 1
+        self.assertEqual(original_line_num, shifted_line_num)
+
+    def test_shift_ttml_subtitle_without_destination_file_path(self):
+        shifted_ttml_file_path = os.path.join(self.__resource_tmp, "subtitle_test.xml")
+        another_shifted_srt_file_path = os.path.join(self.__resource_tmp, "subtitle_test_aligned.xml")
+
+        Undertest.shift_subtitle(
+            self.__ttml_file_path, 2, shifted_ttml_file_path, suffix="_test"
+        )
+        Undertest.shift_subtitle(
+            shifted_ttml_file_path, 2, None, suffix="_aligned"
+        )
+        with open(shifted_ttml_file_path) as original:
+            for i, lo in enumerate(original):
+                pass
+        with open(another_shifted_srt_file_path) as shifted:
+            for j, ls in enumerate(shifted):
+                pass
+        original_line_num = i + 1
+        shifted_line_num = j + 1
+        self.assertEqual(original_line_num, shifted_line_num)
 
     def test_export_ttml_subtitle(self):
         target_file_path = os.path.join(self.__resource_tmp, "subtitle_test.xml")
@@ -440,6 +494,19 @@ class SubtitleTests(unittest.TestCase):
         target_line_num = j + 1
         self.assertEqual(32, target_line_num)
 
+    def test_save_subs_as_srt(self):
+        target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.srt")
+        Undertest.save_subs_as_target_format(
+            Undertest.load(self.__srt_file_path).subs,
+            self.__srt_file_path,
+            target_file_path
+        )
+        with open(target_file_path) as target:
+            for j, lt in enumerate(target):
+                pass
+        target_line_num = j + 1
+        self.assertEqual(67, target_line_num)
+
     def test_save_subs_as_ttml(self):
         target_file_path = os.path.join(self.__resource_tmp, "subtitle_converted.ttml")
         Undertest.save_subs_as_target_format(
@@ -497,7 +564,8 @@ class SubtitleTests(unittest.TestCase):
         Undertest.save_subs_as_target_format(
             Undertest.load(self.__stl_file_path).subs,
             self.__srt_file_path,
-            target_file_path
+            target_file_path,
+            25.0
         )
         with open(target_file_path) as target:
             for j, lt in enumerate(target):
