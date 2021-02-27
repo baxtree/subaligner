@@ -5,62 +5,46 @@ services:
      build:
        context: ./
        dockerfile: Dockerfile-Ubuntu19
-       environment:
-         - SOURCE_BRANCH
      image: baxtree/subaligner:${SUBALIGNER_VERSION}
 
    subaligner-centos7:
      build:
        context: ./
        dockerfile: Dockerfile-CentOS7
-       environment:
-         - SOURCE_BRANCH
      image: baxtree/subaligner:${SUBALIGNER_VERSION}.el7
 
    subaligner-centos8:
      build:
        context: ./
        dockerfile: Dockerfile-CentOS8
-       environment:
-         - SOURCE_BRANCH
      image: baxtree/subaligner:${SUBALIGNER_VERSION}.el8
 
    subaligner-ubuntu19:
      build:
        context: ./
        dockerfile: Dockerfile-Ubuntu18
-       environment:
-         - SOURCE_BRANCH
      image: baxtree/subaligner:${SUBALIGNER_VERSION}.u18
 
    subaligner-ubuntu20:
      build:
        context: ./
        dockerfile: Dockerfile-Ubuntu20
-       environment:
-         - SOURCE_BRANCH
      image: baxtree/subaligner:${SUBALIGNER_VERSION}.u20
 
   subaligner-archlinux:
     build:
       context: ./
       dockerfile: Dockerfile-ArchLinux
-      environment:
-        - SOURCE_BRANCH
     image: baxtree/subaligner:${SUBALIGNER_VERSION}.arch
 
   subaligner-debian10:
     build:
       context: ./
       dockerfile: Dockerfile-Debian10
-      environment:
-        - SOURCE_BRANCH
     image: baxtree/subaligner:${SUBALIGNER_VERSION}.deb10
 
   subaligner-fedora31:
     build:
       context: ./
       dockerfile: Dockerfile-Fedora31
-      environment:
-        - SOURCE_BRANCH
     image: baxtree/subaligner:${SUBALIGNER_VERSION}.fed31
