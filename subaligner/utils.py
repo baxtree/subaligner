@@ -88,7 +88,7 @@ class Utils(object):
                 )
             Utils.remove_trailing_newlines(_vtt_file_path, encoding)
 
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def vtt2srt(vtt_file_path: str, srt_file_path: Optional[str] = None, timeout_secs: int = 30) -> None:
@@ -115,7 +115,7 @@ class Utils(object):
                 )
             Utils.remove_trailing_newlines(_srt_file_path, encoding)
 
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def srt2ass(srt_file_path: str, ass_file_path: Optional[str] = None) -> None:
@@ -322,7 +322,7 @@ class Utils(object):
                 )
             Utils.remove_trailing_newlines(output_file_path, None)
 
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def extract_matroska_subtitle(mkv_file_path: str, stream_index: int, output_file_path: str, timeout_secs: int = 30) -> None:
@@ -347,7 +347,7 @@ class Utils(object):
                     )
                 )
             Utils.remove_trailing_newlines(output_file_path, None)
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def suppress_lib_logs() -> None:
@@ -393,7 +393,7 @@ class Utils(object):
 
         def _callback(returncode: int, std_err: str) -> bool:
             return returncode == 0
-        return Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        return Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def detect_encoding(subtitle_file_path: str) -> str:
@@ -428,7 +428,7 @@ class Utils(object):
         return new_target_file_path, encoding
 
     @staticmethod
-    def __run_command(command: str, timeout_secs: int, timeout_msg: str, error_msg: str, callback: Callable[[int, str], Any]) -> Any:
+    def _run_command(command: str, timeout_secs: int, timeout_msg: str, error_msg: str, callback: Callable[[int, str], Any]) -> Any:
         with subprocess.Popen(
                 command.split(),
                 shell=False,

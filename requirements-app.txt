@@ -53,7 +53,7 @@ pylint==2.5.0
 pyparsing==2.2.0
 pyprof2calltree==1.4.3
 pysrt==1.1.1
-pysubs2==0.2.4
+pysubs2==1.1.0
 pystack-debugger==0.8.0
 python-dateutil==2.7.2
 pytz==2018.4

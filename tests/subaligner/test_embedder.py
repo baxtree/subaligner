@@ -7,10 +7,10 @@ from subaligner.exception import TerminalException
 
 class FeatureEmbedderTests(unittest.TestCase):
     def setUp(self):
-        self.__subtitle_file_path = os.path.join(
+        self.subtitle_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
-        self.__audio_file_path = os.path.join(
+        self.audio_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
         )
 
@@ -22,12 +22,12 @@ class FeatureEmbedderTests(unittest.TestCase):
         self.assertEqual(0.032, Undertest(n_mfcc=20, step_sample=0.05).len_sample)
 
     def test_time_to_sec(self):
-        subs = pysrt.open(self.__subtitle_file_path, encoding="utf-8")
+        subs = pysrt.open(self.subtitle_file_path, encoding="utf-8")
         self.assertEqual(12.44, Undertest.time_to_sec(subs[0].start))
         self.assertEqual(14.955, Undertest.time_to_sec(subs[0].end))
 
     def test_time_to_pos(self):
-        subs = pysrt.open(self.__subtitle_file_path, encoding="utf-8")
+        subs = pysrt.open(self.subtitle_file_path, encoding="utf-8")
         self.assertEqual(
             248, Undertest(n_mfcc=20, step_sample=0.05).time_to_position(subs[0].start)
         )
@@ -53,7 +53,7 @@ class FeatureEmbedderTests(unittest.TestCase):
         train_data, labels = Undertest(
             n_mfcc=20, step_sample=0.05
         ).extract_data_and_label_from_audio(
-            self.__audio_file_path, self.__subtitle_file_path, sound_effect_end_marker="(", sound_effect_start_marker=")"
+            self.audio_file_path, self.subtitle_file_path, sound_effect_end_marker="(", sound_effect_start_marker=")"
         )
         self.assertEqual(len(train_data), len(labels))
         for i in labels:
@@ -63,7 +63,7 @@ class FeatureEmbedderTests(unittest.TestCase):
     def test_throw_terminal_exception(self):
         try:
             Undertest(n_mfcc=20, step_sample=0.05).extract_data_and_label_from_audio(
-                self.__audio_file_path, None
+                self.audio_file_path, None
             )
         except Exception as e:
             self.assertTrue(isinstance(e, TerminalException))

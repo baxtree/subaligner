@@ -13,7 +13,7 @@ from .network import Network
 from .media_helper import MediaHelper
 from .hyperparameters import Hyperparameters
 from .embedder import FeatureEmbedder
-from .exception import UnsupportedFormatException, TerminalException
+from .exception import TerminalException
 from .logger import Logger
 
 

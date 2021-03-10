@@ -8,18 +8,18 @@ from subaligner.hyperparameters import Hyperparameters as Undertest
 class TestHyperparameters(unittest.TestCase):
 
     def setUp(self):
-        self.__hyperparams_file_path = os.path.join(
+        self.hyperparams_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/models/training/config/hyperparameters.json"
         )
-        self.__resource_tmp = os.path.join(
+        self.resource_tmp = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/tmp"
         )
-        if os.path.exists(self.__resource_tmp):
-            shutil.rmtree(self.__resource_tmp)
-        os.mkdir(self.__resource_tmp)
+        if os.path.exists(self.resource_tmp):
+            shutil.rmtree(self.resource_tmp)
+        os.mkdir(self.resource_tmp)
 
     def tearDown(self):
-        shutil.rmtree(self.__resource_tmp)
+        shutil.rmtree(self.resource_tmp)
 
     def test_default_params(self):
         hyperparams = Undertest()
@@ -41,14 +41,14 @@ class TestHyperparameters(unittest.TestCase):
         self.assertEqual("lstm", hyperparams.network_type)
 
     def test_serialisation(self):
-        with open(self.__hyperparams_file_path, "r") as file:
+        with open(self.hyperparams_file_path, "r") as file:
             expected = Undertest()
             expected.epochs = 1
             expected.es_patience = 1000000
             self.assertEqual(expected.to_json(), file.read())
 
     def test_deserialisation(self):
-        with open(self.__hyperparams_file_path, "r") as file:
+        with open(self.hyperparams_file_path, "r") as file:
             hyperparams = Undertest.from_json(file.read())
 
         self.assertEqual(0.001, hyperparams.learning_rate)
@@ -68,7 +68,7 @@ class TestHyperparameters(unittest.TestCase):
         self.assertEqual("lstm", hyperparams.network_type)
 
     def test_saved_to_file(self):
-        hp_file_path = "{}/{}".format(self.__resource_tmp, "hyperparameters.json")
+        hp_file_path = "{}/{}".format(self.resource_tmp, "hyperparameters.json")
         hyperparameters = Undertest()
         hyperparameters.to_file(hp_file_path)
         with open(hp_file_path, "r") as file:
@@ -79,7 +79,7 @@ class TestHyperparameters(unittest.TestCase):
         expected = Undertest()
         expected.epochs = 1
         expected.es_patience = 1000000
-        hyperparams = Undertest.from_file(self.__hyperparams_file_path)
+        hyperparams = Undertest.from_file(self.hyperparams_file_path)
         self.assertEqual(expected, hyperparams)
 
     def test_optimizer_setter(self):
