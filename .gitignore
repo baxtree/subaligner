@@ -1,6 +1,6 @@
 *__pycache__*
 .venv*
-build*
+build/*
 dist*
 *.pyc
 .vscode
