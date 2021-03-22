@@ -13,6 +13,8 @@ from pycaption import (
     DFXPReader,
     SAMIWriter,
     SAMIReader,
+    SCCWriter,
+    SCCReader,
 )
 from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple
 from .exception import TerminalException
@@ -42,7 +44,7 @@ class Utils(object):
         if ttml_file_path is None:
             ttml_file_path = srt_file_path.replace(".srt", ".xml")
         with open(ttml_file_path, "wb") as file:
-            file.write(converter.write(DFXPWriter()).encode(encoding))
+            file.write(converter.write(DFXPWriter()).encode(encoding, errors="replace"))
 
     @staticmethod
     def ttml2srt(ttml_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -61,7 +63,7 @@ class Utils(object):
         if srt_file_path is None:
             srt_file_path = ttml_file_path.replace(".xml", ".srt")
         with open(srt_file_path, "wb") as file:
-            file.write(converter.write(SRTWriter()).encode(encoding))
+            file.write(converter.write(SRTWriter()).encode(encoding, errors="replace"))
 
     @staticmethod
     def srt2vtt(srt_file_path: str, vtt_file_path: Optional[str] = None, timeout_secs: int = 30) -> None:
@@ -255,7 +257,7 @@ class Utils(object):
         if sami_file_path is None:
             sami_file_path = srt_file_path.replace(".srt", ".smi")
         with open(sami_file_path, "wb") as file:
-            file.write(converter.write(SAMIWriter()).encode(encoding))
+            file.write(converter.write(SAMIWriter()).encode(encoding, errors="replace"))
 
     @staticmethod
     def sami2srt(sami_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -274,7 +276,7 @@ class Utils(object):
         if srt_file_path is None:
             srt_file_path = sami_file_path.replace(".smi", ".srt")
         with open(srt_file_path, "wb") as file:
-            file.write(converter.write(SRTWriter()).encode(encoding))
+            file.write(converter.write(SRTWriter()).encode(encoding, errors="replace"))
         Utils.remove_trailing_newlines(srt_file_path, encoding)
 
     @staticmethod
@@ -293,9 +295,48 @@ class Utils(object):
         srt = SRT(srt_file_path)
         for sub in stl:
             (tci, tco, txt) = sub
-            srt.write(tci, tco, txt)
+            srt.write(tci, tco, txt, encoding)
         srt.file.close()
         stl.file.close()
+        Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
+    def srt2scc(srt_file_path: str, scc_file_path: Optional[str] = None) -> None:
+        """Convert SubRip subtitles to SCC subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            scc_file_path {string} -- The path to the Scenarist Closed Captions file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        converter = CaptionConverter()
+        encoding = Utils.detect_encoding(srt_file_path)
+        with open(srt_file_path, "r", encoding=encoding) as file:
+            converter.read(file.read(), SRTReader())
+        if scc_file_path is None:
+            scc_file_path = srt_file_path.replace(".srt", ".scc")
+        with open(scc_file_path, "wb") as file:
+            file.write(converter.write(SCCWriter()).encode(encoding, errors="replace"))
+
+    @staticmethod
+    def scc2srt(scc_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert SCC subtitles to SubRip subtitles.
+
+        Arguments:
+            scc_file_path {string} -- The path to the Scenarist Closed Captions file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        converter = CaptionConverter()
+        encoding = Utils.detect_encoding(scc_file_path)
+        with open(scc_file_path, "r", encoding=encoding) as file:
+            converter.read(file.read(), SCCReader())
+        if srt_file_path is None:
+            srt_file_path = scc_file_path.replace(".scc", ".srt")
+        with open(srt_file_path, "wb") as file:
+            file.write(converter.write(SRTWriter()).encode(encoding, errors="replace"))
         Utils.remove_trailing_newlines(srt_file_path, encoding)
 
     @staticmethod

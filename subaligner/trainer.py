@@ -309,6 +309,7 @@ class Trainer(object):
                             str(e), "".join(traceback.format_stack())
                         )
                     )
+                    traceback.print_tb(e.__traceback__)
 
         train_data = [x for x in train_data if x is not None]
         labels = [x for x in labels if x is not None]
@@ -371,6 +372,7 @@ class Trainer(object):
                     audio_file_path, subtitle_file_path
                 )
             )
+            traceback.print_tb(e.__traceback__)
         else:
             train_data[index] = x
             labels[index] = y

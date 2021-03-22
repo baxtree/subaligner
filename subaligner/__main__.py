@@ -29,7 +29,7 @@ required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi, .stl) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi, .stl and .scc) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -218,18 +218,21 @@ def main():
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
         sys.exit(23)
     except TerminalException as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
         sys.exit(24)
     except Exception as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
         sys.exit(1)
     else:

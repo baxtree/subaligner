@@ -35,6 +35,7 @@ class Subtitle(object):
     TMP_EXTENSIONS = [".tmp"]
     SAMI_EXTENSIONS = [".smi", ".sami"]
     STL_EXTENSIONS = [".stl"]
+    SCC_EXTENSIONS = [".scc"]
 
     def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str):
         """Subtitle object initialiser.
@@ -74,6 +75,8 @@ class Subtitle(object):
             self.__subs = self.__convert_sami_to_subs(subtitle_file_path)
         elif subtitle_format == "stl":
             self.__subs = self.__convert_stl_to_subs(subtitle_file_path)
+        elif subtitle_format == "scc":
+            self.__subs = self.__convert_scc_to_subs(subtitle_file_path)
         else:
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -214,6 +217,19 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "stl")
 
     @classmethod
+    def load_scc(cls, subtitle_file_path: str) -> "Subtitle":
+        """Load a Scenarist Closed Caption subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            Subtitle -- Subtitle object.
+        """
+
+        return cls(cls.__secret, subtitle_file_path, "scc")
+
+    @classmethod
     def load(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip or TTML subtitle file based on the file extension.
 
@@ -245,6 +261,8 @@ class Subtitle(object):
             return cls(cls.__secret, subtitle_file_path, "sami")
         elif file_extension in cls.STL_EXTENSIONS:
             return cls(cls.__secret, subtitle_file_path, "stl")
+        elif file_extension in cls.SCC_EXTENSIONS:
+            return cls(cls.__secret, subtitle_file_path, "scc")
         else:
             return cls(cls.__secret, subtitle_file_path, "unknown")
 
@@ -306,6 +324,8 @@ class Subtitle(object):
                 subs = cls(cls.__secret, subtitle_file_path, "tmp").subs
             elif file_extension.lower() in cls.SAMI_EXTENSIONS:
                 subs = cls(cls.__secret, subtitle_file_path, "sami").subs
+            elif file_extension.lower() in cls.SCC_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "scc").subs
             else:
                 raise UnsupportedFormatException(
                     "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -403,7 +423,7 @@ class Subtitle(object):
         """
 
         subs = Subtitle.load(subtitle_file_path).subs
-        texts = [sub.text for sub in subs]
+        texts = [sub.text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ") for sub in subs]
         return delimiter.join(texts)
 
     @staticmethod
@@ -416,7 +436,7 @@ class Subtitle(object):
         return set(Subtitle.SUBRIP_EXTENTIONS + Subtitle.TTML_EXTENSIONS + Subtitle.WEBVTT_EXTENSIONS
                    + Subtitle.SSA_EXTENTIONS + Subtitle.ADVANCED_SSA_EXTENTIONS + Subtitle.MICRODVD_EXTENSIONS
                    + Subtitle.MPL2_EXTENSIONS + Subtitle.TMP_EXTENSIONS + Subtitle.SAMI_EXTENSIONS
-                   + Subtitle.STL_EXTENSIONS)
+                   + Subtitle.STL_EXTENSIONS + Subtitle.SCC_EXTENSIONS)
 
     @property
     def subtitle_file_path(self) -> str:
@@ -588,6 +608,22 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
+    def __convert_scc_to_subs(scc_file_path: str) -> SubRipFile:
+        """Convert a subtitle file from the SCC format to the SubRip format
+
+        Arguments:
+            scc_file_path {string} -- The path to the SCC subtitle file.
+
+        Returns:
+            {list} -- A list of SubRipItems.
+        """
+
+        _, path = tempfile.mkstemp()
+        Utils.scc2srt(scc_file_path, path)
+
+        return Subtitle.__get_srt_subs(path, housekeep=True)
+
+    @staticmethod
     def __export_with_format(subs: List[SubRipItem], source_file_path: str, target_file_path: Optional[str], file_extension: str, suffix: str) -> None:
         if target_file_path is None:
             target_file_path = source_file_path.replace(
@@ -697,6 +733,13 @@ class Subtitle(object):
             try:
                 _, path = tempfile.mkstemp()
                 SubRipFile(subs).save(target_file_path, encoding=encoding)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.SCC_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2scc(path, target_file_path)
             finally:
                 os.remove(path)
         else:

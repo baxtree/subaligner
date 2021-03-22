@@ -23,6 +23,7 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner       |  single   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner       |  single   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner       |  single   |  "test.scc"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner       |  dual     |  "test.xml"       |  "test_aligned.xml"       |
@@ -36,6 +37,7 @@ Feature: Subaligner CLI
         |  subaligner       |  dual     |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner       |  dual     |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner       |  dual     |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner       |  dual     |  "test.scc"       |  "test_aligned.scc"       |
 
     @video-input @without-mode
     Scenario Outline: Test alignments without modes
@@ -58,6 +60,7 @@ Feature: Subaligner CLI
         |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner_1pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner_1pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner_2pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
@@ -71,6 +74,7 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner_2pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner_2pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
 
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs

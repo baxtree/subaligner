@@ -304,6 +304,7 @@ class Predictor(Singleton):
                     self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
                     message = "Exception on segment alignment: {}\n{}".format(str(e), "".join(traceback.format_stack()))
                     Predictor.__LOGGER.error(message)
+                    traceback.print_tb(e.__traceback__)
                     if isinstance(e, TerminalException):
                         raise e
                     else:
@@ -384,6 +385,7 @@ class Predictor(Singleton):
                     thread_name, segment_index, str(e), "".join(traceback.format_stack())
                 )
             )
+            traceback.print_tb(e.__traceback__)
             if exit_segfail:
                 raise TerminalException("At least one of the segments failed on alignment. Exiting...") from e
             return subs[segment_index]
@@ -490,6 +492,7 @@ class Predictor(Singleton):
                 tee = True
             if Logger.QUIET:
                 tee = False
+
             with self.__lock:
                 # Execute the task
                 ExecuteTask(
@@ -514,6 +517,8 @@ class Predictor(Singleton):
                 )
             )
             return adjusted_subs
+        except KeyboardInterrupt:
+            raise TerminalException("Subtitle stretch interrupted by the user")
         finally:
             # Housekeep intermediate files
             if task.audio_file_path_absolute is not None and os.path.exists(
@@ -630,6 +635,7 @@ class Predictor(Singleton):
                 voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
             except Exception as e:
                 Predictor.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(thread_name, str(e), "".join(traceback.format_stack())))
+                traceback.print_tb(e.__traceback__)
                 raise TerminalException("Prediction failed") from e
             finally:
                 del train_data

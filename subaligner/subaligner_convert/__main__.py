@@ -102,18 +102,21 @@ def main():
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(23)
     except TerminalException as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(24)
     except Exception as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(1)
     else:

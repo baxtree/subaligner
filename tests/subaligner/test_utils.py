@@ -22,6 +22,9 @@ class UtilsTests(unittest.TestCase):
         self.mocked_sami_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test_utils.smi"
         )
+        self.mocked_scc_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test_utils.scc"
+        )
         self.real_srt_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
@@ -184,6 +187,22 @@ class UtilsTests(unittest.TestCase):
     @patch("pycaption.CaptionConverter.read")
     def test_sami2srt(self, mock_read, mock_write):
         Undertest.sami2srt(self.mocked_sami_path)
+
+        self.assertTrue(mock_read.called)
+        self.assertTrue(mock_write.called)
+
+    @patch("pycaption.CaptionConverter.write", side_effect=lambda writer: "output")
+    @patch("pycaption.CaptionConverter.read")
+    def test_srt2scc(self, mock_read, mock_write):
+        Undertest.srt2scc(self.mocked_srt_path)
+
+        self.assertTrue(mock_read.called)
+        self.assertTrue(mock_write.called)
+
+    @patch("pycaption.CaptionConverter.write", side_effect=lambda writer: "output")
+    @patch("pycaption.CaptionConverter.read")
+    def test_scc2srt(self, mock_read, mock_write):
+        Undertest.scc2srt(self.mocked_scc_path)
 
         self.assertTrue(mock_read.called)
         self.assertTrue(mock_write.called)

@@ -20,6 +20,7 @@ Feature: Subaligner CLI
       |  "test.srt"       |  "test_srt.sami"      |
       |  "test.srt"       |  "test_srt.stl"       |
       |  "test.srt"       |  "test_srt.sub"       |
+      |  "test.srt"       |  "test_srt.scc"       |
       |  "test.ttml"      |  "test_ttml.srt"      |
       |  "test.xml"       |  "test_xml.srt"       |
       |  "test.dfxp"      |  "test_dfxp.srt"      |
@@ -32,6 +33,7 @@ Feature: Subaligner CLI
       |  "test.sami"      |  "test_sami.srt"      |
       |  "test.stl"       |  "test_stl.srt"       |
       |  "test.sub"       |  "test_srt.srt"       |
+      |  "test.scc"       |  "test_scc.srt"       |
       |  "test.ttml"      |  "test_ttml.vtt"      |
       |  "test.xml"       |  "test_xml.vtt"       |
       |  "test.dfxp"      |  "test_dfxp.vtt"      |
@@ -43,6 +45,7 @@ Feature: Subaligner CLI
       |  "test.smi"       |  "test_smi.stl"       |
       |  "test.sami"      |  "test_sami.stl"      |
       |  "test.stl"       |  "test_stl.smi"       |
+      |  "test.scc"       |  "test_scc.sub"       |
 
   Scenario: Test conversion from a remote subtitle file
     Given I have a subtitle file "https://raw.githubusercontent.com/baxtree/subaligner/master/tests/subaligner/resource/test.srt"

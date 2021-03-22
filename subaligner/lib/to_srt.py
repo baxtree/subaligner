@@ -40,9 +40,9 @@ class SRT:
             (timestamp * 1000) % 1000
         )
 
-    def write(self, start, end, text):
+    def write(self, start, end, text, encoding):
         text = "\n".join([x for x in text.split("\n") if bool(x)])
-        self.file.write(("%0u\n%s --> %s\n%s\n\n" % (self.counter, self._formatTime(start), self._formatTime(end), text)).encode('utf-8'))
+        self.file.write(("%0u\n%s --> %s\n%s\n\n" % (self.counter, self._formatTime(start), self._formatTime(end), text)).encode(encoding, errors="replace"))
         self.counter += 1
 
 class iso6937(codecs.Codec):
