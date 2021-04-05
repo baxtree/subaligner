@@ -1,5 +1,5 @@
 # Subaligner Ubuntu 20 Docker Image
-FROM ubuntu:20.04
+FROM ubuntu:20.10
 
 ARG RELEASE_VERSION
 
