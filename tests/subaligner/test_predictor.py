@@ -42,7 +42,7 @@ class PredictorTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.sub"
         )
         self.mpl2_file_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "resource/test.mpl2.txt"
+            os.path.dirname(os.path.abspath(__file__)), "resource/test_mpl2.txt"
         )
         self.tmp_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
@@ -52,6 +52,12 @@ class PredictorTests(unittest.TestCase):
         )
         self.stl_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.stl"
+        )
+        self.sbv_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.sbv"
+        )
+        self.ytt_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ytt"
         )
         self.long_subtitle_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test_too_long.srt"
@@ -84,6 +90,8 @@ class PredictorTests(unittest.TestCase):
         ["video_file_path", "tmp_file_path"],
         ["video_file_path", "sami_file_path"],
         ["video_file_path", "stl_file_path"],
+        ["video_file_path", "sbv_file_path"],
+        ["video_file_path", "ytt_file_path"],
     ])
     def test_predict_single_pass_on_video(self, media_file_path, subtitle_file_path):
         subs, audio_file_path, voice_probabilities, frame_rate = Undertest(n_mfcc=20).predict_single_pass(
@@ -107,6 +115,8 @@ class PredictorTests(unittest.TestCase):
         ["audio_file_path", "tmp_file_path"],
         ["audio_file_path", "sami_file_path"],
         ["audio_file_path", "stl_file_path"],
+        ["audio_file_path", "sbv_file_path"],
+        ["audio_file_path", "ytt_file_path"],
     ])
     def test_predict_single_pass_on_audio(self, media_file_path, subtitle_file_path):
         subs, audio_file_path, voice_probabilities, frame_rate = Undertest(n_mfcc=20).predict_single_pass(
@@ -148,6 +158,8 @@ class PredictorTests(unittest.TestCase):
         ["video_file_path", "tmp_file_path"],
         ["video_file_path", "sami_file_path"],
         ["video_file_path", "stl_file_path"],
+        ["video_file_path", "sbv_file_path"],
+        ["video_file_path", "ytt_file_path"],
     ])
     def test_predict_dual_pass_on_video(self, media_file_path, subtitle_file_path):
         undertest_obj = Undertest(n_mfcc=20)
@@ -171,6 +183,8 @@ class PredictorTests(unittest.TestCase):
         ["audio_file_path", "tmp_file_path"],
         ["audio_file_path", "sami_file_path"],
         ["audio_file_path", "stl_file_path"],
+        ["audio_file_path", "sbv_file_path"],
+        ["audio_file_path", "ytt_file_path"],
     ])
     def test_predict_dual_pass_on_video(self, media_file_path, subtitle_file_path):
         undertest_obj = Undertest(n_mfcc=20)

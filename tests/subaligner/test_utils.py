@@ -41,13 +41,19 @@ class UtilsTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.sub"
         )
         self.real_mpl2_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "resource/test.mpl2.txt"
+            os.path.dirname(os.path.abspath(__file__)), "resource/test_mpl2.txt"
         )
         self.real_tmp_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
         )
         self.real_stl_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.stl"
+        )
+        self.real_sbv_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.sbv"
+        )
+        self.real_ytt_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ytt"
         )
         self.mp4_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mp4"
@@ -207,6 +213,34 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(mock_read.called)
         self.assertTrue(mock_write.called)
 
+    def test_srt2sbv(self):
+        output_file_path = os.path.join(self.resource_tmp, "converted.sbv")
+
+        Undertest.srt2sbv(self.real_srt_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_sbv2srt(self):
+        output_file_path = os.path.join(self.resource_tmp, "converted.srt")
+
+        Undertest.sbv2srt(self.real_sbv_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_srt2ytt(self):
+        output_file_path = os.path.join(self.resource_tmp, "converted.ytt")
+
+        Undertest.srt2ytt(self.real_srt_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_ytt2srt(self):
+        output_file_path = os.path.join(self.resource_tmp, "converted.srt")
+
+        Undertest.ytt2srt(self.real_ytt_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
     @patch("subaligner.utils.Utils._run_command")
     def test_extract_teletext_as_srt(self, mocked_run_command):
         Undertest.extract_teletext_as_subtitle("ts_file_path", 888, "srt_file_path")
@@ -249,6 +283,11 @@ class UtilsTests(unittest.TestCase):
     def test_detect_encoding(self):
         self.assertEqual("ASCII", Undertest.detect_encoding(self.real_srt_path))
         self.assertEqual("UTF-8", Undertest.detect_encoding(self.mkv_file_path))
+
+    def test_get_file_root_and_extension(self):
+        root, extension = Undertest.get_file_root_and_extension("/path/to/root.ext1.ext2")
+        self.assertEqual("/path/to/root", root)
+        self.assertEqual("ext1.ext2", extension)
 
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):

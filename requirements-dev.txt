@@ -6,7 +6,8 @@ twine>=3.1.1
 snakeviz==2.1.0
 line-profiler==3.1.0
 scikit-build==0.11.1
-radish-bdd[bddxml]<=0.14.0
+radish-bdd~=0.13.3
 pex==2.1.34
 mypy==0.790
 parameterized==0.8.1
+pygments~=2.7.4

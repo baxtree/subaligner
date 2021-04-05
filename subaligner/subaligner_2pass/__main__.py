@@ -27,7 +27,7 @@ required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi, .stl and .scc) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi, .stl, .scc, .sbv and .ytt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse

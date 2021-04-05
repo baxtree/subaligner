@@ -31,7 +31,7 @@ class SubtitleTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.sub"
         )
         self.mpl2_file_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "resource/test.mpl2.txt"
+            os.path.dirname(os.path.abspath(__file__)), "resource/test_mpl2.txt"
         )
         self.tmp_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
@@ -44,6 +44,12 @@ class SubtitleTests(unittest.TestCase):
         )
         self.scc_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.scc"
+        )
+        self.sbv_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.sbv"
+        )
+        self.ytt_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.ytt"
         )
         self.subtxt_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.txt"
@@ -106,6 +112,14 @@ class SubtitleTests(unittest.TestCase):
         subtitle = Undertest.load_scc(self.scc_file_path)
         self.assertEqual(self.scc_file_path, subtitle.subtitle_file_path)
 
+    def test_get_sbv_file_path(self):
+        subtitle = Undertest.load_sbv(self.sbv_file_path)
+        self.assertEqual(self.sbv_file_path, subtitle.subtitle_file_path)
+
+    def test_get_ytt_file_path(self):
+        subtitle = Undertest.load_ytt(self.ytt_file_path)
+        self.assertEqual(self.ytt_file_path, subtitle.subtitle_file_path)
+
     def test_load_srt_subs(self):
         subtitle = Undertest.load_subrip(self.srt_file_path)
         self.assertGreater(len(subtitle.subs), 0)
@@ -150,6 +164,14 @@ class SubtitleTests(unittest.TestCase):
         subtitle = Undertest.load_scc(self.scc_file_path)
         self.assertGreater(len(subtitle.subs), 0)
 
+    def test_load_sbv_subs(self):
+        subtitle = Undertest.load_sbv(self.sbv_file_path)
+        self.assertGreater(len(subtitle.subs), 0)
+
+    def test_load_sbv_subs(self):
+        subtitle = Undertest.load_ytt(self.ytt_file_path)
+        self.assertGreater(len(subtitle.subs), 0)
+
     def test_load(self):
         srt_subtitle = Undertest.load(self.srt_file_path)
         ttml_subtitle = Undertest.load(self.ttml_file_path)
@@ -162,6 +184,8 @@ class SubtitleTests(unittest.TestCase):
         sami_subtitle = Undertest.load(self.sami_file_path)
         stl_subtitle = Undertest.load(self.stl_file_path)
         scc_subtitle = Undertest.load(self.scc_file_path)
+        sbv_subtitle = Undertest.load(self.sbv_file_path)
+        ytt_subtitle = Undertest.load(self.ytt_file_path)
 
         self.assertEqual(len(srt_subtitle.subs), len(ttml_subtitle.subs))
         self.assertEqual(len(srt_subtitle.subs), len(vtt_subtitle.subs))
@@ -173,6 +197,8 @@ class SubtitleTests(unittest.TestCase):
         self.assertEqual(len(srt_subtitle.subs), len(sami_subtitle.subs))
         self.assertEqual(7, len(stl_subtitle.subs))
         self.assertEqual(len(srt_subtitle.subs), len(scc_subtitle.subs))
+        self.assertEqual(len(srt_subtitle.subs), len(sbv_subtitle.subs))
+        self.assertEqual(len(srt_subtitle.subs), len(ytt_subtitle.subs))
 
     @parameterized.expand([
         ["srt_file_path", "subtitle_test.srt"],
@@ -185,6 +211,8 @@ class SubtitleTests(unittest.TestCase):
         ["tmp_file_path", "subtitle_test.tmp"],
         ["sami_file_path", "subtitle_test.sami"],
         ["scc_file_path", "subtitle_test.scc"],
+        ["sbv_file_path", "subtitle_test.sbv"],
+        ["ytt_file_path", "subtitle_test.ytt"],
     ])
     def test_shift_subtitle(self, subtitle_file_path, shifted_subtitle_file_name):
         shifted_srt_file_path = os.path.join(self.resource_tmp, shifted_subtitle_file_name)
@@ -219,10 +247,12 @@ class SubtitleTests(unittest.TestCase):
         ["ass_file_path", "subtitle_test.ass", "subtitle_test_aligned.ass"],
         ["ssa_file_path", "subtitle_test.ssa", "subtitle_test_aligned.ssa"],
         ["microdvd_file_path", "subtitle_test.sub", "subtitle_test_aligned.sub"],
-        ["mpl2_file_path", "subtitle_test.mpl2.txt", "subtitle_test.mpl2_aligned.txt"],
+        ["mpl2_file_path", "subtitle_test_mpl2.txt", "subtitle_test_mpl2_aligned.txt"],
         ["tmp_file_path", "subtitle_test.tmp", "subtitle_test_aligned.tmp"],
         ["sami_file_path", "subtitle_test.sami", "subtitle_test_aligned.sami"],
         ["scc_file_path", "subtitle_test.scc", "subtitle_test_aligned.scc"],
+        ["sbv_file_path", "subtitle_test.sbv", "subtitle_test_aligned.sbv"],
+        ["ytt_file_path", "subtitle_test.ytt", "subtitle_test_aligned.ytt"],
     ])
     def test_shift_subtitle_without_destination_file_path(self, subtitle_file_path, shifted_subtitle_file_name, aligned_file_name):
         shifted_file_path = os.path.join(self.resource_tmp, shifted_subtitle_file_name)
@@ -253,6 +283,8 @@ class SubtitleTests(unittest.TestCase):
         ["tmp_file_path", "subtitle_test.tmp"],
         ["sami_file_path", "subtitle_test.sami"],
         ["scc_file_path", "subtitle_test.scc"],
+        ["sbv_file_path", "subtitle_test.sbv"],
+        ["ytt_file_path", "subtitle_test.ytt"],
     ])
     def test_export_subtitle(self, subtitle_file_path, target_subtitle_file_name):
         target_file_path = os.path.join(self.resource_tmp, target_subtitle_file_name)
@@ -290,11 +322,14 @@ class SubtitleTests(unittest.TestCase):
         ["subtitle_converted.vtt", None, 52],
         ["subtitle_converted.ssa", None, 31],
         ["subtitle_converted.ass", None, 31],
-        ["subtitle_converted.mpl2.txt", None, 17],
+        ["subtitle_converted_mpl2.txt", None, 17],
         ["subtitle_converted.tmp", None, 17],
         ["subtitle_converted.smi", None, 168],
         ["subtitle_converted.stl", None, 68],
-        ["subtitle_converted.sub", 25.0, 18]
+        ["subtitle_converted.sub", 25.0, 18],
+        ["subtitle_converted.scc", None, 44],
+        ["subtitle_converted.sbv", None, 50],
+        ["subtitle_converted.ytt", None, 18],
     ])
     def test_save_subtitle(self, target_subtitle_file_name, frame_rate, expected_lines):
         target_file_path = os.path.join(self.resource_tmp, target_subtitle_file_name)
@@ -342,6 +377,8 @@ class SubtitleTests(unittest.TestCase):
         ["tmp_file_path"],
         ["sami_file_path"],
         ["scc_file_path"],
+        ["sbv_file_path"],
+        ["ytt_file_path"],
     ])
     def test_extract_text(self, subtitle_file_path):
         text = Undertest.extract_text(getattr(self, subtitle_file_path))
@@ -354,7 +391,7 @@ class SubtitleTests(unittest.TestCase):
         self.assertEqual(194, len(text))
 
     def test_subtitle_extentions(self):
-        self.assertEqual({".srt", ".xml", ".ttml", ".dfxp", ".vtt", ".ssa", ".ass", ".sub", ".txt", ".tmp", ".smi", ".sami", ".stl", ".scc"},
+        self.assertEqual({".srt", ".xml", ".ttml", ".dfxp", ".vtt", ".ssa", ".ass", ".sub", ".txt", ".tmp", ".smi", ".sami", ".stl", ".scc", ".sbv", ".ytt"},
                          Undertest.subtitle_extensions())
 
     def test_throw_exception_on_missing_subtitle(self):

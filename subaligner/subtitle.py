@@ -36,6 +36,8 @@ class Subtitle(object):
     SAMI_EXTENSIONS = [".smi", ".sami"]
     STL_EXTENSIONS = [".stl"]
     SCC_EXTENSIONS = [".scc"]
+    SBV_EXTENSIONS = [".sbv"]
+    YT_TRANSCRIPT_EXTENSIONS = [".ytt"]
 
     def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str):
         """Subtitle object initialiser.
@@ -77,6 +79,10 @@ class Subtitle(object):
             self.__subs = self.__convert_stl_to_subs(subtitle_file_path)
         elif subtitle_format == "scc":
             self.__subs = self.__convert_scc_to_subs(subtitle_file_path)
+        elif subtitle_format == "sbv":
+            self.__subs = self.__convert_sbv_to_subs(subtitle_file_path)
+        elif subtitle_format == "ytt":
+            self.__subs = self.__convert_ytt_to_subs(subtitle_file_path)
         else:
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -230,6 +236,32 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "scc")
 
     @classmethod
+    def load_sbv(cls, subtitle_file_path: str) -> "Subtitle":
+        """Load a SubViewer subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            Subtitle -- Subtitle object.
+        """
+
+        return cls(cls.__secret, subtitle_file_path, "sbv")
+
+    @classmethod
+    def load_ytt(cls, subtitle_file_path: str) -> "Subtitle":
+        """Load a YouTube transcript subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            Subtitle -- Subtitle object.
+        """
+
+        return cls(cls.__secret, subtitle_file_path, "ytt")
+
+    @classmethod
     def load(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip or TTML subtitle file based on the file extension.
 
@@ -263,6 +295,10 @@ class Subtitle(object):
             return cls(cls.__secret, subtitle_file_path, "stl")
         elif file_extension in cls.SCC_EXTENSIONS:
             return cls(cls.__secret, subtitle_file_path, "scc")
+        elif file_extension in cls.SBV_EXTENSIONS:
+            return cls(cls.__secret, subtitle_file_path, "sbv")
+        elif file_extension in cls.YT_TRANSCRIPT_EXTENSIONS:
+            return cls(cls.__secret, subtitle_file_path, "ytt")
         else:
             return cls(cls.__secret, subtitle_file_path, "unknown")
 
@@ -326,6 +362,10 @@ class Subtitle(object):
                 subs = cls(cls.__secret, subtitle_file_path, "sami").subs
             elif file_extension.lower() in cls.SCC_EXTENSIONS:
                 subs = cls(cls.__secret, subtitle_file_path, "scc").subs
+            elif file_extension.lower() in cls.SBV_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "sbv").subs
+            elif file_extension.lower() in cls.YT_TRANSCRIPT_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "ytt").subs
             else:
                 raise UnsupportedFormatException(
                     "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -436,7 +476,8 @@ class Subtitle(object):
         return set(Subtitle.SUBRIP_EXTENTIONS + Subtitle.TTML_EXTENSIONS + Subtitle.WEBVTT_EXTENSIONS
                    + Subtitle.SSA_EXTENTIONS + Subtitle.ADVANCED_SSA_EXTENTIONS + Subtitle.MICRODVD_EXTENSIONS
                    + Subtitle.MPL2_EXTENSIONS + Subtitle.TMP_EXTENSIONS + Subtitle.SAMI_EXTENSIONS
-                   + Subtitle.STL_EXTENSIONS + Subtitle.SCC_EXTENSIONS)
+                   + Subtitle.STL_EXTENSIONS + Subtitle.SCC_EXTENSIONS + Subtitle.SBV_EXTENSIONS
+                   + Subtitle.YT_TRANSCRIPT_EXTENSIONS)
 
     @property
     def subtitle_file_path(self) -> str:
@@ -624,6 +665,38 @@ class Subtitle(object):
         return Subtitle.__get_srt_subs(path, housekeep=True)
 
     @staticmethod
+    def __convert_sbv_to_subs(sbv_file_path: str) -> SubRipFile:
+        """Convert a subtitle file from the SubViewer format to the SubRip format
+
+        Arguments:
+            sbv_file_path {string} -- The path to the SubViewer subtitle file.
+
+        Returns:
+            {list} -- A list of SubRipItems.
+        """
+
+        _, path = tempfile.mkstemp()
+        Utils.sbv2srt(sbv_file_path, path)
+
+        return Subtitle.__get_srt_subs(path, housekeep=True)
+
+    @staticmethod
+    def __convert_ytt_to_subs(ytt_file_path: str) -> SubRipFile:
+        """Convert a subtitle file from the YouTube transcript format to the SubRip format
+
+        Arguments:
+            ytt_file_path {string} -- The path to the YouTube transcript subtitle file.
+
+        Returns:
+            {list} -- A list of SubRipItems.
+        """
+
+        _, path = tempfile.mkstemp()
+        Utils.ytt2srt(ytt_file_path, path)
+
+        return Subtitle.__get_srt_subs(path, housekeep=True)
+
+    @staticmethod
     def __export_with_format(subs: List[SubRipItem], source_file_path: str, target_file_path: Optional[str], file_extension: str, suffix: str) -> None:
         if target_file_path is None:
             target_file_path = source_file_path.replace(
@@ -740,6 +813,20 @@ class Subtitle(object):
                 _, path = tempfile.mkstemp()
                 SubRipFile(subs).save(path, encoding=encoding)
                 Utils.srt2scc(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.SBV_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2sbv(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.YT_TRANSCRIPT_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2ytt(path, target_file_path)
             finally:
                 os.remove(path)
         else:
