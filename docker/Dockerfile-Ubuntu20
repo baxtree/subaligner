@@ -1,8 +1,7 @@
 # Subaligner Ubuntu 20 Docker Image
 FROM ubuntu:20.10
 
-# ARG SOURCE_BRANCH
-ENV SOURCE_BRANCH v0.1.2
+ARG RELEASE_VERSION
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
@@ -15,4 +14,4 @@ RUN ["/bin/bash", "-c", "apt-get -y update &&\
     apt-get -y install python3-pip &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install numpy &&\
-    python3 -m pip install subaligner==${SOURCE_BRANCH:1}"]
+    python3 -m pip install subaligner==${RELEASE_VERSION:1}"]

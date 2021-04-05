@@ -108,7 +108,7 @@ The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI
 
 ![](figures/screencast.gif)
 ## Supported Formats
-Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, and SAMI.
+Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
 
 Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
 

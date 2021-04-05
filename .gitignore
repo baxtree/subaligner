@@ -1,6 +1,6 @@
 *__pycache__*
 .venv*
-build*
+build/*
 dist*
 *.pyc
 .vscode
@@ -11,6 +11,7 @@ tests/subaligner/resource/test.mp4.aac
 tests/subaligner/resource/test.mp4.wav
 tests/subaligner/resource/*_aligned.*
 tests/subaligner/resource/test_mono.wav
+tests/subaligner/resource/test.mpl2_srt.txt
 tests/subaligner/training.log
 tests/subaligner/output.log
 *-output*

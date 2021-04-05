@@ -13,7 +13,16 @@ from pycaption import (
     DFXPReader,
     SAMIWriter,
     SAMIReader,
+    SCCWriter,
+    SCCReader,
 )
+
+from captionstransformer.core import Caption
+from captionstransformer.core import Reader
+from captionstransformer.sbv import Reader as SbvReader, Writer as SbvWriter
+from captionstransformer.srt import Reader as SrtReader, Writer as SrtWriter
+from captionstransformer.transcript import Reader as TranscriptReader, Writer as TranscriptWriter
+from bs4 import BeautifulSoup
 from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple
 from .exception import TerminalException
 from subaligner.lib.to_srt import STL, SRT
@@ -42,7 +51,7 @@ class Utils(object):
         if ttml_file_path is None:
             ttml_file_path = srt_file_path.replace(".srt", ".xml")
         with open(ttml_file_path, "wb") as file:
-            file.write(converter.write(DFXPWriter()).encode(encoding))
+            file.write(converter.write(DFXPWriter()).encode(encoding, errors="replace"))
 
     @staticmethod
     def ttml2srt(ttml_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -61,7 +70,7 @@ class Utils(object):
         if srt_file_path is None:
             srt_file_path = ttml_file_path.replace(".xml", ".srt")
         with open(srt_file_path, "wb") as file:
-            file.write(converter.write(SRTWriter()).encode(encoding))
+            file.write(converter.write(SRTWriter()).encode(encoding, errors="replace"))
 
     @staticmethod
     def srt2vtt(srt_file_path: str, vtt_file_path: Optional[str] = None, timeout_secs: int = 30) -> None:
@@ -88,7 +97,7 @@ class Utils(object):
                 )
             Utils.remove_trailing_newlines(_vtt_file_path, encoding)
 
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def vtt2srt(vtt_file_path: str, srt_file_path: Optional[str] = None, timeout_secs: int = 30) -> None:
@@ -115,7 +124,7 @@ class Utils(object):
                 )
             Utils.remove_trailing_newlines(_srt_file_path, encoding)
 
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def srt2ass(srt_file_path: str, ass_file_path: Optional[str] = None) -> None:
@@ -255,7 +264,7 @@ class Utils(object):
         if sami_file_path is None:
             sami_file_path = srt_file_path.replace(".srt", ".smi")
         with open(sami_file_path, "wb") as file:
-            file.write(converter.write(SAMIWriter()).encode(encoding))
+            file.write(converter.write(SAMIWriter()).encode(encoding, errors="replace"))
 
     @staticmethod
     def sami2srt(sami_file_path: str, srt_file_path: Optional[str] = None) -> None:
@@ -274,7 +283,7 @@ class Utils(object):
         if srt_file_path is None:
             srt_file_path = sami_file_path.replace(".smi", ".srt")
         with open(srt_file_path, "wb") as file:
-            file.write(converter.write(SRTWriter()).encode(encoding))
+            file.write(converter.write(SRTWriter()).encode(encoding, errors="replace"))
         Utils.remove_trailing_newlines(srt_file_path, encoding)
 
     @staticmethod
@@ -293,9 +302,179 @@ class Utils(object):
         srt = SRT(srt_file_path)
         for sub in stl:
             (tci, tco, txt) = sub
-            srt.write(tci, tco, txt)
+            srt.write(tci, tco, txt, encoding)
         srt.file.close()
         stl.file.close()
+        Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
+    def srt2scc(srt_file_path: str, scc_file_path: Optional[str] = None) -> None:
+        """Convert SubRip subtitles to SCC subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            scc_file_path {string} -- The path to the Scenarist Closed Captions file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        converter = CaptionConverter()
+        encoding = Utils.detect_encoding(srt_file_path)
+        with open(srt_file_path, "r", encoding=encoding) as file:
+            converter.read(file.read(), SRTReader())
+        if scc_file_path is None:
+            scc_file_path = srt_file_path.replace(".srt", ".scc")
+        with open(scc_file_path, "wb") as file:
+            file.write(converter.write(SCCWriter()).encode(encoding, errors="replace"))
+
+    @staticmethod
+    def scc2srt(scc_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert SCC subtitles to SubRip subtitles.
+
+        Arguments:
+            scc_file_path {string} -- The path to the Scenarist Closed Captions file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        converter = CaptionConverter()
+        encoding = Utils.detect_encoding(scc_file_path)
+        with open(scc_file_path, "r", encoding=encoding) as file:
+            converter.read(file.read(), SCCReader())
+        if srt_file_path is None:
+            srt_file_path = scc_file_path.replace(".scc", ".srt")
+        with open(srt_file_path, "wb") as file:
+            file.write(converter.write(SRTWriter()).encode(encoding, errors="replace"))
+        Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
+    def srt2sbv(srt_file_path: str, sbv_file_path: Optional[str] = None) -> None:
+        """Convert SubRip subtitles to SubViewer subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            sbv_file_path {string} -- The path to the SubViewer file.
+        """
+
+        Caption.text = property(lambda self: self._text, Utils._set_text_patch)
+        Reader.read = Utils._read_patch
+
+        file: Union[TextIO, BinaryIO]
+        encoding = Utils.detect_encoding(srt_file_path)
+        with open(srt_file_path, "r", encoding=encoding) as file:
+            srt_reader = SrtReader(file)
+            srt_reader.encoding = encoding
+            captions = srt_reader.read()
+            for caption in captions:
+                caption.encoding = encoding
+
+        if sbv_file_path is None:
+            sbv_file_path = srt_file_path.replace(".srt", ".sbv")
+
+        with open(sbv_file_path, "w") as file:
+            sbv_writer = SbvWriter(file, captions)
+            sbv_writer.write()
+            sbv_writer.close()
+
+        Utils.remove_trailing_newlines(sbv_file_path, encoding)
+
+    @staticmethod
+    def sbv2srt(sbv_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert SubViewer subtitles to SubRip subtitles.
+
+        Arguments:
+            sbv_file_path {string} -- The path to the SubViewer file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        encoding = Utils.detect_encoding(sbv_file_path)
+
+        Caption.text = property(lambda self: self._text, Utils._set_text_patch)
+        Reader.read = Utils._read_patch
+
+        with open(sbv_file_path, "r", encoding=encoding) as file:
+            sbv_reader = SbvReader(file)
+            sbv_reader.encoding = encoding
+            captions = sbv_reader.read()
+            for caption in captions:
+                caption.encoding = encoding
+
+        if srt_file_path is None:
+            srt_file_path = srt_file_path.replace(".sbv", ".srt")
+
+        with open(srt_file_path, "w") as file:
+            srt_writer = SrtWriter(file, captions)
+            srt_writer.write()
+            srt_writer.close()
+
+        Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
+    def srt2ytt(srt_file_path: str, transcript_file_path: Optional[str] = None) -> None:
+        """Convert SubRip subtitles to YouTube transcript subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            transcript_file_path {string} -- The path to the YouTube transcript file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        encoding = Utils.detect_encoding(srt_file_path)
+
+        Caption.text = property(lambda self: self._text, Utils._set_text_patch)
+        Reader.read = Utils._read_patch
+        TranscriptWriter.get_utime = Utils._get_utime_patch
+        TranscriptWriter.format_time = Utils._format_time_patch
+        TranscriptWriter.DOCUMENT_TPL = u"""<?xml version="1.0" encoding="{}" ?><transcript>%s</transcript>""".format(encoding)
+        TranscriptWriter.CAPTION_TPL = u"""<text start="%(start)s" dur="%(duration)s">%(text)s</text>"""
+
+        with open(srt_file_path, "r", encoding=encoding) as file:
+            srt_reader = SrtReader(file)
+            srt_reader.encoding = encoding
+            captions = srt_reader.read()
+            for caption in captions:
+                caption.encoding = encoding
+
+        if transcript_file_path is None:
+            transcript_file_path = srt_file_path.replace(".srt", ".ytt")
+
+        with open(transcript_file_path, "w") as file:
+            transcript_writer = TranscriptWriter(file, captions)
+            transcript_writer.write()
+            transcript_writer.close()
+
+        Utils.remove_trailing_newlines(transcript_file_path, encoding)
+
+    @staticmethod
+    def ytt2srt(transcript_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert YouTube transcript subtitles to SubRip subtitles.
+
+        Arguments:
+            transcript_file_path {string} -- The path to the YouTube transcript file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        Caption.text = property(lambda self: self._text, Utils._set_text_patch)
+        Reader.read = Utils._read_patch
+        TranscriptReader.text_to_captions = Utils._text_to_captions_patch
+
+        file: Union[TextIO, BinaryIO]
+        encoding = Utils.detect_encoding(transcript_file_path)
+        with open(transcript_file_path, "r", encoding=encoding) as file:
+            transcript_reader = TranscriptReader(file)
+            transcript_reader.encoding = encoding
+            captions = transcript_reader.read()
+            for caption in captions:
+                caption.encoding = encoding
+
+        if srt_file_path is None:
+            srt_file_path = srt_file_path.replace(".ytt", ".srt")
+
+        with open(srt_file_path, "w") as file:
+            srt_writer = SrtWriter(file, captions)
+            srt_writer.write()
+            srt_writer.close()
+
         Utils.remove_trailing_newlines(srt_file_path, encoding)
 
     @staticmethod
@@ -322,7 +501,7 @@ class Utils(object):
                 )
             Utils.remove_trailing_newlines(output_file_path, None)
 
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def extract_matroska_subtitle(mkv_file_path: str, stream_index: int, output_file_path: str, timeout_secs: int = 30) -> None:
@@ -347,7 +526,7 @@ class Utils(object):
                     )
                 )
             Utils.remove_trailing_newlines(output_file_path, None)
-        Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def suppress_lib_logs() -> None:
@@ -393,7 +572,7 @@ class Utils(object):
 
         def _callback(returncode: int, std_err: str) -> bool:
             return returncode == 0
-        return Utils.__run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
+        return Utils._run_command(command, timeout_secs, timeout_msg, error_msg, _callback)
 
     @staticmethod
     def detect_encoding(subtitle_file_path: str) -> str:
@@ -417,6 +596,11 @@ class Utils(object):
         return detected["encoding"] if "encoding" in detected else None
 
     @staticmethod
+    def get_file_root_and_extension(file_path):
+        parts = os.path.abspath(file_path).split(os.extsep, 1)
+        return parts[0], parts[1]
+
+    @staticmethod
     def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> Tuple[str, str]:
         encoding = Utils.detect_encoding(source_file_path)
         subs = pysubs2.load(source_file_path, encoding=encoding)
@@ -428,7 +612,7 @@ class Utils(object):
         return new_target_file_path, encoding
 
     @staticmethod
-    def __run_command(command: str, timeout_secs: int, timeout_msg: str, error_msg: str, callback: Callable[[int, str], Any]) -> Any:
+    def _run_command(command: str, timeout_secs: int, timeout_msg: str, error_msg: str, callback: Callable[[int, str], Any]) -> Any:
         with subprocess.Popen(
                 command.split(),
                 shell=False,
@@ -452,3 +636,47 @@ class Utils(object):
                     raise TerminalException(error_msg) from e
             finally:
                 os.system("stty sane")
+
+    @staticmethod
+    def _set_text_patch(self, value):
+        self._text = value
+
+    @staticmethod
+    def _read_patch(self):
+        self.rawcontent = self.fileobject.read()
+        self.text_to_captions()
+        return self.captions
+
+    @staticmethod
+    def _text_to_captions_patch(self):
+        soup = BeautifulSoup(self.rawcontent, features="lxml")
+        texts = soup.find_all('text')
+        for text in texts:
+            caption = Caption()
+            caption.start = self.get_start(text)
+            caption.duration = self.get_duration(text)
+            caption.text = text.text
+            self.add_caption(caption)
+
+        return self.captions
+
+    @staticmethod
+    def _get_utime_patch(self, dt):
+        start = dt
+        start_seconds = 3600 * start.hour + 60 * start.minute + start.second
+        start_milliseconds = start.microsecond // 1000
+
+        if start_milliseconds:
+            ustart = u"%s.%s" % (start_seconds, start_milliseconds)
+        else:
+            ustart = u"%s" % start_seconds
+
+        return ustart
+
+    @staticmethod
+    def _format_time_patch(self, caption):
+        return {
+            "start": self.get_utime(caption.start),
+            "end": self.get_utime(caption.end),
+            "duration": caption.duration.total_seconds()
+        }

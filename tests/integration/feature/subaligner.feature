@@ -18,11 +18,14 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.ssa"       |  "test_aligned.ssa"       |
         |  subaligner       |  single   |  "test.ass"       |  "test_aligned.ass"       |
         |  subaligner       |  single   |  "test.sub"       |  "test_aligned.sub"       |
-        |  subaligner       |  single   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner       |  single   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
         |  subaligner       |  single   |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner       |  single   |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner       |  single   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner       |  single   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner       |  single   |  "test.scc"       |  "test_aligned.srt"       |
+        |  subaligner       |  single   |  "test.sbv"       |  "test_aligned.sbv"       |
+        |  subaligner       |  single   |  "test.ytt"       |  "test_aligned.ytt"       |
         |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner       |  dual     |  "test.xml"       |  "test_aligned.xml"       |
@@ -31,11 +34,14 @@ Feature: Subaligner CLI
         |  subaligner       |  dual     |  "test.ssa"       |  "test_aligned.ssa"       |
         |  subaligner       |  dual     |  "test.ass"       |  "test_aligned.ass"       |
         |  subaligner       |  dual     |  "test.sub"       |  "test_aligned.sub"       |
-        |  subaligner       |  dual     |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner       |  dual     |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
         |  subaligner       |  dual     |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner       |  dual     |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner       |  dual     |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner       |  dual     |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner       |  dual     |  "test.scc"       |  "test_aligned.scc"       |
+        |  subaligner       |  dual     |  "test.sbv"       |  "test_aligned.sbv"       |
+        |  subaligner       |  dual     |  "test.ytt"       |  "test_aligned.ytt"       |
 
     @video-input @without-mode
     Scenario Outline: Test alignments without modes
@@ -53,11 +59,14 @@ Feature: Subaligner CLI
         |  subaligner_1pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
         |  subaligner_1pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
         |  subaligner_1pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
-        |  subaligner_1pass |  <NULL>   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner_1pass |  <NULL>   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
         |  subaligner_1pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner_1pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner_1pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
+        |  subaligner_1pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner_2pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
@@ -66,11 +75,14 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
         |  subaligner_2pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
         |  subaligner_2pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
-        |  subaligner_2pass |  <NULL>   |  "test.mpl2.txt"  |  "test.mpl2_aligned.txt"  |
+        |  subaligner_2pass |  <NULL>   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
         |  subaligner_2pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
         |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
         |  subaligner_2pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
         |  subaligner_2pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
+        |  subaligner_2pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
 
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs

@@ -213,23 +213,25 @@ class MediaHelper(object):
                     "[{}-{}] Extracted audio segment: {}".format(threading.current_thread().name, process.pid,
                                                                  segment_path))
                 return segment_path, segment_duration
-            except subprocess.TimeoutExpired as te:
+            except subprocess.TimeoutExpired as e:
                 MediaHelper.__LOGGER.error(
                     "[{}-{}] Extracting {} timed out: {}\n{}".format(
-                        threading.current_thread().name, process.pid, segment_path, str(te), "".join(traceback.format_stack())
+                        threading.current_thread().name, process.pid, segment_path, str(e), "\n".join(traceback.format_stack())
                     )
                 )
+                traceback.print_tb(e.__traceback__)
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
                     "Timeout on extracting audio from audio: {} after {} seconds".format(audio_file_path, MediaHelper.__CMD_TIME_OUT)
-                ) from te
+                ) from e
             except Exception as e:
                 MediaHelper.__LOGGER.error(
                     "[{}-{}] Extracting {} failed: {}\n{}".format(
-                        threading.current_thread().name, process.pid, segment_path, str(e), "".join(traceback.format_stack())
+                        threading.current_thread().name, process.pid, segment_path, str(e), "\n".join(traceback.format_stack())
                     )
                 )
+                traceback.print_tb(e.__traceback__)
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 if isinstance(e, TerminalException):

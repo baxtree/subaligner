@@ -282,16 +282,19 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         print(
             "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
+        traceback.print_tb(e.__traceback__)
         sys.exit(23)
     except TerminalException as e:
         print(
             "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
+        traceback.print_tb(e.__traceback__)
         sys.exit(24)
     except Exception as e:
         print(
             "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
+        traceback.print_tb(e.__traceback__)
         sys.exit(1)
     else:
         exit(0)

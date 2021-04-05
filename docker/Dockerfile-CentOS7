@@ -1,8 +1,7 @@
 # Subaligner CentOS 7 Docker Image
 From centos:7
 
-# ARG SOURCE_BRANCH
-ENV SOURCE_BRANCH v0.1.2
+ARG RELEASE_VERSION
 
 RUN ["/bin/bash", "-c", "yum update -y &&\
     yum update-to -y openssl-libs-1:1.0.2k-21.el7_9 &&\
@@ -18,4 +17,4 @@ RUN ["/bin/bash", "-c", "yum update -y &&\
     easy_install-3.6 pip &&\
     pip install --upgrade pip &&\
     python3 -m pip install numpy &&\
-    python3 -m pip install subaligner==${SOURCE_BRANCH:1}"]
+    python3 -m pip install subaligner==${RELEASE_VERSION:1}"]

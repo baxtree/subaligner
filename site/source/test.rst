@@ -14,6 +14,6 @@ Test
 
     $ make test-all
 
-**Run integration tests::
+**Run integration tests**::
 
     $ make test-int

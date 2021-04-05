@@ -2,11 +2,11 @@
 """
 usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-f FRAME_RATE] [-d] [-q] [-ver]
 
-Convert a subtitle from input format to output format
+Convert a subtitle from the input format to the output format
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f FRAME_RATE, --frame_rate FRAME_RATE
+  -fr FRAME_RATE, --frame_rate FRAME_RATE
                         Frame rate used by conversion to formats such as MicroDVD
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
@@ -38,7 +38,7 @@ def main():
         sys.exit(20)
 
     from subaligner._version import __version__
-    parser = argparse.ArgumentParser(description="Convert a subtitle from input format to output format (v%s)" % __version__,
+    parser = argparse.ArgumentParser(description="Convert a subtitle from the input format to the output format (v%s)" % __version__,
                                      formatter_class=argparse.RawTextHelpFormatter)
     required_args = parser.add_argument_group("required arguments")
     required_args.add_argument(
@@ -58,7 +58,7 @@ def main():
         required=True,
     )
     parser.add_argument(
-        "-f",
+        "-fr",
         "--frame_rate",
         type=float,
         default=None,
@@ -102,18 +102,21 @@ def main():
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(23)
     except TerminalException as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(24)
     except Exception as e:
         print(
             "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
+        traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(1)
     else:

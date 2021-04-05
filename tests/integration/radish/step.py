@@ -285,7 +285,7 @@ def run_subtitle_converter(step, output_subtitle):
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_convert"),
         "-i", step.context.subtitle_path_or_selector,
         "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
-        "-f", "25.0",
+        "-fr", "25.0",
         "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 

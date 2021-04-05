@@ -1,8 +1,7 @@
 # ArchLinux base-devel-20201206.0.10501
 FROM archlinux:base-devel-20201206.0.10501
 
-# ARG SOURCE_BRANCH
-ENV SOURCE_BRANCH v0.1.2
+ARG RELEASE_VERSION
 
 # As of December 2020, Tensorflow does not support python 3.9 which is however a default on Arch
 ARG PYTHON=python-3.8.6-1-x86_64.pkg.tar.zst
@@ -26,4 +25,4 @@ RUN ["/bin/bash", "-c", "pacman --noconfirm -Sy gcc ffmpeg espeak &&\
     ln -s /usr/lib/libffi.so.7 /usr/lib/libffi.so.6 &&\
     python /var/cache/get-pip.py &&\
     python -m pip install numpy &&\
-    python -m pip install subaligner==${SOURCE_BRANCH:1}"]
+    python -m pip install subaligner==${RELEASE_VERSION:1}"]

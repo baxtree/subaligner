@@ -1,8 +1,7 @@
 # Subaligner CentOS 8 Docker Image
 From centos:8
 
-# ARG SOURCE_BRANCH
-ENV SOURCE_BRANCH v0.1.2
+ARG RELEASE_VERSION
 
 RUN ["/bin/bash", "-c", "dnf install -y epel-release dnf-utils &&\
     dnf update-to -y openssl-libs-1:1.1.1g-12.el8_3 &&\
@@ -20,4 +19,4 @@ RUN ["/bin/bash", "-c", "dnf install -y epel-release dnf-utils &&\
     dnf install -y python3-pip &&\
     pip3 install --upgrade pip &&\
     python3 -m pip install numpy &&\
-    python3 -m pip install subaligner==${SOURCE_BRANCH:1}"]
+    python3 -m pip install subaligner==${RELEASE_VERSION:1}"]

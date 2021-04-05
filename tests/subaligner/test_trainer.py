@@ -11,74 +11,96 @@ from mock import patch
 
 class TrainerTests(unittest.TestCase):
     def setUp(self):
-        self.__hyperparameters = Hyperparameters()
-        self.__hyperparameters.epochs = 1
-        self.__video_file_path = os.path.join(
+        self.hyperparameters = Hyperparameters()
+        self.hyperparameters.epochs = 1
+        self.video_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mp4"
         )
-        self.__audio_file_path = os.path.join(
+        self.audio_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
         )
-        self.__srt_file_path = os.path.join(
+        self.srt_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
-        self.__ttml_file_path = os.path.join(
+        self.ttml_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.xml"
         )
-        self.__vtt_file_path = os.path.join(
+        self.vtt_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.vtt"
         )
-        self.__ass_file_path = os.path.join(
+        self.ass_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.ass"
         )
-        self.__ssa_file_path = os.path.join(
+        self.ssa_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.ssa"
         )
-        self.__microdvd_file_path = os.path.join(
+        self.microdvd_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.sub"
         )
-        self.__mpl2_file_path = os.path.join(
+        self.mpl2_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mpl2.txt"
         )
-        self.__tmp_file_path = os.path.join(
+        self.tmp_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.tmp"
         )
-        self.__sami_file_path = os.path.join(
+        self.sami_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.smi"
         )
-        self.__training_dump_dir = os.path.join(
+        self.stl_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.stl"
+        )
+        self.training_dump_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource"
         )
-        self.__resource_tmp = os.path.join(
+        self.resource_tmp = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/tmp"
         )
-        if os.path.exists(self.__resource_tmp):
-            shutil.rmtree(self.__resource_tmp)
-        os.mkdir(self.__resource_tmp)
-        self.__model_dir = os.path.join(
+        if os.path.exists(self.resource_tmp):
+            shutil.rmtree(self.resource_tmp)
+        os.mkdir(self.resource_tmp)
+        self.model_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/models/training/model"
         )
-        self.__training_log_path = os.path.join(
+        self.training_log_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/training.log"
         )
 
     def tearDown(self):
-        shutil.rmtree(self.__resource_tmp)
+        shutil.rmtree(self.resource_tmp)
 
-    def test_train(self):
+    def test_train_with_mixed_audio_and_video(self):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, self.__video_file_path, self.__video_file_path, self.__video_file_path, self.__video_file_path,
-             self.__video_file_path, self.__video_file_path, self.__video_file_path, self.__video_file_path],
-            [self.__srt_file_path, self.__ttml_file_path, self.__vtt_file_path, self.__ass_file_path, self.__ssa_file_path,
-             self.__microdvd_file_path, self.__mpl2_file_path, self.__tmp_file_path, self.__sami_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
+            [self.video_file_path, self.audio_file_path],
+            [self.srt_file_path, self.srt_file_path],
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.resource_tmp,
+            hyperparameters=self.hyperparameters,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
+        outputs = [file for file in output_files if file.endswith(".hdf5")]
+        self.assertEqual(
+            4, len(outputs)
+        )  # one model file, one weights file and one combined file and one training dump
+        hyperparams_files = [file for file in output_files if file.endswith(".json")]
+        self.assertEqual(1, len(hyperparams_files))
+
+    def test_train_with_mixed_subtitle_formats(self):
+        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
+            [self.video_file_path, self.video_file_path, self.video_file_path, self.video_file_path, self.video_file_path,
+             self.video_file_path, self.video_file_path, self.video_file_path, self.video_file_path, self.video_file_path],
+            [self.srt_file_path, self.ttml_file_path, self.vtt_file_path, self.ass_file_path, self.ssa_file_path,
+             self.microdvd_file_path, self.mpl2_file_path, self.tmp_file_path, self.sami_file_path, self.stl_file_path],
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.resource_tmp,
+            hyperparameters=self.hyperparameters,
+        )
+        output_files = os.listdir(self.resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(
             4, len(model_files)
@@ -90,14 +112,14 @@ class TrainerTests(unittest.TestCase):
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
             None,
             None,
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__training_dump_dir,
-            hyperparameters=self.__hyperparameters,
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.training_dump_dir,
+            hyperparameters=self.hyperparameters,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
         model_files = [file for file in output_files if file.endswith(".hdf5")]
 
         self.assertEqual(
@@ -109,18 +131,18 @@ class TrainerTests(unittest.TestCase):
     def test_resume_training(self):
         underTest = Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05))
         underTest.train(
-            [self.__video_file_path, self.__video_file_path],
-            [self.__srt_file_path, self.__srt_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
+            [self.video_file_path, self.video_file_path],
+            [self.srt_file_path, self.srt_file_path],
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.resource_tmp,
+            hyperparameters=self.hyperparameters,
         )
 
         # increase the maximum epoch
-        hyperparams_file = "{}/hyperparameters.json".format(self.__resource_tmp)
+        hyperparams_file = "{}/hyperparameters.json".format(self.resource_tmp)
         hyperparameters = Hyperparameters.from_file(hyperparams_file)
         hyperparameters.epochs = 2
         hyperparameters.to_file(hyperparams_file)
@@ -128,15 +150,15 @@ class TrainerTests(unittest.TestCase):
         underTest.train(
             None,
             None,
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.resource_tmp,
             hyperparameters=hyperparameters,
             resume=True,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
         outputs = [file for file in output_files if file.endswith(".hdf5")]
 
         self.assertEqual(
@@ -147,81 +169,43 @@ class TrainerTests(unittest.TestCase):
 
     def test_pre_train(self):
         val_loss, val_acc = Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).pre_train(
-            [self.__video_file_path, self.__video_file_path],
-            [self.__srt_file_path, self.__vtt_file_path],
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
+            [self.video_file_path, self.video_file_path],
+            [self.srt_file_path, self.vtt_file_path],
+            training_dump_dir=self.resource_tmp,
+            hyperparameters=self.hyperparameters,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
         outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(1, len(outputs))  # one training dump file
-        self.assertEqual(self.__hyperparameters.epochs, len(val_loss))
-        self.assertEqual(self.__hyperparameters.epochs, len(val_acc))
+        self.assertEqual(self.hyperparameters.epochs, len(val_loss))
+        self.assertEqual(self.hyperparameters.epochs, len(val_acc))
 
     def test_pre_train_with_training_dump(self):
         val_loss, val_acc = Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).pre_train(
             None,
             None,
-            training_dump_dir=self.__training_dump_dir,
-            hyperparameters=self.__hyperparameters,
+            training_dump_dir=self.training_dump_dir,
+            hyperparameters=self.hyperparameters,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
         outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(0, len(outputs))
-        self.assertEqual(self.__hyperparameters.epochs, len(val_loss))
-        self.assertEqual(self.__hyperparameters.epochs, len(val_acc))
-
-    def test_train_with_mixed_audio_and_video(self):
-        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, self.__audio_file_path],
-            [self.__srt_file_path, self.__srt_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
-        )
-        output_files = os.listdir(self.__resource_tmp)
-        outputs = [file for file in output_files if file.endswith(".hdf5")]
-        self.assertEqual(
-            4, len(outputs)
-        )  # one model file, one weights file and one combined file and one training dump
-        hyperparams_files = [file for file in output_files if file.endswith(".json")]
-        self.assertEqual(1, len(hyperparams_files))
-
-    def test_train_with_mixed_subtitle_formats(self):
-        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, self.__video_file_path],
-            [self.__srt_file_path, self.__vtt_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
-        )
-        output_files = os.listdir(self.__resource_tmp)
-        outputs = [file for file in output_files if file.endswith(".hdf5")]
-        self.assertEqual(
-            4, len(outputs)
-        )  # one model file, one weights file and one combined file and one training dump
-        hyperparams_files = [file for file in output_files if file.endswith(".json")]
-        self.assertEqual(1, len(hyperparams_files))
+        self.assertEqual(self.hyperparameters.epochs, len(val_loss))
+        self.assertEqual(self.hyperparameters.epochs, len(val_acc))
 
     def test_no_exception_caused_by_bad_media(self):
-        not_a_video = self.__srt_file_path
+        not_a_video = self.srt_file_path
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path, not_a_video],
-            [self.__srt_file_path, self.__srt_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
+            [self.video_file_path, not_a_video],
+            [self.srt_file_path, self.srt_file_path],
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.resource_tmp,
+            hyperparameters=self.hyperparameters,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
         outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(
             4, len(outputs)
@@ -233,16 +217,16 @@ class TrainerTests(unittest.TestCase):
         timeout = Undertest.EMBEDDING_TIMEOUT
         Undertest.EMBEDDING_TIMEOUT = 0.01
         Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-            [self.__video_file_path],
-            [self.__srt_file_path],
-            model_dir=self.__resource_tmp,
-            weights_dir=self.__resource_tmp,
-            config_dir=self.__resource_tmp,
-            logs_dir=self.__resource_tmp,
-            training_dump_dir=self.__resource_tmp,
-            hyperparameters=self.__hyperparameters,
+            [self.video_file_path],
+            [self.srt_file_path],
+            model_dir=self.resource_tmp,
+            weights_dir=self.resource_tmp,
+            config_dir=self.resource_tmp,
+            logs_dir=self.resource_tmp,
+            training_dump_dir=self.resource_tmp,
+            hyperparameters=self.hyperparameters,
         )
-        output_files = os.listdir(self.__resource_tmp)
+        output_files = os.listdir(self.resource_tmp)
         outputs = [file for file in output_files if file.endswith(".hdf5")]
         self.assertEqual(
             4, len(outputs)
@@ -252,21 +236,21 @@ class TrainerTests(unittest.TestCase):
         Undertest.EMBEDDING_TIMEOUT = timeout
 
     def test_get_done_epochs(self):
-        assert Undertest.get_done_epochs(self.__training_log_path) == 1
+        assert Undertest.get_done_epochs(self.training_log_path) == 1
         assert Undertest.get_done_epochs("not_exist_training.log") == 0
 
     @patch("concurrent.futures.wait", side_effect=KeyboardInterrupt)
     def test_throw_exception_on_training_interrupted(self, mock_wait):
         try:
             Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
-                [self.__video_file_path, self.__video_file_path],
-                [self.__srt_file_path, self.__srt_file_path],
-                model_dir=self.__resource_tmp,
-                weights_dir=self.__resource_tmp,
-                config_dir=self.__resource_tmp,
-                logs_dir=self.__resource_tmp,
-                training_dump_dir=self.__resource_tmp,
-                hyperparameters=self.__hyperparameters,
+                [self.video_file_path, self.video_file_path],
+                [self.srt_file_path, self.srt_file_path],
+                model_dir=self.resource_tmp,
+                weights_dir=self.resource_tmp,
+                config_dir=self.resource_tmp,
+                logs_dir=self.resource_tmp,
+                training_dump_dir=self.resource_tmp,
+                hyperparameters=self.hyperparameters,
             )
         except Exception as e:
             self.assertTrue(mock_wait.called)
