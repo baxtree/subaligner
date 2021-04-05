@@ -98,6 +98,8 @@ flags to customise the configuration on tuning:
 
     (.venv) $ subaligner_convert -i subtitle.srt -o subtitle.vtt
 
+For output subtitles like MicroDVD relying on the frame rate, its value needs to be passed in with `-fr` or `--frame_rate`.
+
 **On Windows**::
 
     docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner COMMAND

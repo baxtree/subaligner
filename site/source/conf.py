@@ -78,7 +78,8 @@ autodoc_mock_imports = [
     "sklearn",
     "tensorflow",
     "pysubs2",
-    "cchardet"
+    "cchardet",
+    "captionstransformer"
 ]
 
 def setup(app):

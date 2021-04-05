@@ -19,7 +19,8 @@ without writing any code as well as APIs targeting developers. With existing aud
 hand, users can train their own synchroniser with a single command and zero setup. A handful of subtitle formats are supported
 and can be converted from one to another either during synchronisation or on on-demand.
 
-The source code can be found on GitHub: `subaligner <https://github.com/baxtree/subaligner>`_.
+Subligner supports the following subtitle formats: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP,
+EBU STL, SAMI, SCC and SBV. The source code can be found on GitHub: `subaligner <https://github.com/baxtree/subaligner>`_.
 
 .. toctree::
    :maxdepth: 2
