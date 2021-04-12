@@ -19,14 +19,14 @@ $ brew install ffmpeg espeak
 ```
 # Install from PyPI (pre-emptive NumPy)
 $ pip install -U pip
-$ pip install numpy 
+$ pip install 'numpy<1.20.0'
 $ pip install subaligner
 ```
 or
 ```
 # Install via pipx
 $ pip install -U pip pipx
-$ pipx install numpy
+$ pipx install 'numpy<1.20.0'
 $ pipx install subaligner
 ```
 or
@@ -34,7 +34,7 @@ or
 # Install from GitHub via Pipenv
 ...
 [packages]
-numpy = "*"
+numpy = {version='numpy<1.20.0'}
 subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
 ...
 ```
@@ -44,7 +44,7 @@ or
 
 $ git clone git@github.com:baxtree/subaligner.git
 $ cd subaligner
-$ pip install numpy
+$ pip install 'numpy<1.20.0'
 $ python setup.py install
 ```
 or
@@ -53,8 +53,8 @@ or
 
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
-For users on Windows 10: [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) is the only option at the present.
-Assume your media assets are stored under `d:\media`. Open built-in command prompt, PowerShell, or Windows Terminal and run:
+For users on Windows 10: [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) is the only option at present.
+Assuming your media assets are stored under `d:\media`, open built-in command prompt, PowerShell, or Windows Terminal and run:
 ```
 docker pull baxtree/subaligner
 docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash

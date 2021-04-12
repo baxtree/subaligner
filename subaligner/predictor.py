@@ -82,7 +82,7 @@ class Predictor(Singleton):
                 self.__feature_embedder.step_sample = 1 / frame_rate
                 self.__on_frame_timecodes(subs)
             except NoFrameRateException:
-                Predictor.__LOGGER.warning("Cannot find frame rate for %s" % video_file_path)
+                Predictor.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
             return subs, audio_file_path, voice_probabilities, frame_rate
         finally:
             if os.path.exists(audio_file_path):
@@ -132,7 +132,7 @@ class Predictor(Singleton):
                 self.__feature_embedder.step_sample = 1 / frame_rate
                 self.__on_frame_timecodes(new_subs)
             except NoFrameRateException:
-                Predictor.__LOGGER.warning("Cannot find frame rate for %s" % video_file_path)
+                Predictor.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
             Predictor.__LOGGER.debug("Aligned segments generated")
             return new_subs, subs, voice_probabilities, frame_rate
         finally:
