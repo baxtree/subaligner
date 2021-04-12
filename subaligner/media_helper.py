@@ -339,7 +339,7 @@ class MediaHelper(object):
                 try:
                     std_out, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                     if process.returncode != 0:
-                        MediaHelper.__LOGGER.error("[{}-{}] Cannot extract the frame rate from video: {}\n{}"
+                        MediaHelper.__LOGGER.warning("[{}-{}] Cannot extract the frame rate from video: {}\n{}"
                                                    .format(threading.current_thread().name, process.pid, file_path, std_err))
                         raise NoFrameRateException(
                             "Cannot extract the frame rate from video: {}".format(file_path)
