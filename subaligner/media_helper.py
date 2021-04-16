@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import atexit
 import signal
+import shlex
 
 from typing import Optional, Tuple, List
 from copy import deepcopy
@@ -71,16 +72,16 @@ class MediaHelper(object):
             )
 
         command = (
-            "{0} -y -xerror -i {1} -ac 2 -ar {2} -vn {3}".format(
+            "{0} -y -xerror -i '{1}' -ac 2 -ar {2} -vn '{3}'".format(
                 MediaHelper.FFMPEG_BIN, video_file_path, freq, audio_file_path
             )
             if decompress
-            else "{0} -y -xerror -i {1} -vn -acodec copy {2}".format(
+            else "{0} -y -xerror -i '{1}' -vn -acodec copy '{2}'".format(
                 MediaHelper.FFMPEG_BIN, video_file_path, audio_file_path
             )
         )
         with subprocess.Popen(
-            command.split(),
+            shlex.split(command),
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -184,16 +185,16 @@ class MediaHelper(object):
 
         if end is not None:
             duration = MediaHelper.get_duration_in_seconds(start, end)
-            command = "{0} -y -xerror -i {1} -ss {2} -t {3} -acodec copy {4}".format(
+            command = "{0} -y -xerror -i '{1}' -ss {2} -t {3} -acodec copy '{4}'".format(
                 MediaHelper.FFMPEG_BIN, audio_file_path, start, duration, segment_path
             )
         else:
-            command = "{0} -y -xerror -i {1} -ss {2} -acodec copy {3}".format(
+            command = "{0} -y -xerror -i '{1}' -ss {2} -acodec copy '{3}'".format(
                 MediaHelper.FFMPEG_BIN, audio_file_path, start, segment_path
             )
         with subprocess.Popen(
-            command,
-            shell=True,
+            shlex.split(command),
+            shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
@@ -319,7 +320,7 @@ class MediaHelper(object):
         """
 
         with subprocess.Popen(
-                "{0} -i {1} -t 00:00:10 -f null /dev/null".format(MediaHelper.FFMPEG_BIN, file_path).split(),
+                shlex.split("{0} -i '{1}' -t 00:00:10 -f null /dev/null".format(MediaHelper.FFMPEG_BIN, file_path)),
                 shell=False,
                 stderr=subprocess.PIPE,
                 close_fds=True,
@@ -339,8 +340,7 @@ class MediaHelper(object):
                 try:
                     std_out, std_err = process.communicate(timeout=MediaHelper.__CMD_TIME_OUT)
                     if process.returncode != 0:
-                        MediaHelper.__LOGGER.warning("[{}-{}] Cannot extract the frame rate from video: {}\n{}"
-                                                   .format(threading.current_thread().name, process.pid, file_path, std_err))
+                        MediaHelper.__LOGGER.warning("[{}-{}] Cannot extract the frame rate from video: {}\n{}".format(threading.current_thread().name, process.pid, file_path, std_err))
                         raise NoFrameRateException(
                             "Cannot extract the frame rate from video: {}".format(file_path)
                         )

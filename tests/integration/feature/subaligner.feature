@@ -189,6 +189,12 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |
         |  subaligner       |  dual     |
 
+    Scenario: Test alignments with the file path containing whitespace ([] == " ")
+        Given I have a video file "test[]spaced.mp4"
+        And I have a subtitle file "test[]spaced.vtt"
+        When I run the alignment with subaligner on them with dual stage
+        Then a new subtitle file "test[]spaced_aligned.vtt" is generated
+
     @exception
     Scenario Outline: Test errors out on unsupported subtitle input
         Given I have a video file "test.mp4"
