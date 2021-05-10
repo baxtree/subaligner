@@ -81,7 +81,8 @@ autodoc_mock_imports = [
     "cchardet",
     "captionstransformer",
     "bs4",
-    "transformers"
+    "transformers",
+    "pycountry"
 ]
 
 def setup(app):
