@@ -11,6 +11,8 @@ from .logger import Logger
 
 
 class Translator(Singleton):
+    """Translate subtitles.
+    """
 
     __LOGGER = Logger().get_logger(__name__)
     __TENSOR_TYPE = "pt"
@@ -18,11 +20,32 @@ class Translator(Singleton):
     __OPUS_TATOEBA = "Helsinki-NLP/opus-tatoeba-{}-{}"
     __TRANSLATING_BATCH_SIZE = 10
 
-    def __init__(self, source_language, target_lang) -> None:
-        self.__initialise_model(source_language, target_lang)
+    def __init__(self, source_language, target_language) -> None:
+        """Initialiser for the subtitle translation.
+
+        Arguments:
+            source_language {string} -- The source language code from ISO 639-3.
+            target_language {string} -- The target language code from ISO 639-3.
+
+        Raises:
+            NotImplementedError -- Thrown when the model of the specified language pair is not found.
+        """
+        self.__initialise_model(source_language, target_language)
 
     @staticmethod
     def get_iso_639_alpha_2(language_code: str) -> str:
+        """Get the alpha 2 language code from a alpha 3 one.
+
+        Arguments:
+            language_code {string} -- A language code from ISO 639-3.
+
+        Returns:
+            string -- The alpha 2 language code if exists otherwise the alpha 3 one.
+
+        Raises:
+            ValueError -- Thrown when the input language code cannot be recognised.
+        """
+
         lang = pycountry.languages.get(alpha_3=language_code)
         if lang is None:
             raise ValueError("Cannot recognise %s as an ISO 639-3 language code" % language_code)
@@ -32,6 +55,15 @@ class Translator(Singleton):
             return lang.alpha_3
 
     def translate_subs(self, subs: List[SubRipItem]) -> List[SubRipItem]:
+        """Translate a list of subtitle cues.
+
+        Arguments:
+            subs {list} -- A list of SubRipItems.
+
+        Returns:
+            {list} -- A list of new SubRipItems holding the translation results.
+        """
+
         translated_texts = []
         self.lang_model.eval()
         new_subs = deepcopy(subs)
