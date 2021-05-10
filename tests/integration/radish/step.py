@@ -49,6 +49,26 @@ def run_subaligner(step, aligner, mode):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and {language_pair:S} for translation")
+def run_subaligner_with_translation(step, aligner, mode, language_pair):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_path_or_selector,
+            "-t", language_pair,
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_path_or_selector,
+            "-t", language_pair,
+            "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when('I run the alignment with {aligner:S} on them with {mode:S} stage and output "{file_name:S}"')
 def run_subaligner_with_output(step, aligner, mode, file_name):
     if mode == "<NULL>":
@@ -286,6 +306,18 @@ def run_subtitle_converter(step, output_subtitle):
         "-i", step.context.subtitle_path_or_selector,
         "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
         "-fr", "25.0",
+        "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@when('I run the converter with {language_pair:S} for translation and "{output_subtitle:S}" as the output')
+def run_subtitle_converter_with_translation(step, language_pair, output_subtitle):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_convert"),
+        "-i", step.context.subtitle_path_or_selector,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
+        "-fr", "25.0",
+        "-t", language_pair,
         "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 

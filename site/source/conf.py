@@ -80,7 +80,8 @@ autodoc_mock_imports = [
     "pysubs2",
     "cchardet",
     "captionstransformer",
-    "bs4"
+    "bs4",
+    "transformers"
 ]
 
 def setup(app):

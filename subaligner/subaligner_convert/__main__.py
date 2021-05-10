@@ -8,6 +8,8 @@ optional arguments:
   -h, --help            show this help message and exit
   -fr FRAME_RATE, --frame_rate FRAME_RATE
                         Frame rate used by conversion to formats such as MicroDVD
+  -t TRANSLATE, --translate TRANSLATE
+                        Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
@@ -64,6 +66,12 @@ def main():
         default=None,
         help="Frame rate used by conversion to formats such as MicroDVD",
     )
+    parser.add_argument(
+        "-t",
+        "--translate",
+        type=str,
+        help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
@@ -85,6 +93,7 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.subtitle import Subtitle
+    from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException, TerminalException
     from subaligner.utils import Utils
 
@@ -96,7 +105,16 @@ def main():
             Utils.download_file(FLAGS.input_subtitle_path, local_subtitle_path)
 
         subtitle = Subtitle.load(local_subtitle_path)
-        Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate)
+
+        if FLAGS.translate is not None:
+            source, target = FLAGS.translate.split(",")
+            translator = Translator(source, target)
+            subs_list = translator.translate_subs(subtitle.subs)
+            Subtitle.export_subtitle(local_subtitle_path, subs_list, FLAGS.output_subtitle_path, FLAGS.frame_rate, "utf-8")
+            Subtitle.save_subs_as_target_format(subs_list, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate, "utf-8")
+        else:
+            Subtitle.export_subtitle(local_subtitle_path, subtitle.subs, FLAGS.output_subtitle_path, FLAGS.frame_rate)
+            Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate)
         print("Subtitle converted and saved to: {}".format(FLAGS.output_subtitle_path))
     except UnsupportedFormatException as e:
         print(

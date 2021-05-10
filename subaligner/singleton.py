@@ -6,7 +6,7 @@ class _Singleton(type):  # type: ignore
 
     _instances: Dict[Any, Any] = {}
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs) -> Any:
         if cls not in cls._instances:
             cls._instances[cls] = super(_Singleton, cls).__call__(
                 *args, **kwargs

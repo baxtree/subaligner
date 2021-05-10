@@ -55,3 +55,12 @@ Feature: Subaligner CLI
     Given I have a subtitle file "https://raw.githubusercontent.com/baxtree/subaligner/master/tests/subaligner/resource/test.srt"
     When I run the converter with "test_srt.ttml" as the output
     Then a new subtitle file "test_srt.ttml" is generated
+
+  Scenario Outline: Test subtitle conversion with translation
+    Given I have a subtitle file <subtitle-in>
+    When I run the converter with <language_pair> for translation and <subtitle-out> as the output
+    Then a new subtitle file <subtitle-out> is generated
+    Examples:
+      |  subtitle-in      | language_pair | subtitle-out        |
+      |  "test.srt"       | eng,zho       | "test_zh_srt.ttml"  |
+      |  "test.srt"       | eng,rus       | "test_ru_srt.ttml"  |

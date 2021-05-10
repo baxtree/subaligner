@@ -195,6 +195,19 @@ Feature: Subaligner CLI
         When I run the alignment with subaligner on them with dual stage
         Then a new subtitle file "test[]spaced_aligned.vtt" is generated
 
+    @translation
+    Scenario Outline: Test translation on aligned subtitles
+        Given I have a video file "test.mp4"
+        And I have a subtitle file <subtitle-in>
+        When I run the alignment with <aligner> on them with <mode> stage and <language-pair> for translation
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |  aligner          |  mode     |  subtitle-in      |   language-pair   |   subtitle-out            |
+        |  subaligner       |  single   |  "test.srt"       |   eng,zho         |   "test_aligned.srt"      |
+        |  subaligner       |  dual     |  "test.srt"       |   eng,spa         |   "test_aligned.srt"      |
+        |  subaligner_1pass |  <NULL>   |  "test.srt"       |   eng,fra         |   "test_aligned.srt"      |
+        |  subaligner_2pass |  <NULL>   |  "test.srt"       |   eng,deu         |   "test_aligned.srt"      |
+
     @exception
     Scenario Outline: Test errors out on unsupported subtitle input
         Given I have a video file "test.mp4"

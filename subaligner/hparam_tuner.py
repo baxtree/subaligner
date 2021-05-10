@@ -29,7 +29,7 @@ class HyperParameterTuner(object):
                  num_of_trials: int = 5,
                  tuning_epochs: int = 5,
                  network_type: str = Network.LSTM,
-                 **kwargs):
+                 **kwargs) -> None:
         """Hyperparameter tuner initialiser
 
         Arguments:

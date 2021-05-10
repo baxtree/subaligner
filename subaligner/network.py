@@ -56,7 +56,7 @@ class Network(object):
         hyperparameters: Hyperparameters,
         model_path: Optional[str] = None,
         backend: str = "tensorflow"
-    ):
+    ) -> None:
         """ Network object initialiser used by factory methods.
 
         Arguments:

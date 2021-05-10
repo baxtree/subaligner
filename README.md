@@ -83,6 +83,14 @@ $ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/s
 $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
+# Translative alignment with the ISO 639-3 language code pair (src,tgt)
+
+$ subaligner_1pass -v video.mp4 -s subtitle.srt -t eng,zho
+$ subaligner_2pass -v video.mp4 -s subtitle.srt -t eng,spa
+$ subaligner -m single -v video.mp4 -s subtitle.srt -t eng,fra
+$ subaligner -m dual -v video.mp4 -s subtitle.srt -t eng,deu
+```
+```
 # Run alignments with pipx
 
 $ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
@@ -104,7 +112,8 @@ $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v 
 $ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 $ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
-The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass --help`, `subaligner_2pass --help` or `subaligner --help`.
+The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass -h`, `subaligner_2pass -h` or `subaligner -h`.
+Additional utilities can be used after consulting `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
 
 ![](figures/screencast.gif)
 ## Supported Formats

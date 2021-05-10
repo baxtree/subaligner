@@ -12,6 +12,8 @@ optional arguments:
                         Path to the output directory containing training results
   -o OUTPUT, --output OUTPUT
                         Path to the output subtitle file
+  -t TRANSLATE, --translate TRANSLATE
+                        Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
@@ -81,6 +83,12 @@ def main():
         default="",
         help="Path to the output subtitle file",
     )
+    parser.add_argument(
+        "-t",
+        "--translate",
+        type=str,
+        help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
@@ -108,6 +116,7 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
+    from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
     from subaligner.utils import Utils
@@ -149,7 +158,14 @@ def main():
 
         aligned_subtitle_path = "_aligned.".join(
             FLAGS.subtitle_path.rsplit(".", 1)).replace(".stl", ".srt") if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(local_subtitle_path, subs, aligned_subtitle_path, frame_rate)
+
+        if FLAGS.translate is not None:
+            source, target = FLAGS.translate.split(",")
+            translator = Translator(source, target)
+            subs = translator.translate_subs(subs)
+            Subtitle.export_subtitle(local_subtitle_path, subs, aligned_subtitle_path, frame_rate, "utf-8")
+        else:
+            Subtitle.export_subtitle(local_subtitle_path, subs, aligned_subtitle_path, frame_rate)
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs)
         if log_loss is None or log_loss > FLAGS.max_logloss:
