@@ -27,10 +27,13 @@ Make sure you have got the virtual environment activated upfront.
 
 **Translative alignment with the ISO 639-3 language code pair**::
 
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -t eng,zho
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -t eng,spa
-    (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t eng,fra
-    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t eng,deu
+    (.venv) $ subaligner_1pass --languages
+    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -t src,tgt
+    (.venv) $ subaligner_2pass --languages
+    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
+    (.venv) $ subaligner --languages
+    (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 
 **Run alignments with the docker image**::
 

@@ -85,10 +85,13 @@ $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/sub
 ```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
 
-$ subaligner_1pass -v video.mp4 -s subtitle.srt -t eng,zho
-$ subaligner_2pass -v video.mp4 -s subtitle.srt -t eng,spa
-$ subaligner -m single -v video.mp4 -s subtitle.srt -t eng,fra
-$ subaligner -m dual -v video.mp4 -s subtitle.srt -t eng,deu
+$ subaligner_1pass --languages
+$ subaligner_1pass -v video.mp4 -s subtitle.srt -t src,tgt
+$ subaligner_2pass --languages
+$ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
+$ subaligner --languages
+$ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
+$ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 ```
 ```
 # Run alignments with pipx

@@ -202,6 +202,20 @@ def expect_help_information(step, aligner):
     assert "usage: %s " % aligner in step.context.stdout
 
 
+@when("I run the {aligner:S} command with languages")
+def run_subaligner_with_languages(step, aligner):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", aligner),
+        "-lgs"], shell=False, stdout=subprocess.PIPE)
+    stdout, _ = process.communicate(timeout=WAIT_TIMEOUT_IN_SECONDS)
+    step.context.stdout = stdout.decode("utf-8")
+
+
+@then("supported language codes are displayed")
+def expect_language_codes(step):
+    assert "eng  English" in step.context.stdout
+
+
 @then("the dual-stage help information is displayed")
 def expect_dual_stage_help_information(step):
     assert "usage: subaligner_2pass" in step.context.stdout

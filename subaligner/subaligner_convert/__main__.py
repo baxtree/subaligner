@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-f FRAME_RATE] [-d] [-q] [-ver]
+usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-fr FRAME_RATE] [-t TRANSLATE] [-lgs] [-d] [-q] [-ver]
 
 Convert a subtitle from the input format to the output format
 
@@ -10,6 +10,7 @@ optional arguments:
                         Frame rate used by conversion to formats such as MicroDVD
   -t TRANSLATE, --translate TRANSLATE
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
@@ -49,7 +50,6 @@ def main():
         type=str,
         default="",
         help="File path or URL to the input subtitle file",
-        required=True,
     )
     required_args.add_argument(
         "-o",
@@ -57,7 +57,6 @@ def main():
         type=str,
         default="",
         help="File path to the output subtitle file",
-        required=True,
     )
     parser.add_argument(
         "-fr",
@@ -72,12 +71,20 @@ def main():
         type=str,
         help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
     )
+    parser.add_argument("-lgs", "--languages", action="store_true",
+                        help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
     parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
+
+    from aeneas.language import Language
+    if FLAGS.languages:
+        for line in Language.CODE_TO_HUMAN_LIST:
+            print(line.replace("\t", "  "))
+        sys.exit(0)
     if FLAGS.input_subtitle_path == "":
         print("--input_subtitle_path was not passed in")
         sys.exit(21)

@@ -107,10 +107,15 @@ flags to customise the configuration on tuning:
 **Convert the subtitle to another format**::
 
     (.venv) $ subaligner_convert -i subtitle.srt -o subtitle.vtt
+
+**Convert the subtitle to another format and translate**::
+
+    (.venv) $ subaligner_convert --languages
     (.venv) $ subaligner_convert -i subtitle_en.srt -o subtitle_zh.vtt -t eng,zho
 
-**Convert the subtitle and trans**::
+**Translate the subtitle without changing the format**::
 
+    (.venv) $ subaligner_convert --languages
     (.venv) $ subaligner_convert -i subtitle_en.srt -o subtitle_es.srt -t eng,spa
 
 For output subtitles like MicroDVD relying on the frame rate, its value needs to be passed in with `-fr` or `--frame_rate`.

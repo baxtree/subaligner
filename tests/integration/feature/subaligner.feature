@@ -243,3 +243,13 @@ Feature: Subaligner CLI
         |  subaligner_1pass |
         |  subaligner_2pass |
         |  subaligner       |
+
+    @languages
+    Scenario Outline: Test language codes display
+        When I run the <aligner> command with languages
+        Then supported language codes are displayed
+    Examples:
+        |  aligner          |
+        |  subaligner_1pass |
+        |  subaligner_2pass |
+        |  subaligner       |
