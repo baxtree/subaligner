@@ -4,7 +4,8 @@ Usage
 
 Subaligner provides two ways of aligning subtitles: single-stage alignment and dual-stage alignment. The former way has
 lower latency and shifts all subtitle segments globally. The latter way has higher latency and shifts the
-segments individually with an option of stretching each segment.
+segments individually with an option of stretching each segment. Multilingual translation on subtitles can be achieved
+together with the alignment in one go or separately (see in :doc:`Advanced Usage <./advanced_usage.rst>`).
 
 Make sure you have got the virtual environment activated upfront.
 
@@ -18,14 +19,14 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner_2pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
-**Pass in single-stage or dual-stage as the alignment mode (src,tgt)**::
+**Pass in single-stage or dual-stage as the alignment mode**::
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
-**Translative alignment with the ISO 639-3 language code pair**::
+**Translative alignment with the ISO 639-3 language code pair (src,tgt)**::
 
     (.venv) $ subaligner_1pass --languages
     (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -t src,tgt

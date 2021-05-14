@@ -11,14 +11,14 @@ Subaligner provides a one-stop solution on automatic subtitle synchronisation an
 and forced alignments. In essence, aligning subtitles is a dual-stage process with a Bidirectional Long Short-Term Memory network trained
 upfront. Subaligner helps subtitlers not only in preprocessing raw subtitle materials (outcome from stenographers or
 STT workflow, etc.) but also in gaining quality control over their work within subtitle post-production. This tool
-also tolerates errors occurred in live subtitles which sometimes do not completely or correctly represent what people
+also tolerates errors that occurred in live subtitles which sometimes do not completely or correctly represent what people
 actually spoke in the companion audiovisual content.
 
 Subligner has been shipped with a command-line interface which helps users to conduct various tasks around subtitle
-synchronisation and multilingual translation without writing any code. APIs targeting developers have also been provided.
-With existing audiovisual and in-sync subtitle files at hand, users can train their own synchroniser with a single
-command and zero setup. A handful of subtitle formats are supported and can be converted from one to another either during
-synchronisation or on on-demand.
+synchronisation and multilingual translation without writing any code. Application programming interfaces are also provided
+to developers wanting to perform those tasks programmatically. Moreover, with existing audiovisual and in-sync subtitle files at
+hand, advanced users can train their own synchronisers with a single command and zero setup. A handful of subtitle formats are supported
+and can be converted from one to another either during synchronisation and translation or on on-demand.
 
 Subligner supports the following subtitle formats: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP,
 EBU STL, SAMI, SCC and SBV. The source code can be found on GitHub: `subaligner <https://github.com/baxtree/subaligner>`_.
