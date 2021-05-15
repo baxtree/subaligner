@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-f FRAME_RATE] [-d] [-q] [-ver]
+usage: subaligner_convert [-h] -i INPUT_SUBTITLE_PATH -o OUTPUT_SUBTITLE_PATH [-fr FRAME_RATE] [-t TRANSLATE] [-lgs] [-d] [-q] [-ver]
 
 Convert a subtitle from the input format to the output format
 
@@ -8,6 +8,9 @@ optional arguments:
   -h, --help            show this help message and exit
   -fr FRAME_RATE, --frame_rate FRAME_RATE
                         Frame rate used by conversion to formats such as MicroDVD
+  -t TRANSLATE, --translate TRANSLATE
+                        Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
@@ -47,7 +50,6 @@ def main():
         type=str,
         default="",
         help="File path or URL to the input subtitle file",
-        required=True,
     )
     required_args.add_argument(
         "-o",
@@ -55,7 +57,6 @@ def main():
         type=str,
         default="",
         help="File path to the output subtitle file",
-        required=True,
     )
     parser.add_argument(
         "-fr",
@@ -64,12 +65,26 @@ def main():
         default=None,
         help="Frame rate used by conversion to formats such as MicroDVD",
     )
+    parser.add_argument(
+        "-t",
+        "--translate",
+        type=str,
+        help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
+    parser.add_argument("-lgs", "--languages", action="store_true",
+                        help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Switch off logging information")
     parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
+
+    from aeneas.language import Language
+    if FLAGS.languages:
+        for line in Language.CODE_TO_HUMAN_LIST:
+            print(line.replace("\t", "  "))
+        sys.exit(0)
     if FLAGS.input_subtitle_path == "":
         print("--input_subtitle_path was not passed in")
         sys.exit(21)
@@ -85,6 +100,7 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.subtitle import Subtitle
+    from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException, TerminalException
     from subaligner.utils import Utils
 
@@ -96,7 +112,16 @@ def main():
             Utils.download_file(FLAGS.input_subtitle_path, local_subtitle_path)
 
         subtitle = Subtitle.load(local_subtitle_path)
-        Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate)
+
+        if FLAGS.translate is not None:
+            source, target = FLAGS.translate.split(",")
+            translator = Translator(source, target)
+            subs_list = translator.translate(subtitle.subs)
+            Subtitle.export_subtitle(local_subtitle_path, subs_list, FLAGS.output_subtitle_path, FLAGS.frame_rate, "utf-8")
+            Subtitle.save_subs_as_target_format(subs_list, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate, "utf-8")
+        else:
+            Subtitle.export_subtitle(local_subtitle_path, subtitle.subs, FLAGS.output_subtitle_path, FLAGS.frame_rate)
+            Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate)
         print("Subtitle converted and saved to: {}".format(FLAGS.output_subtitle_path))
     except UnsupportedFormatException as e:
         print(

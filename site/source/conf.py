@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autosectionlabel",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -80,7 +81,9 @@ autodoc_mock_imports = [
     "pysubs2",
     "cchardet",
     "captionstransformer",
-    "bs4"
+    "bs4",
+    "transformers",
+    "pycountry"
 ]
 
 def setup(app):

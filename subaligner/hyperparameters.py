@@ -9,7 +9,7 @@ class Hyperparameters(object):
 
     OPTIMIZERS = ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rmsprop", "sgd"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Hyperparameters initialiser setting default values"""
 
         self.__learning_rate = 0.001
@@ -120,7 +120,7 @@ class Hyperparameters(object):
             self.__optimizer = "SGD"
 
     @property
-    def loss(self) -> float:
+    def loss(self) -> str:
         return self.__loss
 
     @property

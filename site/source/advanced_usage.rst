@@ -39,6 +39,16 @@ Embeddings extracted from your media files can be reused with `-utd` or `--use_t
 model of another kind (instead of re-using the same model on training resumption) without going through the feature embedding process,
 which could take quite long to finish for a large dataset so as to be unnecessary if there is no change on it.
 
+**Ignore sound effects::
+
+    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory --sound_effect_start_marker "(" --sound_effect_end_marker ")"
+
+It is not uncommon that subtitles sometimes contain sound effects (e.g., "BARK", "(applause)" and "[MUSIC]", etc.). For limited training
+data sets and not sophisticated enough network architectures, the model usually cannot capture all the sound effects very well.
+To filter out sound effect subtitles and only preserve the vocal ones, you can pass in `-sesm` or `--sound_effect_start_marker` and/or
+`seem` or `--sound_effect_end_marker` with strings which will be used by subaligner for finding sound effects and ignoring them within the training process.
+For example, the above exemplary command will treat any strings starting with "(" and ending with ")" as sound effects.
+
 **Run alignments after training**::
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -tod training_output_directory
@@ -97,6 +107,16 @@ flags to customise the configuration on tuning:
 **Convert the subtitle to another format**::
 
     (.venv) $ subaligner_convert -i subtitle.srt -o subtitle.vtt
+
+**Convert the subtitle to another format and translate**::
+
+    (.venv) $ subaligner_convert --languages
+    (.venv) $ subaligner_convert -i subtitle_en.srt -o subtitle_zh.vtt -t eng,zho
+
+**Translate the subtitle without changing the format**::
+
+    (.venv) $ subaligner_convert --languages
+    (.venv) $ subaligner_convert -i subtitle_en.srt -o subtitle_es.srt -t eng,spa
 
 For output subtitles like MicroDVD relying on the frame rate, its value needs to be passed in with `-fr` or `--frame_rate`.
 

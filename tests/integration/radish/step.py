@@ -15,7 +15,7 @@ def video_file(step, file_name):
     if file_name.lower().startswith("http"):
         step.context.video_file_path = file_name
     else:
-        step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+        step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name).replace("[]", " ")
 
 
 @given('I have a subtitle file "{file_name:S}"')
@@ -23,7 +23,7 @@ def subtitle_file(step, file_name):
     if file_name.lower().startswith("http"):
         step.context.subtitle_path_or_selector = file_name
     else:
-        step.context.subtitle_path_or_selector = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+        step.context.subtitle_path_or_selector = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name).replace("[]", " ")
 
 
 @given('I have selector "{selector:S}" for the embedded subtitle')
@@ -45,6 +45,26 @@ def run_subaligner(step, aligner, mode):
             "-m", mode,
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_path_or_selector,
+            "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and {language_pair:S} for translation")
+def run_subaligner_with_translation(step, aligner, mode, language_pair):
+    if mode == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_path_or_selector,
+            "-t", language_pair,
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-s", step.context.subtitle_path_or_selector,
+            "-t", language_pair,
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
@@ -133,7 +153,7 @@ def run_subaligner_with_custom_model(step, aligner, mode):
 
 @then('a new subtitle file "{file_name:S}" is generated')
 def expect_result(step, file_name):
-    output_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name)
+    output_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name.replace("[]", " "))
     assert step.context.exit_code == 0
     assert os.path.isfile(output_file_path) is True
 
@@ -182,6 +202,20 @@ def expect_help_information(step, aligner):
     assert "usage: %s " % aligner in step.context.stdout
 
 
+@when("I run the {aligner:S} command with languages")
+def run_subaligner_with_languages(step, aligner):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", aligner),
+        "-lgs"], shell=False, stdout=subprocess.PIPE)
+    stdout, _ = process.communicate(timeout=WAIT_TIMEOUT_IN_SECONDS)
+    step.context.stdout = stdout.decode("utf-8")
+
+
+@then("supported language codes are displayed")
+def expect_language_codes(step):
+    assert "eng  English" in step.context.stdout
+
+
 @then("the dual-stage help information is displayed")
 def expect_dual_stage_help_information(step):
     assert "usage: subaligner_2pass" in step.context.stdout
@@ -194,7 +228,7 @@ def unsupported_subtitle(step):
 
 @given("I have an unsupported video file")
 def unsupported_video(step):
-    step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported")
+    step.context.video_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", "unsupported").replace("[]", " ")
 
 
 @given('I have an audiovisual file directory "{av_dir:S}"')
@@ -286,6 +320,18 @@ def run_subtitle_converter(step, output_subtitle):
         "-i", step.context.subtitle_path_or_selector,
         "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
         "-fr", "25.0",
+        "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@when('I run the converter with {language_pair:S} for translation and "{output_subtitle:S}" as the output')
+def run_subtitle_converter_with_translation(step, language_pair, output_subtitle):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_convert"),
+        "-i", step.context.subtitle_path_or_selector,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", output_subtitle),
+        "-fr", "25.0",
+        "-t", language_pair,
         "-q"] + step.text.split(" "), shell=False, stdout=subprocess.PIPE)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 

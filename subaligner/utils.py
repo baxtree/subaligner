@@ -4,6 +4,7 @@ import pysubs2
 import requests
 import shutil
 import cchardet
+import shlex
 
 from pycaption import (
     CaptionConverter,
@@ -84,7 +85,7 @@ class Utils(object):
 
         _vtt_file_path = srt_file_path.replace(".srt", ".vtt") if vtt_file_path is None else vtt_file_path
         encoding = Utils.detect_encoding(srt_file_path)
-        command = "{0} -y -sub_charenc {1} -i {2} -f webvtt {3}".format(Utils.FFMPEG_BIN, encoding, srt_file_path, _vtt_file_path)
+        command = "{0} -y -sub_charenc {1} -i '{2}' -f webvtt '{3}'".format(Utils.FFMPEG_BIN, encoding, srt_file_path, _vtt_file_path)
         timeout_msg = "Timeout on converting SubRip to WebVTT: {}".format(srt_file_path)
         error_msg = "Cannot convert SubRip to WebVTT: {}".format(srt_file_path)
 
@@ -111,7 +112,7 @@ class Utils(object):
 
         _srt_file_path = vtt_file_path.replace(".vtt", ".srt") if srt_file_path is None else srt_file_path
         encoding = Utils.detect_encoding(vtt_file_path)
-        command = "{0} -y -sub_charenc {1} -i {2} -f srt {3}".format(Utils.FFMPEG_BIN, encoding, vtt_file_path, _srt_file_path)
+        command = "{0} -y -sub_charenc {1} -i '{2}' -f srt '{3}'".format(Utils.FFMPEG_BIN, encoding, vtt_file_path, _srt_file_path)
         timeout_msg = "Timeout on converting WebVTT to SubRip: {}".format(vtt_file_path)
         error_msg = "Cannot convert WebVTT to SubRip: {}".format(vtt_file_path)
 
@@ -400,7 +401,7 @@ class Utils(object):
                 caption.encoding = encoding
 
         if srt_file_path is None:
-            srt_file_path = srt_file_path.replace(".sbv", ".srt")
+            srt_file_path = sbv_file_path.replace(".sbv", ".srt")
 
         with open(srt_file_path, "w") as file:
             srt_writer = SrtWriter(file, captions)
@@ -468,7 +469,7 @@ class Utils(object):
                 caption.encoding = encoding
 
         if srt_file_path is None:
-            srt_file_path = srt_file_path.replace(".ytt", ".srt")
+            srt_file_path = transcript_file_path.replace(".ytt", ".srt")
 
         with open(srt_file_path, "w") as file:
             srt_writer = SrtWriter(file, captions)
@@ -488,7 +489,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
         """
 
-        command = "{0} -y -fix_sub_duration -txt_page {1} -txt_format text -i {2} {3}".format(Utils.FFMPEG_BIN, page_num, ts_file_path, output_file_path)
+        command = "{0} -y -fix_sub_duration -txt_page {1} -txt_format text -i '{2}' '{3}'".format(Utils.FFMPEG_BIN, page_num, ts_file_path, output_file_path)
         timeout_msg = "Timeout on extracting Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
         error_msg = "Cannot extract Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
 
@@ -514,7 +515,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
         """
 
-        command = "{0} -y -i {1} -map 0:s:{2} {3}".format(Utils.FFMPEG_BIN, mkv_file_path, stream_index, output_file_path)
+        command = "{0} -y -i '{1}' -map 0:s:{2} '{3}'".format(Utils.FFMPEG_BIN, mkv_file_path, stream_index, output_file_path)
         timeout_msg = "Timeout on extracting the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
         error_msg = "Cannot extract the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
 
@@ -566,7 +567,7 @@ class Utils(object):
             bool -- True if the video contains embedded subtitles or False otherwise.
         """
 
-        command = "{0} -y -i {1} -c copy -map 0:s -f null - -v 0 -hide_banner".format(Utils.FFMPEG_BIN, video_file_path)
+        command = "{0} -y -i '{1}' -c copy -map 0:s -f null - -v 0 -hide_banner".format(Utils.FFMPEG_BIN, video_file_path)
         timeout_msg = "Timeout on detecting embedded subtitles from file: {}".format(video_file_path)
         error_msg = "Embedded subtitle detection failed for file: {}".format(video_file_path)
 
@@ -614,7 +615,7 @@ class Utils(object):
     @staticmethod
     def _run_command(command: str, timeout_secs: int, timeout_msg: str, error_msg: str, callback: Callable[[int, str], Any]) -> Any:
         with subprocess.Popen(
-                command.split(),
+                shlex.split(command),
                 shell=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,

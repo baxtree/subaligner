@@ -18,6 +18,7 @@ from .media_helper import MediaHelper
 from .singleton import Singleton
 from .subtitle import Subtitle
 from .hyperparameters import Hyperparameters
+from .translator import Translator
 from .exception import TerminalException
 from .exception import NoFrameRateException
 from .logger import Logger
@@ -38,7 +39,7 @@ class Predictor(Singleton):
 
     __SEGMENT_PREDICTION_TIMEOUT = 60  # Maximum waiting time in seconds when predicting each segment
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """Feature predictor initialiser.
 
             Keyword Arguments:
@@ -574,7 +575,7 @@ class Predictor(Singleton):
             audio_file_path {string} -- The file path of the original audio (default: {None}).
             subtitles {list} -- The list of SubRip files (default: {None}).
             max_shift_secs {float} -- The maximum seconds by which subtitle cues can be shifted (default: {None}).
-            previous_gap {float} -- The duration betwee the start time of the audio segment and the start time of the subtitle segment.
+            previous_gap {float} -- The duration between the start time of the audio segment and the start time of the subtitle segment (default: {None}).
 
         Returns:
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
@@ -675,7 +676,7 @@ class Predictor(Singleton):
                 self.__feature_embedder.position_to_duration(pos_to_delay) - original_start
             )
         elif subtitles is not None:  # for each in second pass
-            seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap
+            seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap if previous_gap is not None else 0.0
         else:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)

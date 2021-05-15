@@ -11,7 +11,7 @@ class Logger(Singleton):
     VERBOSE = True
     QUIET = False
 
-    def __init__(self, output_log: str = "output.log"):
+    def __init__(self, output_log: str = "output.log") -> None:
         self.__loggers: Dict[str, logging.Logger] = {}
         self.__output_log = output_log
 

@@ -39,7 +39,7 @@ class Subtitle(object):
     SBV_EXTENSIONS = [".sbv"]
     YT_TRANSCRIPT_EXTENSIONS = [".ytt"]
 
-    def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str):
+    def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str) -> None:
         """Subtitle object initialiser.
 
         Arguments:
@@ -375,7 +375,7 @@ class Subtitle(object):
         return shifted_subtitle_file_path
 
     @staticmethod
-    def save_subs_as_target_format(subs: List[SubRipItem], source_file_path: str, target_file_path: str, frame_rate: Optional[float] = None) -> None:
+    def save_subs_as_target_format(subs: List[SubRipItem], source_file_path: str, target_file_path: str, frame_rate: Optional[float] = None, encoding: Optional[str] = None) -> None:
         """Save SubRipItems with the format determined by the target file extension.
 
         Arguments:
@@ -383,14 +383,15 @@ class Subtitle(object):
             source_file_path {string} -- The path to the original subtitle file.
             target_file_path {string} -- The path to the output subtitle file.
             frame_rate {float} -- The frame rate used by conversion to formats such as MicroDVD
+            encoding {str} -- The encoding of the exported output file {default: None}.
         """
 
-        encoding = Utils.detect_encoding(source_file_path)
+        encoding = Utils.detect_encoding(source_file_path) if encoding is None else encoding
         _, file_extension = os.path.splitext(target_file_path.lower())
         Subtitle.__save_subtitle_by_extension(file_extension, subs, source_file_path, target_file_path, encoding, frame_rate)
 
     @staticmethod
-    def export_subtitle(source_file_path: str, subs: List[SubRipItem], target_file_path: str, frame_rate: float = 25.0) -> None:
+    def export_subtitle(source_file_path: str, subs: List[SubRipItem], target_file_path: str, frame_rate: float = 25.0, encoding: Optional[str] = None) -> None:
         """Export subtitle in the format determined by the file extension.
 
         Arguments:
@@ -398,9 +399,10 @@ class Subtitle(object):
             subs {list} -- A list of SubRipItems.
             target_file_path {string} -- The path to the exported subtitle file.
             frame_rate {float} -- The frame rate for frame-based subtitle formats {default: 25.0}.
+            encoding {str} -- The encoding of the exported subtitle file {default: None}.
         """
 
-        encoding = Utils.detect_encoding(source_file_path)
+        encoding = Utils.detect_encoding(source_file_path) if encoding is None else encoding
         _, file_extension = os.path.splitext(source_file_path.lower())
         Subtitle.__save_subtitle_by_extension(file_extension, subs, source_file_path, target_file_path, encoding, frame_rate, is_exporting=True)
 

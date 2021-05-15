@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-usage: subaligner_2pass [-h] -v VIDEO_PATH -s SUBTITLE_PATH [-l MAX_LOGLOSS] [-so]
+usage: subaligner_2pass [-h] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-so]
                         [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-d] [-q] [-ver]
+                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-lgs] [-d] [-q] [-ver]
 
 Run dual-stage alignment
 
@@ -12,13 +12,16 @@ optional arguments:
                         Max global log loss for alignment
   -so, --stretch_off    Switch off stretch on subtitles for non-English speech
   -sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --stretch_in_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
-                        Stretch the subtitle with the supported ISO 639-2 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes].
+                        Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].
                         NB: This will be ignored if either -so or --stretch_off is present
   -fos, --exit_segfail  Exit on any segment alignment failures
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
   -o OUTPUT, --output OUTPUT
                         Path to the output subtitle file
+  -t TRANSLATE, --translate TRANSLATE
+                        Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
@@ -27,7 +30,7 @@ required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .dfxp, .ass, .xml, .tmp, .ssa, .srt, .txt, .sami, .sub, .ttml, .smi, .stl, .scc, .sbv and .ytt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ass, .sbv, .srt, .vtt, .ttml, .dfxp, .scc, .txt, .tmp, .smi, .ssa, .sami, .xml, .sub, .stl, .ytt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -56,7 +59,6 @@ def main():
         type=str,
         default="",
         help="File path or URL to the video file",
-        required=True,
     )
     from subaligner.subtitle import Subtitle
     required_args.add_argument(
@@ -65,7 +67,6 @@ def main():
         type=str,
         default="",
         help="File path or URL to the subtitle file (Extensions of supported subtitles: {}) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)".format(", ".join(Subtitle.subtitle_extensions())),
-        required=True,
     )
     parser.add_argument(
         "-l",
@@ -87,7 +88,7 @@ def main():
         type=str,
         choices=Language.ALLOWED_VALUES,
         default=Language.ENG,
-        help="Stretch the subtitle with the supported ISO 639-2 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
+        help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
     )
     parser.add_argument(
         "-fos",
@@ -109,6 +110,14 @@ def main():
         default="",
         help="Path to the output subtitle file",
     )
+    parser.add_argument(
+        "-t",
+        "--translate",
+        type=str,
+        help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
+    parser.add_argument("-lgs", "--languages", action="store_true",
+                        help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Print out debugging information")
     parser.add_argument("-q", "--quiet", action="store_true",
@@ -116,6 +125,10 @@ def main():
     parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
 
+    if FLAGS.languages:
+        for line in Language.CODE_TO_HUMAN_LIST:
+            print(line.replace("\t", "  "))
+        sys.exit(0)
     if FLAGS.video_path == "":
         print("--video_path was not passed in")
         sys.exit(21)
@@ -139,6 +152,7 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
+    from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
     from subaligner.utils import Utils
@@ -183,7 +197,14 @@ def main():
 
         aligned_subtitle_path = "_aligned.".join(
             FLAGS.subtitle_path.rsplit(".", 1)).replace(".stl", ".srt") if FLAGS.output == "" else FLAGS.output
-        Subtitle.export_subtitle(local_subtitle_path, subs_list, aligned_subtitle_path, frame_rate)
+
+        if FLAGS.translate is not None:
+            source, target = FLAGS.translate.split(",")
+            translator = Translator(source, target)
+            subs_list = translator.translate(subs)
+            Subtitle.export_subtitle(local_subtitle_path, subs_list, aligned_subtitle_path, frame_rate, "utf-8")
+        else:
+            Subtitle.export_subtitle(local_subtitle_path, subs_list, aligned_subtitle_path, frame_rate)
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs_list)
         if log_loss is None or log_loss > FLAGS.max_logloss:

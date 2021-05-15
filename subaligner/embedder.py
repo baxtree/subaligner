@@ -22,7 +22,7 @@ class FeatureEmbedder(object):
         hop_len: int = 512,
         step_sample: float = 0.04,
         len_sample: float = 0.075,
-    ):
+    ) -> None:
         """Feature embedder initialiser.
 
         Keyword Arguments:
@@ -235,7 +235,7 @@ class FeatureEmbedder(object):
     def extract_data_and_label_from_audio(
         self,
         audio_file_path: str,
-        subtitle_file_path: str,
+        subtitle_file_path: Optional[str],
         subtitles: Optional[SubRipFile] = None,
         sound_effect_start_marker: Optional[str] = None,
         sound_effect_end_marker: Optional[str] = None,

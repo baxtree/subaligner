@@ -25,7 +25,7 @@ class Trainer(object):
     __LOGGER = Logger().get_logger(__name__)
     __MAX_BYTES = 2 ** 31 - 1
 
-    def __init__(self, feature_embedder: FeatureEmbedder):
+    def __init__(self, feature_embedder: FeatureEmbedder) -> None:
         """Initialiser for the training process.
 
         Arguments:
