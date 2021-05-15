@@ -168,7 +168,7 @@ def main():
         if FLAGS.translate is not None:
             source, target = FLAGS.translate.split(",")
             translator = Translator(source, target)
-            subs = translator.translate_subs(subs)
+            subs = translator.translate(subs)
             Subtitle.export_subtitle(local_subtitle_path, subs, aligned_subtitle_path, frame_rate, "utf-8")
         else:
             Subtitle.export_subtitle(local_subtitle_path, subs, aligned_subtitle_path, frame_rate)

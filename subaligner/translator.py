@@ -42,27 +42,28 @@ class Translator(Singleton):
         "yue": "zho"
     }
     __LANGUAGE_PAIR_MAPPER = {
-        "eng-jpn": "eng-jap"
+        "eng-jpn": "eng-jap",
+        "jpn-eng": "jap-eng"
     }
 
-    def __init__(self, source_language, target_language) -> None:
+    def __init__(self, src_language, tgt_language) -> None:
         """Initialiser for the subtitle translation.
 
         Arguments:
-            source_language {string} -- The source language code from ISO 639-3.
-            target_language {string} -- The target language code from ISO 639-3.
+            src_language {string} -- The source language code derived from ISO 639-3.
+            tgt_language {string} -- The target language code derived from ISO 639-3.
 
         Raises:
             NotImplementedError -- Thrown when the model of the specified language pair is not found.
         """
-        self.__initialise_model(source_language, target_language)
+        self.__initialise_model(src_language, tgt_language)
 
     @staticmethod
     def get_iso_639_alpha_2(language_code: str) -> str:
-        """Get the alpha 2 language code from a alpha 3 one.
+        """Find the alpha 2 language code based on an alpha 3 one.
 
         Arguments:
-            language_code {string} -- A language code from ISO 639-3.
+            language_code {string} -- An alpha 3 language code derived from ISO 639-3.
 
         Returns:
             string -- The alpha 2 language code if exists otherwise the alpha 3 one.
@@ -84,7 +85,7 @@ class Translator(Singleton):
         """Normalise a single language code.
 
         Arguments:
-            language_code {string} -- A language code from ISO 639-3.
+            language_code {string} -- A language code derived from ISO 639-3.
 
         Returns:
             string -- The language code understood by the language model.
@@ -93,23 +94,23 @@ class Translator(Singleton):
         return Translator.__LANGUAGE_CODE_MAPPER[language_code] if language_code in Translator.__LANGUAGE_CODE_MAPPER else language_code
 
     @staticmethod
-    def normalise_pair(source_language: str, target_language: str) -> List[str]:
+    def normalise_pair(src_language: str, tgt_language: str) -> List[str]:
         """Normalise a pair of language codes.
 
         Arguments:
-            source_language {string} -- The source language code from ISO 639-3.
-            target_language {string} -- The target language code from ISO 639-3.
+            src_language {string} -- The source language code derived from ISO 639-3.
+            tgt_language {string} -- The target language code derived from ISO 639-3.
 
         Returns:
             list -- The language code pair understood by the language model.
         """
 
-        if "{}-{}".format(source_language, target_language) in Translator.__LANGUAGE_PAIR_MAPPER:
-            return Translator.__LANGUAGE_PAIR_MAPPER["{}-{}".format(source_language, target_language)].split("-")
+        if "{}-{}".format(src_language, tgt_language) in Translator.__LANGUAGE_PAIR_MAPPER:
+            return Translator.__LANGUAGE_PAIR_MAPPER["{}-{}".format(src_language, tgt_language)].split("-")
         else:
-            return [source_language, target_language]
+            return [src_language, tgt_language]
 
-    def translate_subs(self, subs: List[SubRipItem]) -> List[SubRipItem]:
+    def translate(self, subs: List[SubRipItem]) -> List[SubRipItem]:
         """Translate a list of subtitle cues.
 
         Arguments:

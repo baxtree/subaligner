@@ -17,11 +17,11 @@ class TranslatorTests(unittest.TestCase):
     def test_get_iso_639_alpha_2(self):
         self.assertEqual("en", Undertest.get_iso_639_alpha_2("eng"))
         self.assertEqual("ada", Undertest.get_iso_639_alpha_2("ada"))
-        self.assertEqual("unk", Undertest.get_iso_639_alpha_2("unk"))
+        self.assertEqual("xyz", Undertest.get_iso_639_alpha_2("xyz"))
 
     @patch("transformers.MarianMTModel.from_pretrained")
     @patch("transformers.MarianTokenizer.from_pretrained")
-    def test_translate_subs(self, tokenizer_from_pretrained, model_from_pretrained):
+    def test_translate(self, tokenizer_from_pretrained, model_from_pretrained):
         subs = Subtitle.load(self.srt_file_path).subs
         mock_tokenizer = Mock()
         mock_tokenizer.return_value = {"input_ids": None, "attention_mask": None}
@@ -31,7 +31,7 @@ class TranslatorTests(unittest.TestCase):
         tokenizer_from_pretrained.return_value = mock_tokenizer
         model_from_pretrained.return_value = mock_model
 
-        translated_subs = Undertest("eng", "zho").translate_subs(subs)
+        translated_subs = Undertest("eng", "zho").translate(subs)
 
         self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
 
@@ -61,7 +61,8 @@ class TranslatorTests(unittest.TestCase):
         self.assertEqual(normalised, Undertest.normalise_single(original))
 
     @parameterized.expand([
-        ["eng-jpn", "eng-jap"]
+        ["eng-jpn", "eng-jap"],
+        ["jpn-eng", "jap-eng"],
     ])
     def test_normalise_pair(self, original, normalised):
         self.assertEqual(normalised, "-".join(Undertest.normalise_pair(*original.split("-"))))
@@ -70,7 +71,7 @@ class TranslatorTests(unittest.TestCase):
     def test_throw_exception_on_translating_subs(self, mock_tokenizer_from_pretrained):
         subs = Subtitle.load(self.srt_file_path).subs
         try:
-            Undertest("eng", "aar").translate_subs(subs)
+            Undertest("eng", "aar").translate(subs)
         except Exception as e:
             self.assertTrue(mock_tokenizer_from_pretrained.called)
             self.assertTrue(isinstance(e, NotImplementedError))

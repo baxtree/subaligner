@@ -5,7 +5,7 @@ Usage
 Subaligner provides two ways of aligning subtitles: single-stage alignment and dual-stage alignment. The former way has
 lower latency and shifts all subtitle segments globally. The latter way has higher latency and shifts the
 segments individually with an option of stretching each segment. Multilingual translation on subtitles can be achieved
-together with the alignment in one go or separately (see in :doc:`Advanced Usage <./advanced_usage.rst>`).
+together with the alignment in one go or separately (see in :ref:`Advanced Usage`).
 
 Make sure you have got the virtual environment activated upfront.
 
