@@ -24,7 +24,9 @@ from captionstransformer.sbv import Reader as SbvReader, Writer as SbvWriter
 from captionstransformer.srt import Reader as SrtReader, Writer as SrtWriter
 from captionstransformer.transcript import Reader as TranscriptReader, Writer as TranscriptWriter
 from bs4 import BeautifulSoup
-from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple
+from aeneas.language import Language
+from datetime import datetime
+from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple, List, Dict
 from .exception import TerminalException
 from subaligner.lib.to_srt import STL, SRT
 
@@ -597,9 +599,58 @@ class Utils(object):
         return detected["encoding"] if "encoding" in detected else None
 
     @staticmethod
-    def get_file_root_and_extension(file_path):
+    def get_file_root_and_extension(file_path: str) -> Tuple[str, str]:
+        """Get the root path and the extension of the input file path.
+
+        Returns:
+            tuple -- the root path and the extension of the input file path.
+        """
+
         parts = os.path.abspath(file_path).split(os.extsep, 1)
         return parts[0], parts[1]
+
+    @staticmethod
+    def get_stretch_language_codes() -> List[str]:
+        """Get language codes used by stretch.
+
+        Returns:
+            list -- A list of language codes derived from ISO 639-3.
+        """
+        return Language.ALLOWED_VALUES
+
+    @staticmethod
+    def get_misc_language_codes() -> List[str]:
+        """Get all known language codes.
+
+        Returns:
+            list -- A list of all known language codes.
+        """
+        return Language.ALLOWED_VALUES + \
+            ['CELTIC', 'NORTH_EU', 'NORWAY', 'ROMANCE', 'SAMI', 'SCANDINAVIA', 'aav', 'aed', 'afa', 'alv', 'art', 'ase',
+             'bat', 'bcl', 'bem', 'ber', 'bnt', 'bzs', 'cau', 'ccs', 'ceb', 'cel', 'chk', 'cpf', 'cpp', 'crs', 'csg',
+             'csn', 'cus', 'dra', 'efi', 'en_el_es_fi', 'euq', 'fi_nb_no_nn_ru_sv_en', 'fiu', 'fse', 'gaa', 'gem',
+             'gil', 'gmq', 'gmw', 'grk', 'guw', 'hil', 'iir', 'ilo', 'inc', 'ine', 'iso', 'itc', 'jap', 'kab', 'kqn',
+             'kwn', 'kwy', 'loz', 'lua', 'lue', 'lun', 'luo', 'lus', 'map', 'mfe', 'mfs', 'mkh', 'mos', 'mul', 'nic',
+             'niu', 'nso', 'nyk', 'pag', 'phi', 'pis', 'pon', 'poz', 'pqe', 'pqw', 'prl', 'rnd', 'roa', 'run', 'sal',
+             'sem', 'sit', 'sla', 'srn', 'ssp', 'swc', 'taw', 'tdt', 'tiv', 'tll', 'toi', 'tpi', 'trk', 'tum', 'tut',
+             'tvl', 'tzo', 'umb', 'urj', 'vsl', 'wal', 'war', 'wls', 'yap', 'yua', 'zai', 'zle', 'zls', 'zlw', 'zne']
+
+    @staticmethod
+    def get_language_table() -> List[str]:
+        """Get all known language codes and their human-readable versions.
+
+        Returns:
+            list -- A list of all known language codes and their human-readable versions.
+        """
+        return list(map(lambda line: line.replace("\t", "  "), Language.CODE_TO_HUMAN_LIST)) + \
+            ['CELTIC', 'NORTH_EU', 'NORWAY', 'ROMANCE', 'SAMI', 'SCANDINAVIA', 'aav', 'aed', 'afa', 'alv', 'art', 'ase',
+             'bat', 'bcl', 'bem', 'ber', 'bnt', 'bzs', 'cau', 'ccs', 'ceb', 'cel', 'chk', 'cpf', 'cpp', 'crs', 'csg',
+             'csn', 'cus', 'dra', 'efi', 'en_el_es_fi', 'euq', 'fi_nb_no_nn_ru_sv_en', 'fiu', 'fse', 'gaa', 'gem',
+             'gil', 'gmq', 'gmw', 'grk', 'guw', 'hil', 'iir', 'ilo', 'inc', 'ine', 'iso', 'itc', 'jap', 'kab', 'kqn',
+             'kwn', 'kwy', 'loz', 'lua', 'lue', 'lun', 'luo', 'lus', 'map', 'mfe', 'mfs', 'mkh', 'mos', 'mul', 'nic',
+             'niu', 'nso', 'nyk', 'pag', 'phi', 'pis', 'pon', 'poz', 'pqe', 'pqw', 'prl', 'rnd', 'roa', 'run', 'sal',
+             'sem', 'sit', 'sla', 'srn', 'ssp', 'swc', 'taw', 'tdt', 'tiv', 'tll', 'toi', 'tpi', 'trk', 'tum', 'tut',
+             'tvl', 'tzo', 'umb', 'urj', 'vsl', 'wal', 'war', 'wls', 'yap', 'yua', 'zai', 'zle', 'zls', 'zlw', 'zne']
 
     @staticmethod
     def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> Tuple[str, str]:
@@ -639,30 +690,30 @@ class Utils(object):
                 os.system("stty sane")
 
     @staticmethod
-    def _set_text_patch(self, value):
-        self._text = value
+    def _set_text_patch(self_patched: Any, value: str) -> None:
+        self_patched._text = value
 
     @staticmethod
-    def _read_patch(self):
-        self.rawcontent = self.fileobject.read()
-        self.text_to_captions()
-        return self.captions
+    def _read_patch(self_patched: Any) -> List:
+        self_patched.rawcontent = self_patched.fileobject.read()
+        self_patched.text_to_captions()
+        return self_patched.captions
 
     @staticmethod
-    def _text_to_captions_patch(self):
-        soup = BeautifulSoup(self.rawcontent, features="lxml")
+    def _text_to_captions_patch(self_patched: Any) -> List:
+        soup = BeautifulSoup(self_patched.rawcontent, features="lxml")
         texts = soup.find_all('text')
         for text in texts:
             caption = Caption()
-            caption.start = self.get_start(text)
-            caption.duration = self.get_duration(text)
+            caption.start = self_patched.get_start(text)
+            caption.duration = self_patched.get_duration(text)
             caption.text = text.text
-            self.add_caption(caption)
+            self_patched.add_caption(caption)
 
-        return self.captions
+        return self_patched.captions
 
     @staticmethod
-    def _get_utime_patch(self, dt):
+    def _get_utime_patch(_: Any, dt: datetime) -> str:
         start = dt
         start_seconds = 3600 * start.hour + 60 * start.minute + start.second
         start_milliseconds = start.microsecond // 1000
@@ -675,9 +726,9 @@ class Utils(object):
         return ustart
 
     @staticmethod
-    def _format_time_patch(self, caption):
+    def _format_time_patch(self_patched: Any, caption: Any) -> Dict:
         return {
-            "start": self.get_utime(caption.start),
-            "end": self.get_utime(caption.end),
+            "start": self_patched.get_utime(caption.start),
+            "end": self_patched.get_utime(caption.end),
             "duration": caption.duration.total_seconds()
         }

@@ -97,10 +97,9 @@ def main():
     parser.add_argument("-ver", "--version", action="version", version=__version__)
     FLAGS, unparsed = parser.parse_known_args()
 
-    from aeneas.language import Language
+    from subaligner.utils import Utils
     if FLAGS.languages:
-        for line in Language.CODE_TO_HUMAN_LIST:
-            print(line.replace("\t", "  "))
+        print("\n".join(Utils.get_language_table()))
         sys.exit(0)
     if FLAGS.video_path == "":
         print("--video_path was not passed in")
@@ -125,7 +124,6 @@ def main():
     from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
-    from subaligner.utils import Utils
 
     try:
         if FLAGS.video_path.lower().startswith("http"):

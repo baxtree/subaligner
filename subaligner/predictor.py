@@ -18,7 +18,6 @@ from .media_helper import MediaHelper
 from .singleton import Singleton
 from .subtitle import Subtitle
 from .hyperparameters import Hyperparameters
-from .translator import Translator
 from .exception import TerminalException
 from .exception import NoFrameRateException
 from .logger import Logger

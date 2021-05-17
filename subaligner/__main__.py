@@ -91,13 +91,13 @@ def main():
         action="store_true",
         help="Switch off stretch on non-English speech and subtitles)",
     )
-    from aeneas.language import Language
+    from subaligner.utils import Utils
     parser.add_argument(
         "-sil",
         "--stretch_in_language",
         type=str,
-        choices=Language.ALLOWED_VALUES,
-        default=Language.ENG,
+        choices=Utils.get_stretch_language_codes(),
+        default="eng",
         help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
     )
     parser.add_argument(
@@ -136,8 +136,7 @@ def main():
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.languages:
-        for line in Language.CODE_TO_HUMAN_LIST:
-            print(line.replace("\t", "  "))
+        print("\n".join(Utils.get_language_table()))
         sys.exit(0)
     if FLAGS.mode == "":
         print("--mode was not passed in")
@@ -168,7 +167,6 @@ def main():
     from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
-    from subaligner.utils import Utils
 
     try:
         if FLAGS.video_path.lower().startswith("http"):

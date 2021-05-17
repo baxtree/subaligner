@@ -289,6 +289,15 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual("/path/to/root", root)
         self.assertEqual("ext1.ext2", extension)
 
+    def test_get_stretch_language_codes(self):
+        self.assertEqual(87, len(Undertest.get_stretch_language_codes()))
+
+    def test_get_misc_language_codes(self):
+        self.assertEqual(200, len(Undertest.get_misc_language_codes()))
+
+    def test_get_language_table(self):
+        self.assertEqual(200, len(Undertest.get_language_table()))
+
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):
         self._assert_exception_on_subproces(lambda: Undertest.srt2vtt(self.real_srt_path, "output"), mock_communicate)
