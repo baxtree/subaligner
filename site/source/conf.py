@@ -83,7 +83,8 @@ autodoc_mock_imports = [
     "captionstransformer",
     "bs4",
     "transformers",
-    "pycountry"
+    "pycountry",
+    "tqdm",
 ]
 
 def setup(app):
