@@ -86,12 +86,16 @@ def main():
         sys.exit(0)
     if FLAGS.input_subtitle_path == "":
         print("--input_subtitle_path was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.output_subtitle_path == "":
         print("--output_subtitle_path was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.output_subtitle_path.endswith(".sub") and FLAGS.frame_rate is None:
         print("--frame_rate was not passed in for conversion to MicroDVD")
+        parser.print_usage()
+        sys.exit(21)
 
     local_subtitle_path = FLAGS.input_subtitle_path
 

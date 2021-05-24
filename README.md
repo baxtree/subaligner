@@ -94,6 +94,12 @@ $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 ```
 ```
+# Run batch alignment
+
+$ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
+$ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+```
+```
 # Run alignments with pipx
 
 $ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
@@ -116,7 +122,7 @@ $ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/vide
 $ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass -h`, `subaligner_2pass -h` or `subaligner -h`.
-Additional utilities can be used after consulting `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
+Additional utilities can be used after consulting `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
 
 ![](figures/screencast.gif)
 ## Supported Formats

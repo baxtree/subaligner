@@ -104,12 +104,15 @@ def main():
 
     if FLAGS.video_directory == "":
         print("--video_directory was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_directory == "":
         print("--subtitle_directory was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.training_output_directory == "":
         print("--training_output_directory was not passed in")
+        parser.print_usage()
         sys.exit(21)
 
     verbose = FLAGS.debug

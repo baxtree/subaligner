@@ -209,9 +209,11 @@ Each subtitle file and its companion audiovisual file need to share the same bas
 
     if FLAGS.training_output_directory == "":
         print("--training_output_directory was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.sound_effect_end_marker is not None and FLAGS.sound_effect_start_marker is None:
         print("--sound_effect_start_marker was not passed in when --sound_effect_end_marker was in use")
+        parser.print_usage()
         sys.exit(21)
 
     verbose = FLAGS.debug
@@ -243,12 +245,18 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         if not FLAGS.resume:
             if FLAGS.video_directory == "":
                 print("--video_directory was not passed in")
+                parser.print_usage()
                 sys.exit(21)
             if FLAGS.subtitle_directory == "":
                 print("--subtitle_directory was not passed in")
+                parser.print_usage()
                 sys.exit(21)
-            video_file_paths = [os.path.abspath(os.path.join(FLAGS.video_directory, p)) for p in os.listdir(FLAGS.video_directory) if not p.startswith(".")]
-            subtitle_file_paths = [os.path.abspath(os.path.join(FLAGS.subtitle_directory, p)) for p in os.listdir(FLAGS.subtitle_directory) if not p.startswith(".")]
+            video_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
+                                os.walk(FLAGS.video_directory) for p in files if not p.startswith(".")]
+            video_file_paths = sorted(video_file_paths, key=lambda x: os.path.splitext(os.path.basename(x))[0])
+            subtitle_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
+                                   os.walk(FLAGS.subtitle_directory) for p in files if not p.startswith(".")]
+            subtitle_file_paths = sorted(subtitle_file_paths, key=lambda x: os.path.splitext(os.path.basename(x))[0])
         if FLAGS.use_training_dump:
             print("Use data dump from previous training and passed-in video and subtitle directories will be ignored")
             video_file_paths = subtitle_file_paths = None
