@@ -50,7 +50,6 @@ pycountry~=20.7.3
 pydot==1.2.4
 pydot-ng==1.0.0
 pydotplus==2.0.2
-pylint==2.5.0
 pyparsing==2.2.0
 pyprof2calltree==1.4.3
 pysrt==1.1.1
