@@ -241,7 +241,7 @@ def subtitle_dir(step, sub_dir):
     step.context.sub_dir = os.path.join(PWD, "..", "..", "subaligner", "resource", sub_dir)
 
 
-@given('I want to save the output in directory "{output_dir:S}"')
+@given('I want to save the training output in directory "{output_dir:S}"')
 def output_dir(step, output_dir):
     step.context.training_output = os.path.join(step.context.temp_dir, output_dir)
 
@@ -336,12 +336,36 @@ def run_subtitle_converter_with_translation(step, language_pair, output_subtitle
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@before.each_scenario(on_tags="train or hyperparameter-tuning")
+@given('I want to save the alignment output in directory "{aligned_dir:S}"')
+def aligned_dir(step, aligned_dir):
+    step.context.aligning_output = os.path.join(step.context.temp_dir, aligned_dir)
+
+
+@when('I run the subaligner_batch on them with {mode:S} stage')
+def run_subaligner_batch(step, mode):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_batch"),
+        "-m", mode,
+        "-vd", step.context.av_dir,
+        "-sd", step.context.sub_dir,
+        "-od", step.context.aligning_output,
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@then('a new subtitle file "{file_name:S}" is generated in the above output directory')
+def expect_result_in_aligning_output(step, file_name):
+    output_file_path = os.path.join(step.context.aligning_output, file_name)
+    assert step.context.exit_code == 0
+    assert os.path.isfile(output_file_path) is True
+
+
+@before.each_scenario(on_tags="train or hyperparameter-tuning or batch")
 def create_training_output_dir(scenario):
     scenario.context.temp_dir = tempfile.mkdtemp()
 
 
-@after.each_scenario(on_tags="train or hyperparameter-tuning")
+@after.each_scenario(on_tags="train or hyperparameter-tuning or batch")
 def remove_training_output_dir(scenario):
     if os.path.isdir(scenario.context.temp_dir):
         shutil.rmtree(scenario.context.temp_dir)

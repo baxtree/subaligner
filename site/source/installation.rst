@@ -54,6 +54,8 @@ to create a virtual environment and set up all the dependencies:
     (.venv) $ subaligner --help
     (.venv) $ subaligner_1pass --help
     (.venv) $ subaligner_2pass --help
+    (.venv) $ subaligner_batch --help
+    (.venv) $ subaligner_convert --help
     (.venv) $ subaligner_train --help
     (.venv) $ subaligner_tune --help
 
