@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/baxtree/subaligner.svg?branch=master)](https://travis-ci.com/baxtree/subaligner) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
@@ -19,14 +19,14 @@ $ brew install ffmpeg espeak
 ```
 # Install from PyPI (pre-emptive NumPy)
 $ pip install -U pip
-$ pip install 'numpy<1.20.0'
+$ pip install 'numpy~=1.19.2'
 $ pip install subaligner
 ```
 or
 ```
 # Install via pipx
 $ pip install -U pip pipx
-$ pipx install 'numpy<1.20.0'
+$ pipx install 'numpy~=1.19.2'
 $ pipx install subaligner
 ```
 or
@@ -34,7 +34,7 @@ or
 # Install from GitHub via Pipenv
 ...
 [packages]
-numpy = {version='numpy<1.20.0'}
+numpy = {version='numpy~=1.19.2'}
 subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
 ...
 ```
@@ -44,7 +44,7 @@ or
 
 $ git clone git@github.com:baxtree/subaligner.git
 $ cd subaligner
-$ pip install 'numpy<1.20.0'
+$ pip install 'numpy~=1.19.2'
 $ python setup.py install
 ```
 or
@@ -94,6 +94,12 @@ $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 ```
 ```
+# Run batch alignment against directories
+
+$ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
+$ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+```
+```
 # Run alignments with pipx
 
 $ pipx run subaligner -m single -v video.mp4 -s subtitle.srt
@@ -116,7 +122,7 @@ $ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/vide
 $ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass -h`, `subaligner_2pass -h` or `subaligner -h`.
-Additional utilities can be used after consulting `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
+Additional utilities can be used after consulting `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
 
 ![](figures/screencast.gif)
 ## Supported Formats

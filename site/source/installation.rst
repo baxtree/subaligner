@@ -16,20 +16,20 @@ Installation
 **Install Subaligner via PyPI (pre-emptive NumPy)**::
 
     $ pip install -U pip
-    $ pip install 'numpy<1.20.0'
+    $ pip install 'numpy~=1.19.2'
     $ pip install subaligner
 
 **Install Subaligner via pipx**::
 
     $ pip install -U pip pipx
-    $ pipx install 'numpy<1.20.0'
+    $ pipx install 'numpy~=1.19.2'
     $ pipx install subaligner
 
 **Install from GitHub via Pipenv**::
 
     ...
     [packages]
-    numpy = {version='numpy<1.20.0'}
+    numpy = {version='numpy~=1.19.2'}
     subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
     ...
 
@@ -54,6 +54,8 @@ to create a virtual environment and set up all the dependencies:
     (.venv) $ subaligner --help
     (.venv) $ subaligner_1pass --help
     (.venv) $ subaligner_2pass --help
+    (.venv) $ subaligner_batch --help
+    (.venv) $ subaligner_convert --help
     (.venv) $ subaligner_train --help
     (.venv) $ subaligner_tune --help
 

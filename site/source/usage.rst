@@ -36,6 +36,11 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 
+**Run batch alignment against directories**::
+
+    (.venv) $ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
+    (.venv) $ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+
 **Run alignments with the docker image**::
 
     $ docker pull baxtree/subaligner

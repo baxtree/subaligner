@@ -130,15 +130,19 @@ def main():
         sys.exit(0)
     if FLAGS.video_path == "":
         print("--video_path was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_path == "":
         print("--subtitle_path was not passed in")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_path.lower().startswith("http") and FLAGS.output == "":
         print("--output was not passed in for alignment on a remote subtitle file")
+        parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
         print("--output was not passed in for alignment on embedded subtitles")
+        parser.print_usage()
         sys.exit(21)
 
     local_video_path = FLAGS.video_path
@@ -181,6 +185,7 @@ def main():
                     Utils.extract_matroska_subtitle(local_video_path, int(params["stream_index"]), local_subtitle_path)
             else:
                 print("Embedded subtitle selector cannot be empty")
+                parser.print_usage()
                 sys.exit(21)
 
         predictor = Predictor()
