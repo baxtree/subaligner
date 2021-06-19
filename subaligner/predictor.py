@@ -468,32 +468,32 @@ class Predictor(Singleton):
         task = Task(config_string=task_config_string)
 
         try:
-            segment_path, _ = MediaHelper.extract_audio_from_start_to_end(
-                audio_file_path,
-                str(subs[0].start),
-                str(subs[len(subs) - 1].end),
-            )
-
-            # Create a text file for DTW alignments
-            root, _ = os.path.splitext(segment_path)
-            text_file_path = "{}.txt".format(root)
-
-            with open(text_file_path, "w", encoding="utf8") as text_file:
-                for sub_new in subs:
-                    text_file.write(sub_new.text)
-                    text_file.write(os.linesep * 2)
-
-            task.audio_file_path_absolute = segment_path
-            task.text_file_path_absolute = text_file_path
-            task.sync_map_file_path_absolute = "{}.srt".format(root)
-
-            tee = False
-            if Logger.VERBOSE:
-                tee = True
-            if Logger.QUIET:
-                tee = False
-
             with self.__lock:
+                segment_path, _ = MediaHelper.extract_audio_from_start_to_end(
+                    audio_file_path,
+                    str(subs[0].start),
+                    str(subs[len(subs) - 1].end),
+                )
+
+                # Create a text file for DTW alignments
+                root, _ = os.path.splitext(segment_path)
+                text_file_path = "{}.txt".format(root)
+
+                with open(text_file_path, "w", encoding="utf8") as text_file:
+                    for sub_new in subs:
+                        text_file.write(sub_new.text)
+                        text_file.write(os.linesep * 2)
+
+                task.audio_file_path_absolute = segment_path
+                task.text_file_path_absolute = text_file_path
+                task.sync_map_file_path_absolute = "{}.srt".format(root)
+
+                tee = False
+                if Logger.VERBOSE:
+                    tee = True
+                if Logger.QUIET:
+                    tee = False
+
                 # Execute the task
                 ExecuteTask(
                     task=task,
