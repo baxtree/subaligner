@@ -19,14 +19,14 @@ $ brew install ffmpeg espeak
 ```
 # Install from PyPI (pre-emptive NumPy)
 $ pip install -U pip
-$ pip install 'numpy<1.20.0'
+$ pip install 'numpy~=1.19.2'
 $ pip install subaligner
 ```
 or
 ```
 # Install via pipx
 $ pip install -U pip pipx
-$ pipx install 'numpy<1.20.0'
+$ pipx install 'numpy~=1.19.2'
 $ pipx install subaligner
 ```
 or
@@ -34,7 +34,7 @@ or
 # Install from GitHub via Pipenv
 ...
 [packages]
-numpy = {version='numpy<1.20.0'}
+numpy = {version='numpy~=1.19.2'}
 subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
 ...
 ```
@@ -44,7 +44,7 @@ or
 
 $ git clone git@github.com:baxtree/subaligner.git
 $ cd subaligner
-$ pip install 'numpy<1.20.0'
+$ pip install 'numpy~=1.19.2'
 $ python setup.py install
 ```
 or
