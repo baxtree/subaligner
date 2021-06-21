@@ -20,8 +20,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Dependency installation
         run: |
-          apt-get -y install espeak libespeak1 libespeak-dev espeak-data
-          apt-get -y install libsndfile-dev
+          sudo apt-get -y install espeak libespeak1 libespeak-dev espeak-data
+          sudo apt-get -y install libsndfile-dev
           python -m pip install --upgrade pip
           cat requirements.txt | xargs -L 1 pip install
           cat requirements-dev.txt | xargs -L 1 pip install
