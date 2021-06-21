@@ -1,0 +1,40 @@
+name: Main
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Dependency installation
+        run: |
+          apt-get -y install espeak libespeak1 libespeak-dev espeak-data
+          apt-get -y install libsndfile-dev
+          python -m pip install --upgrade pip
+          cat requirements.txt | xargs -L 1 pip install
+          cat requirements-dev.txt | xargs -L 1 pip install
+          pip install -e . --ignore-installed
+      - name: Linting
+        run: |
+          pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
+      - name: Unit tests and converage
+        run: |
+          coverage run -m unittest discover
+          coverage combine
+          bash <(curl -s https://codecov.io/bash)
+      - name: Integration tests
+        run: |
+          radish -b tests/integration/radish tests/integration/feature
+
