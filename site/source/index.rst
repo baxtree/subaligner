@@ -6,6 +6,11 @@
 Welcome to Subaligner's documentation!
 ======================================
 
+.. image:: ../../figures/subaligner.png
+   :width: 200
+   :align: center
+   :alt: Subaligner
+
 Given an out-of-sync subtitle file along with a piece of audiovisual content carrying speeches described by it,
 Subaligner provides a one-stop solution on automatic subtitle synchronisation and translation with pretrained deep neural networks
 and forced alignments. In essence, aligning subtitles is a dual-stage process with a Bidirectional Long Short-Term Memory network trained
