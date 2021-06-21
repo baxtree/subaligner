@@ -100,8 +100,8 @@ $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 ```
 # Run batch alignment against directories
 
-$ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
-$ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+$ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
+$ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
 ```
 ```
 # Run alignments with pipx
