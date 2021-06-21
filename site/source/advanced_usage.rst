@@ -39,7 +39,7 @@ Embeddings extracted from your media files can be reused with `-utd` or `--use_t
 model of another kind (instead of re-using the same model on training resumption) without going through the feature embedding process,
 which could take quite long to finish for a large dataset so as to be unnecessary if there is no change on it.
 
-**Ignore sound effects::
+**Ignore sound effects**::
 
     (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory --sound_effect_start_marker "(" --sound_effect_end_marker ")"
 

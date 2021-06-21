@@ -114,7 +114,8 @@ manual: clean-manual ## generate manual pages
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements-site.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	SPHINXAPIDOC=../.$(PYTHON)/bin/sphinx-apidoc SPHINXBUILD=../.$(PYTHON)/bin/sphinx-build make -C ./site html
+    SPHINXAPIDOC=../.$(PYTHON)/bin/sphinx-apidoc SPHINXBUILD=../.$(PYTHON)/bin/sphinx-build make -C ./site html; \
+	.$(PYTHON)/bin/python -m sphinx -T -b html -d ./site/build/doctrees -D language=en ./site/source ./site/build/html; \
 	$(BROWSER) ./site/build/html/index.html
 
 test-dist:

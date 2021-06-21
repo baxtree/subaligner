@@ -1,9 +1,13 @@
-[![Build Status](https://travis-ci.com/baxtree/subaligner.svg?branch=master)](https://travis-ci.com/baxtree/subaligner) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
+[![Build Status](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml/badge.svg?branch=master)](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml?query=branch%3Amaster) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
 [![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
+
+<div align="center">
+  <img src="./figures/subaligner.png" alt="subaligner" width="200" />
+</div>
 
 ## Dependencies
 [FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
@@ -96,8 +100,8 @@ $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 ```
 # Run batch alignment against directories
 
-$ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
-$ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+$ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
+$ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
 ```
 ```
 # Run alignments with pipx
