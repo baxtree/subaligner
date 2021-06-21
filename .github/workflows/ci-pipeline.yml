@@ -1,4 +1,4 @@
-name: Main
+name: ci pipeline
 
 on:
   - push
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.7]
 
     steps:
       - uses: actions/checkout@v2
@@ -35,6 +35,7 @@ jobs:
         run: |
           coverage run -m unittest discover
           coverage combine
+          coverage xml
           bash <(curl -s https://codecov.io/bash)
       - name: Integration tests
         run: |
