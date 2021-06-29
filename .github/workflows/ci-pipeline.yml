@@ -26,12 +26,13 @@ jobs:
           sudo apt-get -y install libsndfile-dev
           python -m pip install --upgrade pip
           cat requirements.txt | xargs -L 1 pip install
+          cat requirements-extra.txt | xargs -L 1 pip install
           cat requirements-dev.txt | xargs -L 1 pip install
           pip install -e . --ignore-installed
       - name: Linting
         run: |
           pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
-      - name: Unit tests and converage
+      - name: Unit tests and coverage
         run: |
           coverage run -m unittest discover
           coverage combine

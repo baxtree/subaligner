@@ -1,6 +1,5 @@
 absl-py~=0.10
 astor==0.7.1
-astroid~=2.5.6
 audioread==2.1.5
 beautifulsoup4<4.9.0
 bleach==3.3.0
@@ -50,12 +49,10 @@ pycountry~=20.7.3
 pydot==1.2.4
 pydot-ng==1.0.0
 pydotplus==2.0.2
-pyparsing==2.2.0
 pyprof2calltree==1.4.3
 pysrt==1.1.1
 pysubs2==0.2.4
 pystack-debugger==0.8.0
-python-dateutil==2.7.2
 pytz==2018.4
 PyYAML>=4.2b1
 requests~=2.25.1
@@ -79,4 +76,3 @@ urllib3~=1.26.5
 Werkzeug>=0.15.3
 zict==0.1.3
 zipp==0.6.0
-aeneas==1.7.3.0

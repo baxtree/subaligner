@@ -11,12 +11,23 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-if "STRETCH_OFF" not in os.environ:
-    with open("requirements.txt") as requirements_file:
-        requirements = requirements_file.read().splitlines()[::-1]
-else:
-    with open("requirements-app.txt") as requirements_file:
-        requirements = requirements_file.read().splitlines()[::-1]
+with open("requirements.txt") as requirements_file:
+    requirements = requirements_file.read().splitlines()[::-1]
+
+with open("requirements-extra.txt") as extra_requirements_file:
+    extra_requirements = extra_requirements_file.read().splitlines()[::-1]
+
+with open("requirements-site.txt") as docs_requirements_file:
+    docs_requirements = docs_requirements_file.read().splitlines()[::-1]
+
+with open("requirements-dev.txt") as dev_requirements_file:
+    dev_requirements = dev_requirements_file.read().splitlines()[::-1]
+
+EXTRA_DEPENDENCIES = {
+    "extra": extra_requirements,
+    "docs": docs_requirements,
+    "dev": extra_requirements + dev_requirements,
+}
 
 setup(name="subaligner",
       version=__version__,
@@ -27,7 +38,8 @@ setup(name="subaligner",
           "Programming Language :: Python :: 3.6",
           "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
-          "Programming Language :: Python :: 3.9"
+          "Programming Language :: Python :: 3.9",
+          "Intended Audience :: Developers",
       ],
       license="MIT",
       url="https://subaligner.readthedocs.io/en/latest/",
@@ -56,7 +68,7 @@ setup(name="subaligner",
       },
       install_requires=requirements,
       test_suite="tests.subaligner",
-      setup_requires=["numpy>=1.14.1,<1.18.0"],
+      extras_require=EXTRA_DEPENDENCIES,
       scripts=[
           "bin/subaligner",
           "bin/subaligner_1pass",

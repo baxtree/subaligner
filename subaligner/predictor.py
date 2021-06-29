@@ -5,6 +5,8 @@ import threading
 import concurrent.futures
 import gc
 import math
+import sys
+import pkg_resources
 import numpy as np
 import multiprocessing as mp
 
@@ -20,6 +22,7 @@ from .subtitle import Subtitle
 from .hyperparameters import Hyperparameters
 from .exception import TerminalException
 from .exception import NoFrameRateException
+from .exception import DependencyMissingException
 from .logger import Logger
 
 
@@ -455,6 +458,9 @@ class Predictor(Singleton):
             self.__network = Network.get_from_model(model_path, hyperparams)
 
     def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str, stretch_in_lang: str) -> List[SubRipItem]:
+        if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
+            raise DependencyMissingException('Alignment has been configured to use extra features. Please install "subaligner[extra]" and try again.')
+
         from aeneas.executetask import ExecuteTask
         from aeneas.task import Task
         from aeneas.runtimeconfiguration import RuntimeConfiguration

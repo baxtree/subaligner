@@ -10,10 +10,10 @@ optional arguments:
   -h, --help            show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
-  -so, --stretch_off    Switch off stretch on subtitles for non-English speech
+  -so, --stretch_on    Switch on stretch on subtitles
   -sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --stretch_in_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].
-                        NB: This will be ignored if either -so or --stretch_off is present
+                        NB: This will be ignored if neither -so nor --stretch_on is present
   -fos, --exit_segfail  Exit on any segment alignment failures
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
@@ -77,9 +77,9 @@ def main():
     )
     parser.add_argument(
         "-so",
-        "--stretch_off",
+        "--stretch_on",
         action="store_true",
-        help="Switch off stretch on subtitles for non-English speech",
+        help="Switch on stretch on subtitles",
     )
     from subaligner.utils import Utils
     parser.add_argument(
@@ -88,7 +88,7 @@ def main():
         type=str,
         choices=Utils.get_stretch_language_codes(),
         default="eng",
-        help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
+        help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if neither -so nor --stretch_on is present",
     )
     parser.add_argument(
         "-fos",
@@ -148,7 +148,7 @@ def main():
     local_video_path = FLAGS.video_path
     local_subtitle_path = FLAGS.subtitle_path
     exit_segfail = FLAGS.exit_segfail
-    stretch = not FLAGS.stretch_off
+    stretch = FLAGS.stretch_on
     stretch_in_lang = FLAGS.stretch_in_language
 
     from subaligner.logger import Logger

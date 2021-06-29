@@ -16,22 +16,26 @@ Installation
 **Install Subaligner via PyPI (pre-emptive NumPy)**::
 
     $ pip install -U pip
-    $ pip install 'numpy~=1.19.2'
     $ pip install subaligner
 
 **Install Subaligner via pipx**::
 
     $ pip install -U pip pipx
-    $ pipx install 'numpy~=1.19.2'
     $ pipx install subaligner
 
 **Install from GitHub via Pipenv**::
 
     ...
     [packages]
-    numpy = {version='numpy~=1.19.2'}
     subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
     ...
+
+**Install dependencies for enabling extra features::
+
+    $ pip install subaligner[extra]
+
+**Install dependencies for enabling the development environment**::
+    $ pip install subaligner[dev]
 
 **Use dockerised installation**::
 

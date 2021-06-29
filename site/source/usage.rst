@@ -61,9 +61,9 @@ Make sure you have got the virtual environment activated upfront.
     $ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
     $ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
 
-Currently the stretching is experimental and only works for speech and subtitles in English.
+Currently the stretching is experimental and make sure subaligner[extra] is installed before switching it on as shown below.
 
-**Use flag "-so" to switch off stretching when aligning subtitles not in English**::
+**Use flag "-so" to switch on stretching when aligning subtitles**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -so
     or
