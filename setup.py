@@ -14,19 +14,24 @@ with open("README.md") as readme_file:
 with open("requirements.txt") as requirements_file:
     requirements = requirements_file.read().splitlines()[::-1]
 
-with open("requirements-extra.txt") as extra_requirements_file:
-    extra_requirements = extra_requirements_file.read().splitlines()[::-1]
+with open("requirements-stretch.txt") as stretch_requirements_file:
+    stretch_requirements = stretch_requirements_file.read().splitlines()[::-1]
 
 with open("requirements-site.txt") as docs_requirements_file:
     docs_requirements = docs_requirements_file.read().splitlines()[::-1]
+
+with open("requirements-translation.txt") as translate_requirements_file:
+    translate_requirements = translate_requirements_file.read().splitlines()[::-1]
 
 with open("requirements-dev.txt") as dev_requirements_file:
     dev_requirements = dev_requirements_file.read().splitlines()[::-1]
 
 EXTRA_DEPENDENCIES = {
-    "extra": extra_requirements,
+    "harmony": stretch_requirements + translate_requirements,
+    "dev": dev_requirements + stretch_requirements + translate_requirements + docs_requirements,
     "docs": docs_requirements,
-    "dev": extra_requirements + dev_requirements,
+    "stretch": stretch_requirements,
+    "translation": translate_requirements,
 }
 
 setup(name="subaligner",

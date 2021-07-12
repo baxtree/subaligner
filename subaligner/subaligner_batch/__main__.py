@@ -42,16 +42,17 @@ import argparse
 import sys
 import traceback
 import os
+import pkg_resources
 
 
 def main():
     if sys.version_info.major != 3:
-        print("Cannot find Python 3")
+        print("ERROR: Cannot find Python 3")
         sys.exit(20)
     try:
         import subaligner
     except ModuleNotFoundError:
-        print("Subaligner is not installed")
+        print("ERROR: Subaligner is not installed")
         sys.exit(20)
 
     from subaligner._version import __version__
@@ -142,32 +143,36 @@ Each file pair needs to share the same base filename, the part before the extens
         print("\n".join(Utils.get_language_table()))
         sys.exit(0)
     if FLAGS.mode == "":
-        print("--mode was not passed in")
+        print("ERROR: --mode was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.video_directory == "":
-        print("--video_directory was not passed in")
+        print("ERROR: --video_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_directory == "":
-        print("--subtitle_directory was not passed in")
+        print("ERROR: --subtitle_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.output_directory == "":
-        print("--output_directory was not passed in")
+        print("ERROR: --output_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if os.path.abspath(FLAGS.subtitle_directory) == os.path.abspath(FLAGS.output_directory):
-        print("The output directory cannot be set to the same as the input subtitle directory")
+        print("ERROR: The output directory cannot be set to the same as the input subtitle directory")
         parser.print_usage()
         sys.exit(21)
+    if FLAGS.translate is not None:
+        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+            sys.exit(21)
 
     video_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
                         os.walk(FLAGS.video_directory) for p in files if not p.startswith(".")]
     subtitle_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
                            os.walk(FLAGS.subtitle_directory) for p in files if not p.startswith(".")]
     if len(video_file_paths) != len(subtitle_file_paths):
-        print("The numbers of input videos and subtitles do not match")
+        print("ERROR: The numbers of input videos and subtitles do not match")
         parser.print_usage()
         sys.exit(21)
 
@@ -183,7 +188,6 @@ Each file pair needs to share the same base filename, the part before the extens
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
-    from subaligner.translator import Translator
     from subaligner.subtitle import Subtitle
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
@@ -216,6 +220,7 @@ Each file pair needs to share the same base filename, the part before the extens
                                                     ".".join(os.path.basename(local_subtitle_path).rsplit(".", 1)).replace(".stl", ".srt")))
 
             if FLAGS.translate is not None:
+                from subaligner.translator import Translator
                 source, target = FLAGS.translate.split(",")
                 translator = Translator(source, target)
                 aligned_subs = translator.translate(aligned_subs)
@@ -226,7 +231,7 @@ Each file pair needs to share the same base filename, the part before the extens
             log_loss = predictor.get_log_loss(voice_probabilities, aligned_subs)
             if log_loss is None or log_loss > FLAGS.max_logloss:
                 print(
-                    "Alignment failed with a too high loss value: {} for {} and {}".format(log_loss, local_video_path, local_subtitle_path)
+                    "ERROR: Alignment failed with a too high loss value: {} for {} and {}".format(log_loss, local_video_path, local_subtitle_path)
                 )
                 failures.append((local_video_path, local_subtitle_path))
                 continue
@@ -234,21 +239,21 @@ Each file pair needs to share the same base filename, the part before the extens
             print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
         except UnsupportedFormatException as e:
             print(
-                "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+                "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
             )
             traceback.print_tb(e.__traceback__)
             failures.append((local_video_path, local_subtitle_path))
             continue
         except TerminalException as e:
             print(
-                "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+                "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
             )
             traceback.print_tb(e.__traceback__)
             failures.append((local_video_path, local_subtitle_path))
             continue
         except Exception as e:
             print(
-                "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+                "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
             )
             traceback.print_tb(e.__traceback__)
             failures.append((local_video_path, local_subtitle_path))

@@ -16,4 +16,4 @@ RUN ["/bin/bash", "-c", "yum update -y &&\
     yum install -y python36-setuptools &&\
     easy_install-3.6 pip &&\
     pip install --upgrade pip &&\
-    python3 -m pip install subaligner[extra]==${RELEASE_VERSION:1}"]
+    python3 -m pip install 'subaligner[harmony]==${RELEASE_VERSION:1}'"]

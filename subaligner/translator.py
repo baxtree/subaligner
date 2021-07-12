@@ -8,6 +8,7 @@ from transformers import MarianMTModel, MarianTokenizer
 from typing import List, Generator
 from .singleton import Singleton
 from .logger import Logger
+from .exception import DependencyMissingException
 
 
 class Translator(Singleton):
@@ -56,6 +57,7 @@ class Translator(Singleton):
         Raises:
             NotImplementedError -- Thrown when the model of the specified language pair is not found.
         """
+
         self.__initialise_model(src_language, tgt_language)
 
     @staticmethod

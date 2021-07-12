@@ -62,13 +62,13 @@ import traceback
 
 def main():
     if sys.version_info.major != 3:
-        print("Cannot find Python 3")
+        print("ERROR: Cannot find Python 3")
         sys.exit(20)
     try:
         import subaligner
         del subaligner
     except ModuleNotFoundError:
-        print("Subaligner is not installed")
+        print("ERROR: Subaligner is not installed")
         sys.exit(20)
 
     from subaligner._version import __version__
@@ -208,11 +208,11 @@ Each subtitle file and its companion audiovisual file need to share the same bas
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.training_output_directory == "":
-        print("--training_output_directory was not passed in")
+        print("ERROR: --training_output_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.sound_effect_end_marker is not None and FLAGS.sound_effect_start_marker is None:
-        print("--sound_effect_start_marker was not passed in when --sound_effect_end_marker was in use")
+        print("ERROR: --sound_effect_start_marker was not passed in when --sound_effect_end_marker was in use")
         parser.print_usage()
         sys.exit(21)
 
@@ -244,11 +244,11 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         video_file_paths = subtitle_file_paths = None
         if not FLAGS.resume:
             if FLAGS.video_directory == "":
-                print("--video_directory was not passed in")
+                print("ERROR: --video_directory was not passed in")
                 parser.print_usage()
                 sys.exit(21)
             if FLAGS.subtitle_directory == "":
-                print("--subtitle_directory was not passed in")
+                print("ERROR: --subtitle_directory was not passed in")
                 parser.print_usage()
                 sys.exit(21)
             video_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
@@ -288,19 +288,19 @@ Each subtitle file and its companion audiovisual file need to share the same bas
                       FLAGS.sound_effect_end_marker)
     except UnsupportedFormatException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "ERROR: {}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
         traceback.print_tb(e.__traceback__)
         sys.exit(23)
     except TerminalException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "ERROR: {}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
         traceback.print_tb(e.__traceback__)
         sys.exit(24)
     except Exception as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "ERROR: {}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
         traceback.print_tb(e.__traceback__)
         sys.exit(1)

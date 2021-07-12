@@ -458,9 +458,6 @@ class Predictor(Singleton):
             self.__network = Network.get_from_model(model_path, hyperparams)
 
     def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str, stretch_in_lang: str) -> List[SubRipItem]:
-        if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
-            raise DependencyMissingException('Alignment has been configured to use extra features. Please install "subaligner[extra]" and try again.')
-
         from aeneas.executetask import ExecuteTask
         from aeneas.task import Task
         from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -613,7 +610,7 @@ class Predictor(Singleton):
         else:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
-            raise TerminalException("Error: No subtitles passed in")
+            raise TerminalException("ERROR: No subtitles passed in")
         with self.__lock:
             try:
                 train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
@@ -652,7 +649,7 @@ class Predictor(Singleton):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
             raise TerminalException(
-                "Error: Audio is too short and no voice was detected"
+                "ERROR: Audio is too short and no voice was detected"
             )
 
         result["time_predictions"] = str(datetime.datetime.now() - pred_start)
@@ -685,7 +682,7 @@ class Predictor(Singleton):
         else:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
-            raise ValueError("Error: No subtitles passed in")
+            raise ValueError("ERROR: No subtitles passed in")
 
         if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
             if os.path.exists(audio_file_path):

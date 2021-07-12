@@ -26,7 +26,8 @@ jobs:
           sudo apt-get -y install libsndfile-dev
           python -m pip install --upgrade pip
           cat requirements.txt | xargs -L 1 pip install
-          cat requirements-extra.txt | xargs -L 1 pip install
+          cat requirements-stretch.txt | xargs -L 1 pip install
+          cat requirements-translation.txt | xargs -L 1 pip install
           cat requirements-dev.txt | xargs -L 1 pip install
           pip install -e . --ignore-installed
       - name: Linting

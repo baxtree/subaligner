@@ -10,22 +10,51 @@
 </div>
 
 ## Dependencies
-[FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
+Required by basic: [FFmpeg](https://www.ffmpeg.org/)
 ```
-$ apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
+$ apt-get install ffmpeg
 ```
 or
 ```
-$ brew install ffmpeg espeak
+$ brew install ffmpeg
 ```
 
-## Installation
+## Basic Installation
 ```
-# Install from PyPI
 $ pip install -U pip
 $ pip install subaligner
 ```
+
+## Installation with Optional Packages Supporting Additional Features
+```
+# Install dependencies for enabling translation
+
+$ pip install 'subaligner[translation]'
+```
+```
+# Install dependencies for enabling forced alignment
+
+$ pip install 'subaligner[stretch]'
+```
+```
+# Install dependencies for enabling the development environment
+
+$ pip install 'subaligner[dev]'
+```
+Note that both `subaligner[stretch]` and `subaligner[dev]` require additional dependencies to be installed: 
+```
+$ apt-get install espeak libespeak1 libespeak-dev espeak-data
+```
 or
+```
+$ brew install espeak
+```
+To install all supported features:
+```
+$ pip install 'subaligner[harmony]'
+```
+
+## Alternative Installations
 ```
 # Install via pipx
 $ pip install -U pip pipx
@@ -34,10 +63,9 @@ $ pipx install subaligner
 or
 ```
 # Install from GitHub via Pipenv
-...
-[packages]
-subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
-...
+$ pipenv install subaligner
+$ pipenv install 'subaligner[stretch]'
+$ pipenv install 'subaligner[dev]'
 ```
 or
 ```
@@ -46,18 +74,6 @@ or
 $ git clone git@github.com:baxtree/subaligner.git
 $ cd subaligner
 $ python setup.py install
-```
-or
-```
-# Install dependencies for enabling extra features
-
-$ pip install subaligner[extra]
-```
-or
-```
-# Install dependencies for enabling the development environment
-
-$ pip install subaligner[dev]
 ```
 or
 ```

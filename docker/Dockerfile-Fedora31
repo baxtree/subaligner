@@ -19,4 +19,4 @@ RUN ["/bin/bash", "-c", "dnf install -y dnf-utils &&\
     dnf install -y python3-devel &&\
     dnf install -y python3-pip &&\
     pip3 install --upgrade pip &&\
-    python3 -m pip install subaligner[extra]==${RELEASE_VERSION:1}"]
+    python3 -m pip install 'subaligner[harmony]==${RELEASE_VERSION:1}'"]

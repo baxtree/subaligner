@@ -16,4 +16,4 @@ RUN ["/bin/bash", "-c", "pacman --noconfirm -Sy gcc ffmpeg espeak &&\
     pacman --noconfirm -Syu python python-pip &&\
     ln -s /usr/lib/libffi.so.7 /usr/lib/libffi.so.6 &&\
     python -m pip install wheel &&\
-    python -m pip install subaligner[extra]==${RELEASE_VERSION:1}"]
+    python -m pip install 'subaligner[harmony]==${RELEASE_VERSION:1}'"]

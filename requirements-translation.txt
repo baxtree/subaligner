@@ -1,0 +1,5 @@
+pycountry~=20.7.3
+sentencepiece~=0.1.95
+six~=1.15.0
+torch~=1.8.1
+transformers~=4.5.1

@@ -38,16 +38,17 @@ import sys
 import traceback
 import os
 import tempfile
+import pkg_resources
 
 
 def main():
     if sys.version_info.major != 3:
-        print("Cannot find Python 3")
+        print("ERROR: Cannot find Python 3")
         sys.exit(20)
     try:
         import subaligner
     except ModuleNotFoundError:
-        print("Subaligner is not installed")
+        print("ERROR: Subaligner is not installed")
         sys.exit(20)
 
     from subaligner._version import __version__
@@ -129,21 +130,29 @@ def main():
         print("\n".join(Utils.get_language_table()))
         sys.exit(0)
     if FLAGS.video_path == "":
-        print("--video_path was not passed in")
+        print("ERROR: --video_path was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_path == "":
-        print("--subtitle_path was not passed in")
+        print("ERROR: --subtitle_path was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_path.lower().startswith("http") and FLAGS.output == "":
-        print("--output was not passed in for alignment on a remote subtitle file")
+        print("ERROR: --output was not passed in for alignment on a remote subtitle file")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
-        print("--output was not passed in for alignment on embedded subtitles")
+        print("ERROR: --output was not passed in for alignment on embedded subtitles")
         parser.print_usage()
         sys.exit(21)
+    if FLAGS.translate is not None:
+        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+            sys.exit(21)
+    if FLAGS.stretch_on:
+        if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
+            print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
+            sys.exit(21)
 
     local_video_path = FLAGS.video_path
     local_subtitle_path = FLAGS.subtitle_path
@@ -155,7 +164,6 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
-    from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
 
@@ -184,7 +192,7 @@ def main():
                 elif "stream_index" in params:
                     Utils.extract_matroska_subtitle(local_video_path, int(params["stream_index"]), local_subtitle_path)
             else:
-                print("Embedded subtitle selector cannot be empty")
+                print("ERROR: Embedded subtitle selector cannot be empty")
                 parser.print_usage()
                 sys.exit(21)
 
@@ -202,6 +210,7 @@ def main():
             FLAGS.subtitle_path.rsplit(".", 1)).replace(".stl", ".srt") if FLAGS.output == "" else FLAGS.output
 
         if FLAGS.translate is not None:
+            from subaligner.translator import Translator
             source, target = FLAGS.translate.split(",")
             translator = Translator(source, target)
             subs_list = translator.translate(subs)
@@ -212,7 +221,7 @@ def main():
         log_loss = predictor.get_log_loss(voice_probabilities, subs_list)
         if log_loss is None or log_loss > FLAGS.max_logloss:
             print(
-                "Alignment failed with a too high loss value: {}".format(log_loss)
+                "ERROR: Alignment failed with a too high loss value: {}".format(log_loss)
             )
             _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
             sys.exit(22)
@@ -220,21 +229,21 @@ def main():
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
     except UnsupportedFormatException as e:
         print(
-            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+            "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
         sys.exit(23)
     except TerminalException as e:
         print(
-            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+            "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
         sys.exit(24)
     except Exception as e:
         print(
-            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+            "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
