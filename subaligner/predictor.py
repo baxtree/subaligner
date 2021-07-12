@@ -22,7 +22,6 @@ from .subtitle import Subtitle
 from .hyperparameters import Hyperparameters
 from .exception import TerminalException
 from .exception import NoFrameRateException
-from .exception import DependencyMissingException
 from .logger import Logger
 
 

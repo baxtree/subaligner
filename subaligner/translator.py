@@ -8,7 +8,6 @@ from transformers import MarianMTModel, MarianTokenizer
 from typing import List, Generator
 from .singleton import Singleton
 from .logger import Logger
-from .exception import DependencyMissingException
 
 
 class Translator(Singleton):
