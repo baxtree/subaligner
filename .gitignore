@@ -22,6 +22,7 @@ site/build
 site/source/subaligner.rst
 site/source/modules.rst
 site/source/subaligner.subaligner_*.rst
+site/source/subaligner.lib.rst
 *subaligner.egg-info*
 examples/tmp
 examples/training.log
