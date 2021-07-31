@@ -56,6 +56,7 @@ class Translator(Singleton):
         Raises:
             NotImplementedError -- Thrown when the model of the specified language pair is not found.
         """
+
         self.__initialise_model(src_language, tgt_language)
 
     @staticmethod

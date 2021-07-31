@@ -17,10 +17,10 @@ optional arguments:
                         Path to the subtitle directory
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
-  -so, --stretch_off    Switch off stretch on non-English speech and subtitles)
+  -so, --stretch_on    Switch on stretch on subtitles
   -sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --stretch_in_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].
-                        NB: This will be ignored if either -so or --stretch_off is present
+                        NB: This will be ignored if neither -so nor --stretch_on is present
   -fos, --exit_segfail  Exit on any segment alignment failures
   -tod TRAINING_OUTPUT_DIRECTORY, --training_output_directory TRAINING_OUTPUT_DIRECTORY
                         Path to the output directory containing training results
@@ -42,16 +42,17 @@ import argparse
 import sys
 import traceback
 import os
+import pkg_resources
 
 
 def main():
     if sys.version_info.major != 3:
-        print("Cannot find Python 3")
+        print("ERROR: Cannot find Python 3")
         sys.exit(20)
     try:
         import subaligner
     except ModuleNotFoundError:
-        print("Subaligner is not installed")
+        print("ERROR: Subaligner is not installed")
         sys.exit(20)
 
     from subaligner._version import __version__
@@ -90,9 +91,9 @@ Each file pair needs to share the same base filename, the part before the extens
     )
     parser.add_argument(
         "-so",
-        "--stretch_off",
+        "--stretch_on",
         action="store_true",
-        help="Switch off stretch on non-English speech and subtitles)",
+        help="Switch on stretch on subtitles)",
     )
     from subaligner.utils import Utils
     parser.add_argument(
@@ -101,7 +102,7 @@ Each file pair needs to share the same base filename, the part before the extens
         type=str,
         choices=Utils.get_stretch_language_codes(),
         default="eng",
-        help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if either -so or --stretch_off is present",
+        help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if neither -so nor --stretch_on is present",
     )
     parser.add_argument(
         "-fos",
@@ -142,32 +143,36 @@ Each file pair needs to share the same base filename, the part before the extens
         print("\n".join(Utils.get_language_table()))
         sys.exit(0)
     if FLAGS.mode == "":
-        print("--mode was not passed in")
+        print("ERROR: --mode was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.video_directory == "":
-        print("--video_directory was not passed in")
+        print("ERROR: --video_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_directory == "":
-        print("--subtitle_directory was not passed in")
+        print("ERROR: --subtitle_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.output_directory == "":
-        print("--output_directory was not passed in")
+        print("ERROR: --output_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if os.path.abspath(FLAGS.subtitle_directory) == os.path.abspath(FLAGS.output_directory):
-        print("The output directory cannot be set to the same as the input subtitle directory")
+        print("ERROR: The output directory cannot be set to the same as the input subtitle directory")
         parser.print_usage()
         sys.exit(21)
+    if FLAGS.translate is not None:
+        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+            sys.exit(21)
 
     video_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
                         os.walk(FLAGS.video_directory) for p in files if not p.startswith(".")]
     subtitle_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
                            os.walk(FLAGS.subtitle_directory) for p in files if not p.startswith(".")]
     if len(video_file_paths) != len(subtitle_file_paths):
-        print("The numbers of input videos and subtitles do not match")
+        print("ERROR: The numbers of input videos and subtitles do not match")
         parser.print_usage()
         sys.exit(21)
 
@@ -176,14 +181,13 @@ Each file pair needs to share the same base filename, the part before the extens
     video_file_paths = sorted(video_file_paths, key=lambda x: os.path.splitext(os.path.basename(x))[0])
     subtitle_file_paths = sorted(subtitle_file_paths, key=lambda x: os.path.splitext(os.path.basename(x))[0])
     exit_segfail = FLAGS.exit_segfail
-    stretch = not FLAGS.stretch_off
+    stretch = FLAGS.stretch_on
     stretch_in_lang = FLAGS.stretch_in_language
 
     from subaligner.logger import Logger
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.predictor import Predictor
-    from subaligner.translator import Translator
     from subaligner.subtitle import Subtitle
     from subaligner.exception import UnsupportedFormatException
     from subaligner.exception import TerminalException
@@ -216,6 +220,7 @@ Each file pair needs to share the same base filename, the part before the extens
                                                     ".".join(os.path.basename(local_subtitle_path).rsplit(".", 1)).replace(".stl", ".srt")))
 
             if FLAGS.translate is not None:
+                from subaligner.translator import Translator
                 source, target = FLAGS.translate.split(",")
                 translator = Translator(source, target)
                 aligned_subs = translator.translate(aligned_subs)
@@ -226,7 +231,7 @@ Each file pair needs to share the same base filename, the part before the extens
             log_loss = predictor.get_log_loss(voice_probabilities, aligned_subs)
             if log_loss is None or log_loss > FLAGS.max_logloss:
                 print(
-                    "Alignment failed with a too high loss value: {} for {} and {}".format(log_loss, local_video_path, local_subtitle_path)
+                    "ERROR: Alignment failed with a too high loss value: {} for {} and {}".format(log_loss, local_video_path, local_subtitle_path)
                 )
                 failures.append((local_video_path, local_subtitle_path))
                 continue
@@ -234,21 +239,21 @@ Each file pair needs to share the same base filename, the part before the extens
             print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
         except UnsupportedFormatException as e:
             print(
-                "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+                "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
             )
             traceback.print_tb(e.__traceback__)
             failures.append((local_video_path, local_subtitle_path))
             continue
         except TerminalException as e:
             print(
-                "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+                "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
             )
             traceback.print_tb(e.__traceback__)
             failures.append((local_video_path, local_subtitle_path))
             continue
         except Exception as e:
             print(
-                "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+                "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
             )
             traceback.print_tb(e.__traceback__)
             failures.append((local_video_path, local_subtitle_path))

@@ -5,33 +5,53 @@ Installation
 **Install necessary dependencies**::
 
     $ apt-get install ffmpeg
-    $ apt-get install espeak libespeak1 libespeak-dev espeak-data
 
 **or**::
 
-    $ brew install ffmpeg espeak
+    $ brew install ffmpeg
 
 § You may also need to install `HomeBrew <https://brew.sh/>`_.
 
 **Install Subaligner via PyPI (pre-emptive NumPy)**::
 
     $ pip install -U pip
-    $ pip install 'numpy~=1.19.2'
     $ pip install subaligner
+
+**Install dependencies for enabling translation**::
+
+    $ pip install 'subaligner[translation]'
+
+**Pre-install additional dependencies before installing subaligner[stretch] or subaligner[dev]**::
+
+    $ apt-get install espeak libespeak1 libespeak-dev espeak-data
+
+**or**::
+
+    $ brew install espeak
+
+**Install dependencies for enabling forced alignment**::
+
+    $ pip install 'subaligner[stretch]'
+
+**Install dependencies for setting up the development environment**::
+
+    $ pip install 'subaligner[dev]'
+
+**Install all supported features**::
+
+    $ pip install 'subaligner[harmony]'
 
 **Install Subaligner via pipx**::
 
-    $ pip install -U pip pipx
-    $ pipx install 'numpy~=1.19.2'
     $ pipx install subaligner
+    $ pipx install 'subaligner[stretch]'
+    $ pipx install 'subaligner[dev]'
 
 **Install from GitHub via Pipenv**::
 
-    ...
-    [packages]
-    numpy = {version='numpy~=1.19.2'}
-    subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
-    ...
+    $ pipenv install subaligner
+    $ pipenv install 'subaligner[stretch]'
+    $ pipenv install 'subaligner[dev]'
 
 **Use dockerised installation**::
 

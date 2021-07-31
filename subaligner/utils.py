@@ -24,11 +24,11 @@ from captionstransformer.sbv import Reader as SbvReader, Writer as SbvWriter
 from captionstransformer.srt import Reader as SrtReader, Writer as SrtWriter
 from captionstransformer.transcript import Reader as TranscriptReader, Writer as TranscriptWriter
 from bs4 import BeautifulSoup
-from aeneas.language import Language
 from datetime import datetime
 from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple, List, Dict
 from .exception import TerminalException
 from subaligner.lib.to_srt import STL, SRT
+from subaligner.lib.language import Language
 
 
 class Utils(object):

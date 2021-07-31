@@ -11,12 +11,28 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-if "STRETCH_OFF" not in os.environ:
-    with open("requirements.txt") as requirements_file:
-        requirements = requirements_file.read().splitlines()[::-1]
-else:
-    with open("requirements-app.txt") as requirements_file:
-        requirements = requirements_file.read().splitlines()[::-1]
+with open("requirements.txt") as requirements_file:
+    requirements = requirements_file.read().splitlines()[::-1]
+
+with open("requirements-stretch.txt") as stretch_requirements_file:
+    stretch_requirements = stretch_requirements_file.read().splitlines()[::-1]
+
+with open("requirements-site.txt") as docs_requirements_file:
+    docs_requirements = docs_requirements_file.read().splitlines()[::-1]
+
+with open("requirements-translation.txt") as translate_requirements_file:
+    translate_requirements = translate_requirements_file.read().splitlines()[::-1]
+
+with open("requirements-dev.txt") as dev_requirements_file:
+    dev_requirements = dev_requirements_file.read().splitlines()[::-1]
+
+EXTRA_DEPENDENCIES = {
+    "harmony": stretch_requirements + translate_requirements,
+    "dev": dev_requirements + stretch_requirements + translate_requirements + docs_requirements,
+    "docs": docs_requirements,
+    "stretch": stretch_requirements,
+    "translation": translate_requirements,
+}
 
 setup(name="subaligner",
       version=__version__,
@@ -27,11 +43,12 @@ setup(name="subaligner",
           "Programming Language :: Python :: 3.6",
           "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
-          "Programming Language :: Python :: 3.9"
+          "Programming Language :: Python :: 3.9",
+          "Intended Audience :: Developers",
       ],
       license="MIT",
       url="https://subaligner.readthedocs.io/en/latest/",
-      description="Automatically synchronize subtitles to audiovisual content and translate them into various languages with pretrained deep neural networks and forced alignments.",
+      description="Automatically synchronize and translate subtitles with pretrained deep neural networks, forced alignments and transformers.",
       long_description=readme + "\n\n",
       long_description_content_type='text/markdown',
       python_requires=">=3.6",
@@ -56,7 +73,7 @@ setup(name="subaligner",
       },
       install_requires=requirements,
       test_suite="tests.subaligner",
-      setup_requires=["numpy>=1.14.1,<1.18.0"],
+      extras_require=EXTRA_DEPENDENCIES,
       scripts=[
           "bin/subaligner",
           "bin/subaligner_1pass",
