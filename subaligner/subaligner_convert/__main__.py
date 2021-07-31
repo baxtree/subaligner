@@ -27,17 +27,18 @@ import os
 import sys
 import tempfile
 import traceback
+import pkg_resources
 
 
 def main():
     if sys.version_info.major != 3:
-        print("Cannot find Python 3")
+        print("ERROR: Cannot find Python 3")
         sys.exit(20)
     try:
         import subaligner
         del subaligner
     except ModuleNotFoundError:
-        print("Subaligner is not installed")
+        print("ERROR: Subaligner is not installed")
         sys.exit(20)
 
     from subaligner._version import __version__
@@ -85,17 +86,21 @@ def main():
         print("\n".join(Utils.get_language_table()))
         sys.exit(0)
     if FLAGS.input_subtitle_path == "":
-        print("--input_subtitle_path was not passed in")
+        print("ERROR: --input_subtitle_path was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.output_subtitle_path == "":
-        print("--output_subtitle_path was not passed in")
+        print("ERROR: --output_subtitle_path was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.output_subtitle_path.endswith(".sub") and FLAGS.frame_rate is None:
-        print("--frame_rate was not passed in for conversion to MicroDVD")
+        print("ERROR: --frame_rate was not passed in for conversion to MicroDVD")
         parser.print_usage()
         sys.exit(21)
+    if FLAGS.translate is not None:
+        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+            sys.exit(21)
 
     local_subtitle_path = FLAGS.input_subtitle_path
 
@@ -103,7 +108,6 @@ def main():
     Logger.VERBOSE = FLAGS.debug
     Logger.QUIET = FLAGS.quiet
     from subaligner.subtitle import Subtitle
-    from subaligner.translator import Translator
     from subaligner.exception import UnsupportedFormatException, TerminalException
 
     try:
@@ -116,6 +120,7 @@ def main():
         subtitle = Subtitle.load(local_subtitle_path)
 
         if FLAGS.translate is not None:
+            from subaligner.translator import Translator
             source, target = FLAGS.translate.split(",")
             translator = Translator(source, target)
             subs_list = translator.translate(subtitle.subs)
@@ -127,21 +132,21 @@ def main():
         print("Subtitle converted and saved to: {}".format(FLAGS.output_subtitle_path))
     except UnsupportedFormatException as e:
         print(
-            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+            "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(23)
     except TerminalException as e:
         print(
-            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+            "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)
         sys.exit(24)
     except Exception as e:
         print(
-            "{}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
+            "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
         )
         traceback.print_tb(e.__traceback__)
         _remove_tmp_files(FLAGS, local_subtitle_path)

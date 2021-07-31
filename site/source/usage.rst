@@ -38,8 +38,8 @@ Make sure you have got the virtual environment activated upfront.
 
 **Run batch alignment against directories**::
 
-    (.venv) $ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
-    (.venv) $ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+    (.venv) $ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
+    (.venv) $ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
 
 **Run alignments with the docker image**::
 
@@ -61,15 +61,16 @@ Make sure you have got the virtual environment activated upfront.
     $ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
     $ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
 
-Currently the stretching is experimental and only works for speech and subtitles in English.
+Currently the stretching is experimental and make sure subaligner[stretch] is installed before switching it on with `-so`
+or `--stretch_on` as shown below.
 
-**Use flag "-so" to switch off stretching when aligning subtitles not in English**::
+**Switch on stretching when aligning subtitles**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -so
     or
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -so
 
-**Use flag "-o" to save the aligned subtitle to a specific location**::
+**Save the aligned subtitle to a specific location**::
 
     (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
     or

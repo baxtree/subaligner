@@ -1,4 +1,8 @@
-[![Build Status](https://travis-ci.com/baxtree/subaligner.svg?branch=master)](https://travis-ci.com/baxtree/subaligner) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
+<div align="left">
+  <img src="./figures/subaligner.png" alt="subaligner" width="300" />
+</div>
+
+[![Build Status](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml/badge.svg?branch=master)](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml?query=branch%3Amaster) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
@@ -6,37 +10,62 @@
 [![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
 
 ## Dependencies
-[FFmpeg](https://www.ffmpeg.org/) and [eSpeak](http://espeak.sourceforge.net/index.html)
+Required by basic: [FFmpeg](https://www.ffmpeg.org/)
 ```
-$ apt-get install ffmpeg espeak libespeak1 libespeak-dev espeak-data
+$ apt-get install ffmpeg
 ```
 or
 ```
-$ brew install ffmpeg espeak
+$ brew install ffmpeg
 ```
 
-## Installation
+## Basic Installation
 ```
-# Install from PyPI (pre-emptive NumPy)
 $ pip install -U pip
-$ pip install 'numpy~=1.19.2'
 $ pip install subaligner
 ```
+
+## Installation with Optional Packages Supporting Additional Features
+```
+# Install dependencies for enabling translation
+
+$ pip install 'subaligner[translation]'
+```
+```
+# Install dependencies for enabling forced alignment
+
+$ pip install 'subaligner[stretch]'
+```
+```
+# Install dependencies for setting up the development environment
+
+$ pip install 'subaligner[dev]'
+```
+Note that both `subaligner[stretch]` and `subaligner[dev]` require additional dependencies to be pre-installed:
+```
+$ apt-get install espeak libespeak1 libespeak-dev espeak-data
+```
 or
+```
+$ brew install espeak
+```
+To install all supported features:
+```
+$ pip install 'subaligner[harmony]'
+```
+
+## Alternative Installations
 ```
 # Install via pipx
 $ pip install -U pip pipx
-$ pipx install 'numpy~=1.19.2'
 $ pipx install subaligner
 ```
 or
 ```
 # Install from GitHub via Pipenv
-...
-[packages]
-numpy = {version='numpy~=1.19.2'}
-subaligner = {git = "ssh://git@github.com/baxtree/subaligner.git", ref = "<TAG>"}
-...
+$ pipenv install subaligner
+$ pipenv install 'subaligner[stretch]'
+$ pipenv install 'subaligner[dev]'
 ```
 or
 ```
@@ -44,7 +73,6 @@ or
 
 $ git clone git@github.com:baxtree/subaligner.git
 $ cd subaligner
-$ pip install 'numpy~=1.19.2'
 $ python setup.py install
 ```
 or
@@ -96,8 +124,8 @@ $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 ```
 # Run batch alignment against directories
 
-$ subaligner_batch -m single -vd /videos -sd /subtitles -od /aligned_subtitles
-$ subaligner_batch -m dual -vd /videos -sd /subtitles -od /aligned_subtitles
+$ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
+$ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
 ```
 ```
 # Run alignments with pipx

@@ -36,7 +36,7 @@ def kernprof_target():
     output_dir = os.path.join(examples_dir, "tmp")
     os.makedirs(output_dir, exist_ok=True)
     video_file_path = os.path.join(examples_dir, "..", "video.mp4")
-    srt_file_path = os.path.join(examples_dir, "..", "subtitle.srt")
+    srt_file_path = os.path.join(examples_dir, "..", "video.srt")
 
     predictor = Predictor()
     predictor.predict_dual_pass(video_file_path, srt_file_path)

@@ -35,13 +35,13 @@ import traceback
 
 def main():
     if sys.version_info.major != 3:
-        print("Cannot find Python 3")
+        print("ERROR: Cannot find Python 3")
         sys.exit(20)
     try:
         import subaligner
         del subaligner
     except ModuleNotFoundError:
-        print("Subaligner is not installed")
+        print("ERROR: Subaligner is not installed")
         sys.exit(20)
 
     from subaligner._version import __version__
@@ -103,15 +103,15 @@ def main():
     FLAGS, unparsed = parser.parse_known_args()
 
     if FLAGS.video_directory == "":
-        print("--video_directory was not passed in")
+        print("ERROR: --video_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.subtitle_directory == "":
-        print("--subtitle_directory was not passed in")
+        print("ERROR: --subtitle_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
     if FLAGS.training_output_directory == "":
-        print("--training_output_directory was not passed in")
+        print("ERROR: --training_output_directory was not passed in")
         parser.print_usage()
         sys.exit(21)
 
@@ -144,17 +144,17 @@ def main():
         print(hparam_tuner.hyperparameters.to_json())
     except UnsupportedFormatException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "ERROR: {}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
         sys.exit(23)
     except TerminalException as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "ERROR: {}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
         sys.exit(24)
     except Exception as e:
         print(
-            "{}\n{}".format(str(e), traceback.format_stack() if verbose else "")
+            "ERROR: {}\n{}".format(str(e), traceback.format_stack() if verbose else "")
         )
         sys.exit(1)
     else:
