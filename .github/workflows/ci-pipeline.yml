@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +29,7 @@ jobs:
           cat requirements-stretch.txt | xargs -L 1 pip install
           cat requirements-translation.txt | xargs -L 1 pip install
           cat requirements-dev.txt | xargs -L 1 pip install
+          cat requirements-site.txt | xargs -L 1 pip install
           pip install -e . --ignore-installed
       - name: Linting
         run: |
