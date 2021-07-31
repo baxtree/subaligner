@@ -21,7 +21,7 @@ Installation
 
     $ pip install 'subaligner[translation]'
 
-**Install additional required dependencies before installing subaligner[stretch] or subaligner[dev]**::
+**Pre-install additional dependencies before installing subaligner[stretch] or subaligner[dev]**::
 
     $ apt-get install espeak libespeak1 libespeak-dev espeak-data
 
@@ -33,7 +33,7 @@ Installation
 
     $ pip install 'subaligner[stretch]'
 
-**Install dependencies for enabling the development environment**::
+**Install dependencies for setting up the development environment**::
 
     $ pip install 'subaligner[dev]'
 
