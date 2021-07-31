@@ -1,4 +1,4 @@
-<div align="left">
+<div align="center">
   <img src="./figures/subaligner.png" alt="subaligner" width="300" />
 </div>
 
