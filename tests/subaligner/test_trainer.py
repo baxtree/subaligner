@@ -1,7 +1,6 @@
 import unittest
 import os
 import shutil
-import concurrent.futures
 from subaligner.embedder import FeatureEmbedder
 from subaligner.hyperparameters import Hyperparameters
 from subaligner.trainer import Trainer as Undertest

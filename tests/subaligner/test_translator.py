@@ -2,7 +2,6 @@ import os
 import unittest
 from mock import Mock, patch
 from parameterized import parameterized
-from transformers import MarianMTModel, MarianTokenizer
 from subaligner.subtitle import Subtitle
 from subaligner.translator import Translator as Undertest
 
