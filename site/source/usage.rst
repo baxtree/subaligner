@@ -26,6 +26,11 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
+**Alignment on segmented plain texts (double newlines as the delimiter)**::
+
+    (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
+    (.venv) $ subaligner -m script -v https://example.com/video.mp4 -s https://example.com/subtitle.txt -o subtitle_aligned.srt
+
 **Translative alignment with the ISO 639-3 language code pair (src,tgt)**::
 
     (.venv) $ subaligner_1pass --languages
@@ -35,6 +40,7 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner --languages
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
+    (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
 
 **Run batch alignment against directories**::
 

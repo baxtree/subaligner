@@ -2,7 +2,6 @@ import unittest
 import os
 import sys
 
-from concurrent.futures._base import Future
 from mock import patch
 from parameterized import parameterized
 from subaligner.exception import TerminalException
@@ -61,6 +60,9 @@ class PredictorTests(unittest.TestCase):
         )
         self.long_subtitle_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test_too_long.srt"
+        )
+        self.plain_text_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test_plain.txt"
         )
         self.audio_file_paths = []
 
@@ -245,6 +247,16 @@ class PredictorTests(unittest.TestCase):
         self.assertEqual(len(new_subs), len(subs))
         self.assertTrue(stretched)
         self.assertGreater(len(voice_probabilities), 0)
+        self.assertEqual(24.0, frame_rate)
+
+    def test_predict_plain_text(self):
+        subs, audio_file_path, voice_probabilities, frame_rate = Undertest(n_mfcc=20, step_sample=0.02).predict_plain_text(
+            self.video_file_path, self.plain_text_file_path
+        )
+
+        self.assertGreater(len(subs), 0)
+        self.assertIsNone(audio_file_path)
+        self.assertIsNone(voice_probabilities)
         self.assertEqual(24.0, frame_rate)
 
     def test_get_log_loss(self):

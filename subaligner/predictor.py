@@ -110,7 +110,7 @@ class Predictor(Singleton):
             exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
-            tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+            tuple -- The shifted subtitles, the globally shifted subtitles and the voice probabilities of the original audio.
         """
 
         self.__initialise_network(weights_dir)
@@ -140,6 +140,88 @@ class Predictor(Singleton):
         finally:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
+
+    def predict_plain_text(self, video_file_path: str, subtitle_file_path: str, stretch_in_lang: str = "eng") -> None:
+        """Predict time to shift with plain texts
+
+            Arguments:
+            video_file_path {string} -- The input video file path.
+            subtitle_file_path {string} -- The path to the subtitle file.
+            stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
+
+            Returns:
+            tuple -- The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
+        """
+        from aeneas.executetask import ExecuteTask
+        from aeneas.task import Task
+        from aeneas.runtimeconfiguration import RuntimeConfiguration
+        from aeneas.logger import Logger as AeneasLogger
+
+        t = datetime.datetime.now()
+        thread_name = threading.current_thread().name
+        audio_file_path = MediaHelper.extract_audio(
+            video_file_path, True, 16000
+        )
+        Predictor.__LOGGER.debug(
+            "[{}] Audio extracted after {}".format(
+                thread_name, str(datetime.datetime.now() - t)
+            )
+        )
+
+        root, _ = os.path.splitext(audio_file_path)
+
+        # Initialise a DTW alignment task
+        task_config_string = (
+            "task_language={}|os_task_file_format=srt|is_text_type=subtitles".format(stretch_in_lang)
+        )
+        runtime_config_string = "dtw_algorithm=stripe"  # stripe or exact
+        task = Task(config_string=task_config_string)
+
+        try:
+            task.audio_file_path_absolute = audio_file_path
+            task.text_file_path_absolute = subtitle_file_path
+            task.sync_map_file_path_absolute = "{}.srt".format(root)
+
+            tee = False
+            if Logger.VERBOSE:
+                tee = True
+            if Logger.QUIET:
+                tee = False
+
+            # Execute the task
+            ExecuteTask(
+                task=task,
+                rconf=RuntimeConfiguration(config_string=runtime_config_string),
+                logger=AeneasLogger(tee=tee),
+            ).execute()
+
+            # Output new subtitle segment to a file
+            task.output_sync_map_file()
+
+            # Load the above subtitle segment
+            adjusted_subs = Subtitle.load(
+                task.sync_map_file_path_absolute
+            ).subs
+
+            frame_rate = None
+            try:
+                frame_rate = MediaHelper.get_frame_rate(video_file_path)
+                self.__feature_embedder.step_sample = 1 / frame_rate
+                self.__on_frame_timecodes(adjusted_subs)
+            except NoFrameRateException:
+                Predictor.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
+
+            return adjusted_subs, None, None, frame_rate
+        except KeyboardInterrupt:
+            raise TerminalException("Subtitle stretch interrupted by the user")
+        finally:
+            # Housekeep intermediate files
+            if task.audio_file_path_absolute is not None and os.path.exists(
+                    task.audio_file_path_absolute
+            ):
+                os.remove(task.audio_file_path_absolute)
+            if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
+                os.remove(task.sync_map_file_path_absolute)
 
     def get_log_loss(self, voice_probabilities: "np.ndarray[float]", subs: List[SubRipItem]) -> float:
         """Returns a single loss value on voice prediction

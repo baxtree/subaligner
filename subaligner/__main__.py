@@ -27,8 +27,8 @@ optional arguments:
   -ver, --version       show program's version number and exit
 
 required arguments:
-  -m {single,dual}, --mode {single,dual}
-                        Alignment mode: either single or dual
+  -m {single,dual, script}, --mode {single,dual,script}
+                        Alignment mode: either single or dual or script
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
@@ -61,7 +61,7 @@ def main():
         "--mode",
         type=str,
         default="",
-        choices=["single", "dual"],
+        choices=["single", "dual", "script"],
         help="Alignment mode: either single or dual",
     )
     required_args.add_argument(
@@ -159,11 +159,15 @@ def main():
         print("ERROR: --output was not passed in for alignment on embedded subtitles")
         parser.print_usage()
         sys.exit(21)
+    if FLAGS.mode == "script" and FLAGS.output == "":
+        print("ERROR: --output was not passed in for alignment on plain texts")
+        parser.print_usage()
+        sys.exit(21)
     if FLAGS.translate is not None:
         if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
             print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
             sys.exit(21)
-    if FLAGS.stretch_on:
+    if FLAGS.stretch_on or FLAGS.mode == "script":
         if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
             print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
             sys.exit(21)
@@ -217,7 +221,7 @@ def main():
                 subtitle_file_path=local_subtitle_path,
                 weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights")
             )
-        else:
+        elif FLAGS.mode == "dual":
             aligned_subs, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
                 video_file_path=local_video_path,
                 subtitle_file_path=local_subtitle_path,
@@ -226,6 +230,16 @@ def main():
                 stretch_in_lang=stretch_in_lang,
                 exit_segfail=exit_segfail,
             )
+        elif FLAGS.mode == "script":
+            aligned_subs, _, voice_probabilities, frame_rate = predictor.predict_plain_text(
+                video_file_path=local_video_path,
+                subtitle_file_path=local_subtitle_path,
+                stretch_in_lang=stretch_in_lang,
+            )
+        else:
+            print("ERROR: Unknown mode {}".format(FLAGS.mode))
+            parser.print_usage()
+            sys.exit(21)
 
         aligned_subtitle_path = "_aligned.".join(
             FLAGS.subtitle_path.rsplit(".", 1)).replace(".stl", ".srt") if FLAGS.output == "" else FLAGS.output
@@ -235,17 +249,18 @@ def main():
             source, target = FLAGS.translate.split(",")
             translator = Translator(source, target)
             aligned_subs = translator.translate(aligned_subs)
-            Subtitle.export_subtitle(local_subtitle_path, aligned_subs, aligned_subtitle_path, frame_rate, "utf-8")
+            Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path, frame_rate, "utf-8")
         else:
-            Subtitle.export_subtitle(local_subtitle_path, aligned_subs, aligned_subtitle_path, frame_rate)
+            Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path, frame_rate)
 
-        log_loss = predictor.get_log_loss(voice_probabilities, aligned_subs)
-        if log_loss is None or log_loss > FLAGS.max_logloss:
-            print(
-                "ERROR: Alignment failed with a too high loss value: {}".format(log_loss)
-            )
-            _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
-            sys.exit(22)
+        if voice_probabilities is not None:
+            log_loss = predictor.get_log_loss(voice_probabilities, aligned_subs)
+            if log_loss is None or log_loss > FLAGS.max_logloss:
+                print(
+                    "ERROR: Alignment failed with a too high loss value: {}".format(log_loss)
+                )
+                _remove_tmp_files(FLAGS, local_video_path, local_subtitle_path)
+                sys.exit(22)
 
         print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
     except UnsupportedFormatException as e:

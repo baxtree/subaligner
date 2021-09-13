@@ -57,6 +57,7 @@ def run_subaligner_with_translation(step, aligner, mode, language_pair):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_path_or_selector,
             "-t", language_pair,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
             "-q"], shell=False)
     else:
         process = subprocess.Popen([
@@ -65,6 +66,7 @@ def run_subaligner_with_translation(step, aligner, mode, language_pair):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_path_or_selector,
             "-t", language_pair,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 

@@ -8,6 +8,12 @@
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
 [![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
+[![Docker Hub](https://zenodo.org/badge/doi/10.5281/zenodo.1234.svg)](https://doi.org/10.5281/zenodo.1234)
+
+## Supported Formats
+Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
+
+Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
 
 ## Dependencies
 Required by basic: [FFmpeg](https://www.ffmpeg.org/)
@@ -111,6 +117,12 @@ $ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/s
 $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
+# Alignment on segmented plain texts (double newlines as the delimiter)
+
+$ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
+$ subaligner -m script -v https://example.com/video.mp4 -s https://example.com/subtitle.txt -o subtitle_aligned.srt
+```
+```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
 
 $ subaligner_1pass --languages
@@ -120,6 +132,7 @@ $ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner --languages
 $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
+$ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
 ```
 ```
 # Run batch alignment against directories
@@ -153,10 +166,6 @@ The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI
 Additional utilities can be used after consulting `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
 
 ![](figures/screencast.gif)
-## Supported Formats
-Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
-
-Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
 
 ## Advanced Usage
 You can train a new model with your own audiovisual files and subtitle files:

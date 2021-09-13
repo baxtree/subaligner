@@ -13,7 +13,7 @@ Welcome to Subaligner's documentation!
 
 Given an out-of-sync subtitle file along with a piece of audiovisual content carrying speeches described by it,
 Subaligner provides a one-stop solution on automatic subtitle synchronisation and translation with pretrained deep neural networks
-and forced alignments. In essence, aligning subtitles is a dual-stage process with a Bidirectional Long Short-Term Memory network trained
+, forced alignments and transformers. In essence, aligning subtitles is a dual-stage process with a Bidirectional Long Short-Term Memory network trained
 upfront. Subaligner helps subtitlers not only in preprocessing raw subtitle materials (outcome from stenographers or
 STT workflow, etc.) but also in gaining quality control over their work within subtitle post-production. This tool
 also tolerates errors that occurred in live subtitles which sometimes do not completely or correctly represent what people
