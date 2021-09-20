@@ -245,6 +245,18 @@ Feature: Subaligner CLI
         |  "aligned_single" |  single   |  "test.srt"   |
         |  "aligned_dual"   |  dual     |  "test.srt"   |
 
+    @batch
+    Scenario Outline: Test batch alignment with output formats
+        Given I have an audiovisual file directory "av"
+        And I have a subtitle file directory "sub"
+        And I want to save the alignment output in directory <output_dir> with format <subtitle-format>
+        When I run the subaligner_batch on them with <mode> stage
+        Then a new subtitle file <subtitle-out> is generated in the above output directory
+    Examples:
+        |  output_dir       |  mode     |   subtitle-format |  subtitle-out |
+        |  "aligned_single" |  single   |   "ttml"          |  "test.ttml"  |
+        |  "aligned_dual"   |  dual     |   "vtt"           |  "test.vtt"   |
+
     @exception
     Scenario Outline: Test errors out on unsupported subtitle input
         Given I have a video file "test.mp4"

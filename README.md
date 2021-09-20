@@ -139,6 +139,7 @@ $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t sr
 
 $ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
 $ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
+$ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/ -of ttml
 ```
 ```
 # Run alignments with pipx

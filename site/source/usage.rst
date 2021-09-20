@@ -46,6 +46,7 @@ Make sure you have got the virtual environment activated upfront.
 
     (.venv) $ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
     (.venv) $ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
+    (.venv) $ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/ -of ttml
 
 **Run alignments with the docker image**::
 
