@@ -96,7 +96,7 @@ class MediaHelper(object):
                 self.__LOGGER.debug("[{}] {}".format(process.pid, std_err))
                 if process.returncode != 0:
                     self.__LOGGER.error("[{}] Cannot extract audio from video: {}\n{}"
-                                               .format(process.pid, video_file_path, std_err))
+                                        .format(process.pid, video_file_path, std_err))
                     raise TerminalException(
                         "Cannot extract audio from video: {}".format(video_file_path)
                     )
@@ -203,7 +203,7 @@ class MediaHelper(object):
                 self.__LOGGER.debug("[{}] {}".format(process.pid, std_err))
                 if process.returncode != 0:
                     self.__LOGGER.error("[{}] Cannot clip audio: {} Return Code: {}\n{}"
-                                               .format(process.pid, audio_file_path, process.returncode, std_err))
+                                        .format(process.pid, audio_file_path, process.returncode, std_err))
                     raise TerminalException(
                         "Cannot clip audio: {} Return Code: {}".format(audio_file_path, process.returncode)
                     )
