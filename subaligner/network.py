@@ -45,7 +45,6 @@ class Network(object):
     CONV_1D = "conv_1d"
     TYPES = [LSTM, BI_LSTM, CONV_1D]
 
-    __LOGGER = Logger().get_logger(__name__)
     __secret = object()
     __UNKNOWN = "unknown"
 
@@ -69,7 +68,6 @@ class Network(object):
         Raises:
             NotImplementedError -- Thrown when any network attributes are modified.
         """
-
         assert (
             secret == Network.__secret
         ), "Only factory methods are supported when creating instances"
@@ -99,6 +97,7 @@ class Network(object):
 
         self.__n_type = hyperparameters.network_type
         self.hyperparameters = hyperparameters
+        self.__LOGGER = Logger().get_logger(__name__)
 
     @classmethod
     def get_network(cls, input_shape: Tuple, hyperparameters: Hyperparameters) -> "Network":
@@ -297,11 +296,11 @@ class Network(object):
                 initial_epoch=initial_epoch,
             )
         except KeyboardInterrupt:
-            Network.__LOGGER.warning("Training interrupted by the user")
+            self.__LOGGER.warning("Training interrupted by the user")
             raise TerminalException("Training interrupted by the user")
         finally:
             save_model(self.__model, model_filepath)
-            Network.__LOGGER.warning("Model saved to %s" % model_filepath)
+            self.__LOGGER.warning("Model saved to %s" % model_filepath)
 
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
@@ -392,11 +391,11 @@ class Network(object):
                 initial_epoch=initial_epoch,
             )
         except KeyboardInterrupt:
-            Network.__LOGGER.warning("Training interrupted by the user")
+            self.__LOGGER.warning("Training interrupted by the user")
             raise TerminalException("Training interrupted by the user")
         finally:
             self.__model.save(model_filepath)
-            Network.__LOGGER.warning("Model saved to %s" % model_filepath)
+            self.__LOGGER.warning("Model saved to %s" % model_filepath)
 
         return hist.history["val_loss"], hist.history["val_acc"] if int(tf.__version__.split(".")[0]) < 2 else hist.history["val_accuracy"]
 
@@ -548,14 +547,14 @@ class Network(object):
             # Set the number of inter/intra threads to the number of physical cores (experiment shows this is the best)
             physical_core_num = psutil.cpu_count(logical=False)
             tf.config.threading.set_inter_op_parallelism_threads(physical_core_num)
-            tf.config.threading.set_intra_op_parallelism_threads(physical_core_num)
+            tf.config.threading.set_intra_op_parallelism_threads(1)
             tf.config.set_soft_device_placement(True)
             physical_devices = tf.config.experimental.list_physical_devices("GPU")
             try:
                 for gpu in physical_devices:
                     tf.config.experimental.set_memory_growth(gpu, True)
             except Exception:
-                Network.__LOGGER.warning("Invalid device or cannot modify virtual devices once initialised")
+                raise ValueError("Invalid device or cannot modify virtual devices once initialised")
             K.clear_session()
         elif backend.lower() == "theano" or backend.lower() == "cntk":
             #  Backends other than tensorflow require separate installations before being used.

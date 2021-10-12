@@ -13,8 +13,6 @@ class FeatureEmbedder(object):
     """Audio and subtitle feature embedding.
     """
 
-    __LOGGER = Logger().get_logger(__name__)
-
     def __init__(
         self,
         n_mfcc: int = 13,
@@ -45,6 +43,7 @@ class FeatureEmbedder(object):
         self.__item_time = (
             1.0 / frequency
         ) * hop_len  # 1 item = 1/16000 seg = 32 ms
+        self.__LOGGER = Logger().get_logger(__name__)
 
     @property
     def n_mfcc(self) -> int:
@@ -265,9 +264,9 @@ class FeatureEmbedder(object):
             subs = subtitles
         elif subtitle_file_path is not None:
             subs = Subtitle.load(subtitle_file_path).subs
-            FeatureEmbedder.__LOGGER.info("Subtitle file loaded: {}".format(subtitle_file_path))
+            self.__LOGGER.info("Subtitle file loaded: {}".format(subtitle_file_path))
         else:
-            FeatureEmbedder.__LOGGER.error("Subtitles are missing")
+            self.__LOGGER.error("Subtitles are missing")
             raise TerminalException("Subtitles are missing")
 
         if sound_effect_start_marker is not None:
@@ -278,7 +277,7 @@ class FeatureEmbedder(object):
             subs = Subtitle.remove_sound_effects_by_case(
                 subs, se_uppercase=True
             )
-            FeatureEmbedder.__LOGGER.debug(
+            self.__LOGGER.debug(
                 "{} sound effects removed".format(original_size - len(subs))
             )
 
@@ -299,7 +298,7 @@ class FeatureEmbedder(object):
         del audio_time_series
         gc.collect()
 
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "Audio file loaded and embedded with sample rate {}: {}".format(
                 sample_rate, audio_file_path
             )
@@ -333,25 +332,25 @@ class FeatureEmbedder(object):
 
         label_extraction_time = datetime.now() - t
 
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "----- Feature Embedding Metrics --------"
         )
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "| Audio file path: {}".format(audio_file_path)
         )
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "| Subtitle file path: {}".format(subtitle_file_path)
         )
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "| MFCC extration time: {}".format(str(mfcc_extration_time))
         )
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "| Label extraction time: {}".format(str(label_extraction_time))
         )
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "| Total time: {}".format(str(datetime.now() - total_time))
         )
-        FeatureEmbedder.__LOGGER.debug(
+        self.__LOGGER.debug(
             "----------------------------------------"
         )
 
