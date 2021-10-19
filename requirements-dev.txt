@@ -1,5 +1,5 @@
 mock==4.0.3
-coverage==4.5.1
+coverage==5.5
 tox~=3.23.0
 pycodestyle==2.5.0
 twine>=3.1.1

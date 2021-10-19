@@ -9,8 +9,8 @@ absl_logging._warn_preinit_stderr = 0
 class Logger(Singleton):
     """Common logging."""
 
-    VERBOSE = True
-    QUIET = False
+    VERBOSE = False
+    QUIET = True
 
     def __init__(self, output_log: str = "output.log") -> None:
         self.__loggers: Dict[str, logging.Logger] = {}
