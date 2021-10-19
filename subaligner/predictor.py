@@ -575,12 +575,12 @@ class Predictor(Singleton):
                 try:
                     subs_list.extend(future.result(timeout=Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size))
                 except concurrent.futures.TimeoutError as e:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
                     message = "Batch alignment timed out after {} seconds".format(Predictor.__SEGMENT_PREDICTION_TIMEOUT)
                     self.__LOGGER.error(message)
                     raise TerminalException(message) from e
                 except Exception as e:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
                     message = "Exception on batch alignment: {}\n{}".format(str(e), "".join(traceback.format_stack()))
                     self.__LOGGER.error(e, exc_info=True, stack_info=True)
                     traceback.print_tb(e.__traceback__)
@@ -589,7 +589,7 @@ class Predictor(Singleton):
                     else:
                         raise TerminalException(message) from e
                 except KeyboardInterrupt:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
                     raise TerminalException("Batch alignment interrupted by the user")
                 else:
                     self.__LOGGER.debug("Batch aligned")
