@@ -10,7 +10,7 @@ class Logger(Singleton):
     """Common logging."""
 
     VERBOSE = True
-    QUIET = True
+    QUIET = False
 
     def __init__(self, output_log: str = "output.log") -> None:
         self.__loggers: Dict[str, logging.Logger] = {}
