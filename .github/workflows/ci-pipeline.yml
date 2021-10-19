@@ -8,6 +8,8 @@ jobs:
   main:
 
     runs-on: ubuntu-latest
+    env:
+      MAX_WORKERS: 1
     strategy:
       matrix:
         python-version: [3.7]
