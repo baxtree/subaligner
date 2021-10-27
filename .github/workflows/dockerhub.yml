@@ -1,6 +1,9 @@
 name: Docker Hub
 
 on:
+  push:
+    tags:
+      - 'v*'
   release:
     types: [ published ]
   workflow_dispatch:
