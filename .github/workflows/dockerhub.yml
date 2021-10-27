@@ -1,0 +1,47 @@
+name: Docker Hub
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        
+      - name: checkout repo
+        uses: actions/checkout@v2
+        
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER_NAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: baxtree/subaligner:latest
+
+      - name: Build and push the latest image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Ubuntu20"
+          build-args: |
+            RELEASE_VERSION=${{ github.ref }}
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:latest
+          push: true
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
