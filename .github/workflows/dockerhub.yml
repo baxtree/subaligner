@@ -30,13 +30,9 @@ jobs:
         with:
           images: baxtree/subaligner:latest
       
-      - name: Extract tag name
+      - name: Extract the tag
         id: tag
-        uses: actions/github-script@0.2.0
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            return context.payload.ref.replace(/\/refs\/tags\//, '');
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
 
       - name: Build and push the latest image
         id: docker_build
@@ -45,7 +41,7 @@ jobs:
           context: ./docker
           file: "./docker/Dockerfile-Ubuntu20"
           build-args: |
-            RELEASE_VERSION=${{ steps.tag.outputs.result }}
+            RELEASE_VERSION=${{ steps.tag.outputs.TAG }}
           allow: network.host
           github-token: ${{ github.token }}
           tags: baxtree/subaligner:latest
