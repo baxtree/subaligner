@@ -32,7 +32,7 @@ jobs:
       
       - name: Extract the tag
         id: tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\/v/}
 
       - name: Build and push the latest image
         id: docker_build
