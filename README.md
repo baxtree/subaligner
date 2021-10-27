@@ -187,8 +187,6 @@ Second Stage (Parallelised Individual Alignment):
 ![](figures/2nd_stage.png)
 
 ## Acknowledgement
-Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.
-
 This tool wouldn't be possible without the following packages:
 [librosa](https://librosa.github.io/librosa/)
 [tensorflow](https://www.tensorflow.org/)
@@ -198,3 +196,5 @@ This tool wouldn't be possible without the following packages:
 [pysubs2](https://github.com/tkarabela/pysubs2)
 [aeneas](https://www.readbeyond.it/aeneas/)
 [transformers](https://huggingface.co/transformers/).
+
+Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.

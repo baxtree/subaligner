@@ -2,6 +2,8 @@
 From fedora:31
 
 ARG RELEASE_VERSION
+
+ENV RELEASE_VERSION=${RELEASE_VERSION}
 ENV DOCKER_BUILDKIT=0
 ENV COMPOSE_DOCKER_CLI_BUILD=0
 
@@ -19,5 +21,5 @@ RUN ["/bin/bash", "-c", "dnf install -y dnf-utils &&\
     dnf install -y python3-devel &&\
     dnf install -y python3-pip &&\
     pip3 install --upgrade pip &&\
-    python3 -m pip install 'subaligner==${RELEASE_VERSION:1}' &&\
-    python3 -m pip install 'subaligner[harmony]==${RELEASE_VERSION:1}'"]
+    python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
+    python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
