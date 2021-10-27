@@ -2,8 +2,6 @@
 Acknowledgement
 ########################
 
-**Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.**
-
 **This tool wouldn't be possible without the following packages**:
 
     - `librosa <https://librosa.github.io/librosa/>`_
@@ -14,3 +12,6 @@ Acknowledgement
     - `pysubs2 <https://github.com/tkarabela/pysubs2>`_
     - `aeneas <https://www.readbeyond.it/aeneas/>`_
     - `transformers <https://huggingface.co/transformers/>`_
+
+
+Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.

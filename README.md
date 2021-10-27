@@ -8,7 +8,7 @@
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
 [![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
-[![Docker Hub](https://zenodo.org/badge/doi/10.5281/zenodo.1234.svg)](https://doi.org/10.5281/zenodo.1234)
+[![Docker Hub](https://zenodo.org/badge/228440472.svg)](https://doi.org/10.5281/zenodo.5603295)
 
 ## Supported Formats
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
