@@ -35,7 +35,7 @@ jobs:
         run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\/v/}
 
       - name: Build and push the latest image
-        id: docker_build
+        id: docker_build_latest
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -48,7 +48,7 @@ jobs:
           push: true
 
       - name: Build and push the Ubuntu 20 image
-        id: docker_build
+        id: docker_build_u20
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -61,7 +61,7 @@ jobs:
           push: true
 
       - name: Build and push the Ubuntu 18 image
-        id: docker_build
+        id: docker_build_u18
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -74,7 +74,7 @@ jobs:
           push: true
 
       - name: Build and push the Fedora 31 image
-        id: docker_build
+        id: docker_build_fed31
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -87,7 +87,7 @@ jobs:
           push: true
 
       - name: Build and push the Debian 10 image
-        id: docker_build
+        id: docker_build_deb10
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -100,7 +100,7 @@ jobs:
           push: true
       
       - name: Build and push the ArchLinux image
-        id: docker_build
+        id: docker_build_arch
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -113,7 +113,7 @@ jobs:
           push: true
 
       - name: Build and push the CentOS 8 image
-        id: docker_build
+        id: docker_build_el8
         uses: docker/build-push-action@v2
         with:
           context: ./docker
@@ -126,7 +126,7 @@ jobs:
           push: true
 
       - name: Build and push the CentOS 7 image
-        id: docker_build
+        id: docker_build_el7
         uses: docker/build-push-action@v2
         with:
           context: ./docker
