@@ -96,6 +96,7 @@ Each file pair needs to share the same base filename, the part before the extens
         help="Switch on stretch on subtitles)",
     )
     from subaligner.utils import Utils
+    from subaligner.subtitle import Subtitle
     parser.add_argument(
         "-sil",
         "--stretch_in_language",
@@ -123,6 +124,14 @@ Each file pair needs to share the same base filename, the part before the extens
         type=str,
         default="",
         help="Path to the output subtitle directory",
+    )
+    parser.add_argument(
+        "-of",
+        "--output_format",
+        type=str,
+        choices=list(map(lambda x: x[1:], Subtitle.subtitle_extensions())),
+        default="",
+        help="File format of the output subtitles"
     )
     parser.add_argument(
         "-t",
@@ -216,17 +225,18 @@ Each file pair needs to share the same base filename, the part before the extens
 
             parent_dir = os.path.dirname(local_subtitle_path.replace(os.path.abspath(FLAGS.subtitle_directory), output_dir))
             os.makedirs(parent_dir, exist_ok=True)
-            aligned_subtitle_path = os.path.abspath(os.path.join(parent_dir,
-                                                    ".".join(os.path.basename(local_subtitle_path).rsplit(".", 1)).replace(".stl", ".srt")))
+            file_parts = os.path.basename(local_subtitle_path).rsplit(".", 1)
+            file_parts[1] = FLAGS.output_format if FLAGS.output_format != "" else file_parts[1]
+            aligned_subtitle_path = os.path.abspath(os.path.join(parent_dir, ".".join(file_parts).replace(".stl", ".srt")))
 
             if FLAGS.translate is not None:
                 from subaligner.translator import Translator
                 source, target = FLAGS.translate.split(",")
                 translator = Translator(source, target)
                 aligned_subs = translator.translate(aligned_subs)
-                Subtitle.export_subtitle(local_subtitle_path, aligned_subs, aligned_subtitle_path, frame_rate, "utf-8")
+                Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path, frame_rate, "utf-8")
             else:
-                Subtitle.export_subtitle(local_subtitle_path, aligned_subs, aligned_subtitle_path, frame_rate)
+                Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path, frame_rate, "utf-8")
 
             log_loss = predictor.get_log_loss(voice_probabilities, aligned_subs)
             if log_loss is None or log_loss > FLAGS.max_logloss:

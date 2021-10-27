@@ -1,5 +1,5 @@
 mock==4.0.3
-coverage==4.5.1
+coverage==5.5
 tox~=3.23.0
 pycodestyle==2.5.0
 twine>=3.1.1
@@ -11,4 +11,4 @@ pex==2.1.34
 mypy==0.910
 parameterized==0.8.1
 pylint~=2.8.2
-pygments~=2.7.4
+pygments==2.7.4

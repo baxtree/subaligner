@@ -124,10 +124,8 @@ def main():
             source, target = FLAGS.translate.split(",")
             translator = Translator(source, target)
             subs_list = translator.translate(subtitle.subs)
-            Subtitle.export_subtitle(local_subtitle_path, subs_list, FLAGS.output_subtitle_path, FLAGS.frame_rate, "utf-8")
             Subtitle.save_subs_as_target_format(subs_list, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate, "utf-8")
         else:
-            Subtitle.export_subtitle(local_subtitle_path, subtitle.subs, FLAGS.output_subtitle_path, FLAGS.frame_rate)
             Subtitle.save_subs_as_target_format(subtitle.subs, local_subtitle_path, FLAGS.output_subtitle_path, FLAGS.frame_rate)
         print("Subtitle converted and saved to: {}".format(FLAGS.output_subtitle_path))
     except UnsupportedFormatException as e:

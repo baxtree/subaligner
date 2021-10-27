@@ -22,7 +22,6 @@ class Trainer(object):
     """
 
     EMBEDDING_TIMEOUT = 300  # time out for feature embedding of media files
-    __LOGGER = Logger().get_logger(__name__)
     __MAX_BYTES = 2 ** 31 - 1
 
     def __init__(self, feature_embedder: FeatureEmbedder) -> None:
@@ -37,6 +36,8 @@ class Trainer(object):
 
         self.__feature_embedder = feature_embedder
         self.__lock = threading.RLock()
+        self.__media_helper = MediaHelper()
+        self.__LOGGER = Logger().get_logger(__name__)
 
     def train(
         self,
@@ -78,7 +79,7 @@ class Trainer(object):
         if av_file_paths is None or subtitle_file_paths is None:
             # Load the data and labels dump from the disk
             training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
-            Trainer.__LOGGER.debug(
+            self.__LOGGER.debug(
                 "Resume training on data dump: ".format(
                     training_dump
                 )
@@ -101,7 +102,7 @@ class Trainer(object):
                     hyperparameters.to_file(hyperparams_filepath)
 
                     input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
-                    Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+                    self.__LOGGER.debug("input_shape: {}".format(input_shape))
                     network = Network.get_network(input_shape, hyperparameters)
 
                 val_loss, val_acc = network.fit_with_generator(
@@ -134,7 +135,7 @@ class Trainer(object):
             train_data = train_data - np.mean(train_data, axis=0)
 
             input_shape = (train_data.shape[1], train_data.shape[2])
-            Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+            self.__LOGGER.debug("input_shape: {}".format(input_shape))
 
             # Save hyperparameters before each new training
             hyperparameters.to_file(hyperparams_filepath)
@@ -150,9 +151,9 @@ class Trainer(object):
                 False,
             )
 
-        Trainer.__LOGGER.debug("val_loss: {}".format(min(val_loss)))
-        Trainer.__LOGGER.debug("val_acc: {}".format(max(val_acc)))
-        Trainer.__LOGGER.info(
+        self.__LOGGER.debug("val_loss: {}".format(min(val_loss)))
+        self.__LOGGER.debug("val_acc: {}".format(max(val_acc)))
+        self.__LOGGER.info(
             "Total training time: {}".format(
                 str(datetime.datetime.now() - training_start)
             )
@@ -191,7 +192,7 @@ class Trainer(object):
                 labels_raw = hf["labels"]
 
                 input_shape = (train_data_raw.shape[2], train_data_raw.shape[1])
-                Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+                self.__LOGGER.debug("input_shape: {}".format(input_shape))
 
                 val_loss, val_acc = Network.simple_fit_with_generator(
                     input_shape,
@@ -217,7 +218,7 @@ class Trainer(object):
             train_data = train_data - np.mean(train_data, axis=0)
 
             input_shape = (train_data.shape[1], train_data.shape[2])
-            Trainer.__LOGGER.debug("input_shape: {}".format(input_shape))
+            self.__LOGGER.debug("input_shape: {}".format(input_shape))
 
             val_loss, val_acc = Network.simple_fit(
                 input_shape,
@@ -290,21 +291,21 @@ class Trainer(object):
             except KeyboardInterrupt:
                 for future in futures:
                     if not future.cancel():
-                        Trainer.__LOGGER.warning("Data and label extraction job cannot be cancelled")
+                        self.__LOGGER.warning("Data and label extraction job cannot be cancelled")
                 raise TerminalException("Data and label extraction interrupted by the user")
             for future in not_done:
                 # Log undone audio files and continue
                 try:
                     audio_file_path, subtitle_file_path = future.result()
-                    Trainer.__LOGGER.warning(
+                    self.__LOGGER.warning(
                         "Data and label extraction failed for: [Audio: {}, Subtitle: {}]".format(
                             audio_file_path, subtitle_file_path
                         )
                     )
                     if not future.cancel():
-                        Trainer.__LOGGER.warning("Data and label extraction job cannot be cancelled")
+                        self.__LOGGER.warning("Data and label extraction job cannot be cancelled")
                 except Exception as e:
-                    Trainer.__LOGGER.error(
+                    self.__LOGGER.error(
                         "Unexpected exception during data and label extraction: {} stacktrace: {}".format(
                             str(e), "".join(traceback.format_stack())
                         )
@@ -316,7 +317,7 @@ class Trainer(object):
 
         train_data = np.concatenate(train_data)
         labels = np.concatenate(labels)
-        Trainer.__LOGGER.debug(
+        self.__LOGGER.debug(
             "Data and labels extracted after {} seconds".format(
                 str(datetime.datetime.now() - extraction_start)
             )
@@ -337,12 +338,12 @@ class Trainer(object):
         _, file_ext = os.path.splitext(av_file_path)
 
         try:
-            if file_ext not in MediaHelper.AUDIO_FILE_EXTENSION:
+            if file_ext not in self.__media_helper.AUDIO_FILE_EXTENSION:
                 t = datetime.datetime.now()
-                audio_file_path = MediaHelper.extract_audio(
+                audio_file_path = self.__media_helper.extract_audio(
                     av_file_path, True, 16000
                 )
-                Trainer.__LOGGER.debug(
+                self.__LOGGER.debug(
                     "- Audio extracted after {}".format(
                         str(datetime.datetime.now() - t)
                     )
@@ -362,12 +363,12 @@ class Trainer(object):
         # However, the training shall continue after expensive embedding on healthy media files.
         except Exception as e:
             # Log failed audio and subtitle files and continue
-            Trainer.__LOGGER.warning(
+            self.__LOGGER.warning(
                 "Exception: {}; stacktrace: {}".format(
                     str(e), "".join(traceback.format_stack())
                 )
             )
-            Trainer.__LOGGER.warning(
+            self.__LOGGER.warning(
                 "[Audio: {}, Subtitle: {}]".format(
                     audio_file_path, subtitle_file_path
                 )

@@ -84,6 +84,30 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
         |  subaligner_2pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
 
+    @with-mode @script
+    Scenario Outline: Test alignments with plain texts as input
+        Given I have a video file <video-in>
+        And I have a subtitle file "test_plain.txt"
+        When I run the alignment with subaligner on them with script stage and output <subtitle-out>
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |   video-in    |  subtitle-out             |
+        |   "test.mp4"  |  "test_aligned.srt"       |
+        |   "test.mp4"  |  "test_aligned.ttml"      |
+        |   "test.mp4"  |  "test_aligned.xml"       |
+        |   "test.mp4"  |  "test_aligned.dfxp"      |
+        |   "test.mp4"  |  "test_aligned.vtt"       |
+        |   "test.mp4"  |  "test_aligned.ssa"       |
+        |   "test.mp4"  |  "test_aligned.ass"       |
+        |   "test.mp4"  |  "test_aligned.sub"       |
+        |   "test.wav"  |  "test_mpl2_aligned.txt"  |
+        |   "test.wav"  |  "test_aligned.tmp"       |
+        |   "test.wav"  |  "test_aligned.smi"       |
+        |   "test.wav"  |  "test_aligned.sami"      |
+        |   "test.wav"  |  "test_aligned.scc"       |
+        |   "test.wav"  |  "test_aligned.sbv"       |
+        |   "test.wav"  |  "test_aligned.ytt"       |
+
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs
         Given I have a video file "https://raw.githubusercontent.com/baxtree/subaligner/master/tests/subaligner/resource/test.mp4"
@@ -205,6 +229,7 @@ Feature: Subaligner CLI
         |  aligner          |  mode     |  subtitle-in      |   language-pair   |   subtitle-out            |
         |  subaligner       |  single   |  "test.srt"       |   eng,zho         |   "test_aligned.srt"      |
         |  subaligner       |  dual     |  "test.srt"       |   eng,spa         |   "test_aligned.srt"      |
+        |  subaligner       |  script   |  "test_plain.txt" |   eng,ita         |   "test_aligned.srt"      |
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |   eng,fra         |   "test_aligned.srt"      |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |   eng,deu         |   "test_aligned.srt"      |
 
@@ -219,6 +244,18 @@ Feature: Subaligner CLI
         |  output_dir       |  mode     |  subtitle-out |
         |  "aligned_single" |  single   |  "test.srt"   |
         |  "aligned_dual"   |  dual     |  "test.srt"   |
+
+    @batch
+    Scenario Outline: Test batch alignment with output formats
+        Given I have an audiovisual file directory "av"
+        And I have a subtitle file directory "sub"
+        And I want to save the alignment output in directory <output_dir> with format <subtitle-format>
+        When I run the subaligner_batch on them with <mode> stage
+        Then a new subtitle file <subtitle-out> is generated in the above output directory
+    Examples:
+        |  output_dir       |  mode     |   subtitle-format |  subtitle-out |
+        |  "aligned_single" |  single   |   "ttml"          |  "test.ttml"  |
+        |  "aligned_dual"   |  dual     |   "vtt"           |  "test.vtt"   |
 
     @exception
     Scenario Outline: Test errors out on unsupported subtitle input

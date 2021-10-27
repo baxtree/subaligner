@@ -3,11 +3,17 @@
 </div>
 
 [![Build Status](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml/badge.svg?branch=master)](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml?query=branch%3Amaster) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
-[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
 [![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
+[![Docker Hub](https://zenodo.org/badge/doi/10.5281/zenodo.1234.svg)](https://doi.org/10.5281/zenodo.1234)
+
+## Supported Formats
+Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
+
+Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
 
 ## Dependencies
 Required by basic: [FFmpeg](https://www.ffmpeg.org/)
@@ -111,6 +117,12 @@ $ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/s
 $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
+# Alignment on segmented plain texts (double newlines as the delimiter)
+
+$ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
+$ subaligner -m script -v https://example.com/video.mp4 -s https://example.com/subtitle.txt -o subtitle_aligned.srt
+```
+```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
 
 $ subaligner_1pass --languages
@@ -120,12 +132,14 @@ $ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner --languages
 $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
+$ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
 ```
 ```
 # Run batch alignment against directories
 
 $ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/
 $ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/
+$ subaligner_batch -m dual -vd videos/ -sd subtitles/ -od aligned_subtitles/ -of ttml
 ```
 ```
 # Run alignments with pipx
@@ -153,10 +167,6 @@ The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI
 Additional utilities can be used after consulting `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
 
 ![](figures/screencast.gif)
-## Supported Formats
-Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
-
-Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
 
 ## Advanced Usage
 You can train a new model with your own audiovisual files and subtitle files:
@@ -175,3 +185,16 @@ First Stage (Global Alignment):
 
 Second Stage (Parallelised Individual Alignment):
 ![](figures/2nd_stage.png)
+
+## Acknowledgement
+Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.
+
+This tool wouldn't be possible without the following packages:
+[librosa](https://librosa.github.io/librosa/)
+[tensorflow](https://www.tensorflow.org/)
+[scikit-learn](https://scikit-learn.org)
+[pycaption](https://pycaption.readthedocs.io)
+[pysrt](https://github.com/byroot/pysrt)
+[pysubs2](https://github.com/tkarabela/pysubs2)
+[aeneas](https://www.readbeyond.it/aeneas/)
+[transformers](https://huggingface.co/transformers/).

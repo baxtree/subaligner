@@ -5,11 +5,9 @@ import threading
 import concurrent.futures
 import gc
 import math
-import sys
-import pkg_resources
+import logging
 import numpy as np
 import multiprocessing as mp
-
 from typing import Tuple, List, Optional, Dict, Any
 from pysrt import SubRipTime, SubRipItem, SubRipFile
 from sklearn.metrics import log_loss
@@ -28,8 +26,6 @@ from .logger import Logger
 class Predictor(Singleton):
     """ Predictor for working out the time to shift subtitles
     """
-
-    __LOGGER = Logger().get_logger(__name__)
     __MAX_SHIFT_IN_SECS = (
         100
     )
@@ -39,6 +35,9 @@ class Predictor(Singleton):
     __MAX_HEAD_ROOM = 20000  # Maximum duration without subtitle (10 minutes)
 
     __SEGMENT_PREDICTION_TIMEOUT = 60  # Maximum waiting time in seconds when predicting each segment
+
+    __THREAD_QUEUE_SIZE = 8
+    __THREAD_NUMBER = 4
 
     def __init__(self, **kwargs) -> None:
         """Feature predictor initialiser.
@@ -52,7 +51,8 @@ class Predictor(Singleton):
         """
 
         self.__feature_embedder = FeatureEmbedder(**kwargs)
-        self.__lock = threading.RLock()
+        self.__LOGGER = Logger().get_logger(__name__)
+        self.__media_helper = MediaHelper()
 
     def predict_single_pass(
             self,
@@ -71,7 +71,6 @@ class Predictor(Singleton):
                 tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
-        self.__initialise_network(weights_dir)
         weights_file_path = self.__get_weights_path(weights_dir)
         audio_file_path = ""
         frame_rate = None
@@ -80,11 +79,11 @@ class Predictor(Singleton):
                 video_file_path, subtitle_file_path, weights_file_path
             )
             try:
-                frame_rate = MediaHelper.get_frame_rate(video_file_path)
+                frame_rate = self.__media_helper.get_frame_rate(video_file_path)
                 self.__feature_embedder.step_sample = 1 / frame_rate
                 self.__on_frame_timecodes(subs)
             except NoFrameRateException:
-                Predictor.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
+                self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
             return subs, audio_file_path, voice_probabilities, frame_rate
         finally:
             if os.path.exists(audio_file_path):
@@ -110,10 +109,9 @@ class Predictor(Singleton):
             exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
-            tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+            tuple -- The shifted subtitles, the globally shifted subtitles and the voice probabilities of the original audio.
         """
 
-        self.__initialise_network(weights_dir)
         weights_file_path = self.__get_weights_path(weights_dir)
         audio_file_path = ""
         frame_rate = None
@@ -130,16 +128,93 @@ class Predictor(Singleton):
                 exit_segfail=exit_segfail,
             )
             try:
-                frame_rate = MediaHelper.get_frame_rate(video_file_path)
+                frame_rate = self.__media_helper.get_frame_rate(video_file_path)
                 self.__feature_embedder.step_sample = 1 / frame_rate
                 self.__on_frame_timecodes(new_subs)
             except NoFrameRateException:
-                Predictor.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
-            Predictor.__LOGGER.debug("Aligned segments generated")
+                self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
+            self.__LOGGER.debug("Aligned segments generated")
             return new_subs, subs, voice_probabilities, frame_rate
         finally:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
+
+    def predict_plain_text(self, video_file_path: str, subtitle_file_path: str, stretch_in_lang: str = "eng") -> Tuple:
+        """Predict time to shift with plain texts
+
+            Arguments:
+            video_file_path {string} -- The input video file path.
+            subtitle_file_path {string} -- The path to the subtitle file.
+            stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
+
+            Returns:
+            tuple -- The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
+        """
+        from aeneas.executetask import ExecuteTask
+        from aeneas.task import Task
+        from aeneas.runtimeconfiguration import RuntimeConfiguration
+        from aeneas.logger import Logger as AeneasLogger
+
+        t = datetime.datetime.now()
+        audio_file_path = self.__media_helper.extract_audio(
+            video_file_path, True, 16000
+        )
+        self.__LOGGER.debug(
+            "[{}] Audio extracted after {}".format(
+                os.getpid(), str(datetime.datetime.now() - t)
+            )
+        )
+
+        root, _ = os.path.splitext(audio_file_path)
+
+        # Initialise a DTW alignment task
+        task_config_string = (
+            "task_language={}|os_task_file_format=srt|is_text_type=subtitles".format(stretch_in_lang)
+        )
+        runtime_config_string = "dtw_algorithm=stripe"  # stripe or exact
+        task = Task(config_string=task_config_string)
+
+        try:
+            task.audio_file_path_absolute = audio_file_path
+            task.text_file_path_absolute = subtitle_file_path
+            task.sync_map_file_path_absolute = "{}.srt".format(root)
+
+            tee = False if self.__LOGGER.level == getattr(logging, 'DEBUG') else True
+
+            # Execute the task
+            ExecuteTask(
+                task=task,
+                rconf=RuntimeConfiguration(config_string=runtime_config_string),
+                logger=AeneasLogger(tee=tee),
+            ).execute()
+
+            # Output new subtitle segment to a file
+            task.output_sync_map_file()
+
+            # Load the above subtitle segment
+            adjusted_subs = Subtitle.load(
+                task.sync_map_file_path_absolute
+            ).subs
+
+            frame_rate = None
+            try:
+                frame_rate = self.__media_helper.get_frame_rate(video_file_path)
+                self.__feature_embedder.step_sample = 1 / frame_rate
+                self.__on_frame_timecodes(adjusted_subs)
+            except NoFrameRateException:
+                self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
+
+            return adjusted_subs, None, None, frame_rate
+        except KeyboardInterrupt:
+            raise TerminalException("Subtitle stretch interrupted by the user")
+        finally:
+            # Housekeep intermediate files
+            if task.audio_file_path_absolute is not None and os.path.exists(
+                    task.audio_file_path_absolute
+            ):
+                os.remove(task.audio_file_path_absolute)
+            if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
+                os.remove(task.sync_map_file_path_absolute)
 
     def get_log_loss(self, voice_probabilities: "np.ndarray[float]", subs: List[SubRipItem]) -> float:
         """Returns a single loss value on voice prediction
@@ -160,7 +235,7 @@ class Predictor(Singleton):
         # so we can have room to shift the subtitle back and forth based on losses.
         head_room = len(voice_probabilities) - len(subtitle_mask)
         if head_room < 0:
-            Predictor.__LOGGER.warning("Audio duration is shorter than the subtitle duration")
+            self.__LOGGER.warning("Audio duration is shorter than the subtitle duration")
             local_vp = np.vstack(
                 [
                     voice_probabilities,
@@ -175,7 +250,7 @@ class Predictor(Singleton):
                 subtitle_mask, voice_probabilities[: len(subtitle_mask)], labels=[0, 1]
             )
 
-        Predictor.__LOGGER.debug("Log loss: {}".format(result))
+        self.__LOGGER.debug("Log loss: {}".format(result))
         return result
 
     def get_min_log_loss_and_index(self, voice_probabilities: "np.ndarray[float]", subs: SubRipFile) -> Tuple[float, int]:
@@ -197,7 +272,7 @@ class Predictor(Singleton):
         # Adjust the voice duration when it is shorter than the subtitle duration
         # so we can have room to shift the subtitle back and forth based on losses.
         head_room = len(voice_probabilities) - len(subtitle_mask)
-        Predictor.__LOGGER.debug("head room: {}".format(head_room))
+        self.__LOGGER.debug("head room: {}".format(head_room))
         if head_room < 0:
             local_vp = np.vstack(
                 [
@@ -209,13 +284,13 @@ class Predictor(Singleton):
             local_vp = voice_probabilities
         head_room = len(local_vp) - len(subtitle_mask)
         if head_room > Predictor.__MAX_HEAD_ROOM:
-            Predictor.__LOGGER.error("head room: {}".format(head_room))
+            self.__LOGGER.error("head room: {}".format(head_room))
             raise TerminalException(
                 "Maximum head room reached due to the suspicious audio or subtitle duration"
             )
 
         log_losses = []
-        Predictor.__LOGGER.debug(
+        self.__LOGGER.debug(
             "Start calculating {} log loss(es)...".format(head_room)
         )
         for i in np.arange(0, head_room):
@@ -239,73 +314,59 @@ class Predictor(Singleton):
 
         return min_log_loss, min_log_loss_idx
 
-    def __predict_2nd_pass(self, audio_file_path: str, subs: List[SubRipItem], weights_file_path: str, stretch: bool, stretch_in_lang: str, exit_segfail: bool) -> List[SubRipItem]:
-        """This function uses divide and conquer to align partial subtitle with partial video.
-
-        Arguments:
-            audio_file_path {string} -- The file path of the original audio.
-            subs {list} -- A list of SubRip files.
-            weights_file_path {string} --  The file path of the weights file.
-            stretch {bool} -- True to stretch the subtitle segments.
-            stretch_in_lang {str} -- The language used for stretching subtitles.
-            exit_segfail {bool} -- True to exit on any segment alignment failures.
-        """
-
-        segment_starts, segment_ends, subs = MediaHelper.get_audio_segment_starts_and_ends(subs)
-        subs_copy = deepcopy(subs)
-
-        for index, sub in enumerate(subs):
-            Predictor.__LOGGER.debug(
-                "Subtitle chunk #{0}: start time: {1} ------> end time: {2}".format(
-                    index, sub[0].start, sub[len(sub) - 1].end
-                )
-            )
-
-        assert len(segment_starts) == len(
-            segment_ends
-        ), "Segment start times and end times do not match"
-        assert len(segment_starts) == len(
-            subs
-        ), "Segment size and subtitle size do not match"
-
+    @staticmethod
+    def _predict_in_multiprocesses(
+            self,
+            batch_idx: List[int],
+            segment_starts: List[str],
+            segment_ends: List[str],
+            weights_file_path: str,
+            audio_file_path: str,
+            subs: List[SubRipItem],
+            subs_copy: List[SubRipItem],
+            stretch: bool,
+            stretch_in_lang: str,
+            exit_segfail: bool,
+    ) -> List[SubRipItem]:
         subs_list = []
-
-        max_workers = math.ceil(float(os.getenv("MAX_WORKERS", mp.cpu_count() / 2)))
-        Predictor.__LOGGER.debug("Number of workers: {}".format(max_workers))
-
         with _ThreadPoolExecutorLocal(
-                queue_size=10,
-                max_workers=max_workers
+                queue_size=Predictor.__THREAD_QUEUE_SIZE,
+                max_workers=Predictor.__THREAD_NUMBER
         ) as executor:
-            futures = [
-                executor.submit(
-                    Predictor.__predict_in_multithreads,
-                    self,
-                    i,
-                    segment_starts,
-                    segment_ends,
-                    weights_file_path,
-                    audio_file_path,
-                    subs,
-                    subs_copy,
-                    stretch,
-                    stretch_in_lang,
-                    exit_segfail
+            lock = threading.RLock()
+            network = self.__initialise_network(os.path.dirname(weights_file_path), self.__LOGGER)
+            futures = []
+            for segment_index in batch_idx:
+                futures.append(
+                    executor.submit(
+                        Predictor._predict_in_multithreads,
+                        self,
+                        segment_index,
+                        segment_starts,
+                        segment_ends,
+                        weights_file_path,
+                        audio_file_path,
+                        subs,
+                        subs_copy,
+                        stretch,
+                        stretch_in_lang,
+                        exit_segfail,
+                        lock,
+                        network
+                    )
                 )
-                for i in range(len(segment_starts))
-            ]
             for i, future in enumerate(futures):
                 try:
                     new_subs = future.result(timeout=Predictor.__SEGMENT_PREDICTION_TIMEOUT)
                 except concurrent.futures.TimeoutError as e:
                     self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
                     message = "Segment alignment timed out after {} seconds".format(Predictor.__SEGMENT_PREDICTION_TIMEOUT)
-                    Predictor.__LOGGER.error(message)
+                    self.__LOGGER.error(message)
                     raise TerminalException(message) from e
                 except Exception as e:
                     self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
                     message = "Exception on segment alignment: {}\n{}".format(str(e), "".join(traceback.format_stack()))
-                    Predictor.__LOGGER.error(message)
+                    self.__LOGGER.error(e, exc_info=True, stack_info=True)
                     traceback.print_tb(e.__traceback__)
                     if isinstance(e, TerminalException):
                         raise e
@@ -313,18 +374,14 @@ class Predictor(Singleton):
                         raise TerminalException(message) from e
                 except KeyboardInterrupt:
                     self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
-                    raise TerminalException("Alignment interrupted by the user")
+                    raise TerminalException("Segment alignment interrupted by the user")
                 else:
-                    Predictor.__LOGGER.debug("Segment aligned")
-                    subs_list.append(new_subs)
-
-        subs_list = [
-            sub_item for subs in subs_list for sub_item in subs
-        ]  # flatten the subs_list
-        Predictor.__LOGGER.debug("All segments aligned")
+                    self.__LOGGER.debug("Segment aligned")
+                    subs_list.extend(new_subs)
         return subs_list
 
-    def __predict_in_multithreads(
+    @staticmethod
+    def _predict_in_multithreads(
             self,
             segment_index: int,
             segment_starts: List[str],
@@ -336,16 +393,17 @@ class Predictor(Singleton):
             stretch: bool,
             stretch_in_lang: str,
             exit_segfail: bool,
+            lock: threading.RLock,
+            network: Network
     ) -> List[SubRipItem]:
-        thread_name = threading.current_thread().name
         segment_path = ""
         try:
             if segment_index == (len(segment_starts) - 1):
-                segment_path, segment_duration = MediaHelper.extract_audio_from_start_to_end(
+                segment_path, segment_duration = self.__media_helper.extract_audio_from_start_to_end(
                     audio_file_path, segment_starts[segment_index], None
                 )
             else:
-                segment_path, segment_duration = MediaHelper.extract_audio_from_start_to_end(
+                segment_path, segment_duration = self.__media_helper.extract_audio_from_start_to_end(
                     audio_file_path,
                     segment_starts[segment_index],
                     segment_ends[segment_index],
@@ -364,7 +422,6 @@ class Predictor(Singleton):
                 previous_gap = FeatureEmbedder.time_to_sec(subs[segment_index][0].start) - FeatureEmbedder.time_to_sec(
                     subs[segment_index - 1][len(subs[segment_index - 1]) - 1].end
                 )
-
             subs_new, _, voice_probabilities = self.__predict(
                 video_file_path=None,
                 subtitle_file_path=None,
@@ -373,18 +430,20 @@ class Predictor(Singleton):
                 subtitles=subs_copy[segment_index],
                 max_shift_secs=max_shift_secs,
                 previous_gap=previous_gap,
+                lock=lock,
+                network=network
             )
             del voice_probabilities
             gc.collect()
 
             if stretch:
-                subs_new = self.__adjust_durations(subs_new, audio_file_path, stretch_in_lang)
-                Predictor.__LOGGER.info("[{}] Segment {} stretched".format(thread_name, segment_index))
+                subs_new = self.__adjust_durations(subs_new, audio_file_path, stretch_in_lang, lock)
+                self.__LOGGER.info("[{}] Segment {} stretched".format(os.getpid(), segment_index))
             return subs_new
         except Exception as e:
-            Predictor.__LOGGER.error(
+            self.__LOGGER.error(
                 "[{}] Alignment failed for segment {}: {}\n{}".format(
-                    thread_name, segment_index, str(e), "".join(traceback.format_stack())
+                    os.getpid(), segment_index, str(e), "".join(traceback.format_stack())
                 )
             )
             traceback.print_tb(e.__traceback__)
@@ -395,6 +454,149 @@ class Predictor(Singleton):
             # Housekeep intermediate files
             if os.path.exists(segment_path):
                 os.remove(segment_path)
+
+    @staticmethod
+    def __minibatch(total, batch_size):
+        batch = []
+        for i in range(total):
+            if len(batch) == batch_size:
+                yield batch
+                batch = []
+            batch.append(i)
+        if batch:
+            yield batch
+
+    @staticmethod
+    def __initialise_network(weights_dir: str, logger: logging.Logger) -> Network:
+        model_dir = weights_dir.replace("/weights", "/model")
+        config_dir = weights_dir.replace("/weights", "/config")
+        files = os.listdir(model_dir)
+        model_files = [
+            file
+            for file in files
+            if file.startswith("model")
+        ]
+        files = os.listdir(config_dir)
+        hyperparams_files = [
+            file
+            for file in files
+            if file.startswith("hyperparameters")
+        ]
+
+        if not model_files:
+            raise TerminalException(
+                "Cannot find model files at {}".format(weights_dir)
+            )
+
+        logger.debug("model files: {}".format(model_files))
+        logger.debug("config files: {}".format(hyperparams_files))
+
+        # Get the first file from the file lists
+        model_path = "{}/{}".format(model_dir, model_files[0])
+        hyperparams_path = "{}/{}".format(config_dir, hyperparams_files[0])
+        hyperparams = Hyperparameters.from_file(hyperparams_path)
+        return Network.get_from_model(model_path, hyperparams)
+
+    @staticmethod
+    def __get_weights_path(weights_dir: str) -> str:
+        files = os.listdir(weights_dir)
+        weights_files = [
+            file
+            for file in files
+            if file.startswith("weights")
+        ]
+
+        if not weights_files:
+            raise TerminalException(
+                "Cannot find weights files at {}".format(weights_dir)
+            )
+
+        # Get the first file from the file lists
+        weights_path = os.path.join(weights_dir, weights_files[0])
+
+        return os.path.abspath(weights_path)
+
+    def __predict_2nd_pass(self, audio_file_path: str, subs: List[SubRipItem], weights_file_path: str, stretch: bool, stretch_in_lang: str, exit_segfail: bool) -> List[SubRipItem]:
+        """This function uses divide and conquer to align partial subtitle with partial video.
+
+        Arguments:
+            audio_file_path {string} -- The file path of the original audio.
+            subs {list} -- A list of SubRip files.
+            weights_file_path {string} --  The file path of the weights file.
+            stretch {bool} -- True to stretch the subtitle segments.
+            stretch_in_lang {str} -- The language used for stretching subtitles.
+            exit_segfail {bool} -- True to exit on any segment alignment failures.
+        """
+
+        segment_starts, segment_ends, subs = self.__media_helper.get_audio_segment_starts_and_ends(subs)
+        subs_copy = deepcopy(subs)
+
+        for index, sub in enumerate(subs):
+            self.__LOGGER.debug(
+                "Subtitle chunk #{0}: start time: {1} ------> end time: {2}".format(
+                    index, sub[0].start, sub[len(sub) - 1].end
+                )
+            )
+
+        assert len(segment_starts) == len(
+            segment_ends
+        ), "Segment start times and end times do not match"
+        assert len(segment_starts) == len(
+            subs
+        ), "Segment size and subtitle size do not match"
+
+        subs_list = []
+
+        max_workers = math.ceil(float(os.getenv("MAX_WORKERS", mp.cpu_count() / 2)))
+        self.__LOGGER.debug("Number of workers: {}".format(max_workers))
+
+        with concurrent.futures.ProcessPoolExecutor(
+                max_workers=max_workers
+        ) as executor:
+            batch_size = max(math.floor(len(segment_starts) / max_workers), 1)
+            futures = [
+                executor.submit(
+                    Predictor._predict_in_multiprocesses,
+                    self,
+                    batch_idx,
+                    segment_starts,
+                    segment_ends,
+                    weights_file_path,
+                    audio_file_path,
+                    subs,
+                    subs_copy,
+                    stretch,
+                    stretch_in_lang,
+                    exit_segfail
+                )
+                for batch_idx in Predictor.__minibatch(len(segment_starts), batch_size)
+            ]
+            for i, future in enumerate(futures):
+                try:
+                    subs_list.extend(future.result(timeout=Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size))
+                except concurrent.futures.TimeoutError as e:
+                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
+                    message = "Batch alignment timed out after {} seconds".format(Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__LOGGER.error(message)
+                    raise TerminalException(message) from e
+                except Exception as e:
+                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
+                    message = "Exception on batch alignment: {}\n{}".format(str(e), "".join(traceback.format_stack()))
+                    self.__LOGGER.error(e, exc_info=True, stack_info=True)
+                    traceback.print_tb(e.__traceback__)
+                    if isinstance(e, TerminalException):
+                        raise e
+                    else:
+                        raise TerminalException(message) from e
+                except KeyboardInterrupt:
+                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
+                    raise TerminalException("Batch alignment interrupted by the user")
+                else:
+                    self.__LOGGER.debug("Batch aligned")
+
+        subs_list = [sub_item for sub_item in subs_list]
+        self.__LOGGER.debug("All segments aligned")
+        return subs_list
 
     def __cancel_futures(self, futures: List[concurrent.futures.Future], timeout: int) -> None:
         for future in futures:
@@ -423,40 +625,7 @@ class Predictor(Singleton):
             sub.start = SubRipTime.coerce(new_start)
             sub.end = SubRipTime.coerce(new_end)
 
-    def __initialise_network(self, weights_dir: str) -> None:
-        model_dir = weights_dir.replace("/weights", "/model")
-        config_dir = weights_dir.replace("/weights", "/config")
-        files = os.listdir(model_dir)
-        model_files = [
-            file
-            for file in files
-            if file.startswith("model")
-        ]
-        files = os.listdir(config_dir)
-        hyperparams_files = [
-            file
-            for file in files
-            if file.startswith("hyperparameters")
-        ]
-
-        if not model_files:
-            raise TerminalException(
-                "Cannot find model files at {}".format(weights_dir)
-            )
-
-        Predictor.__LOGGER.debug("model files: {}".format(model_files))
-        Predictor.__LOGGER.debug("config files: {}".format(hyperparams_files))
-
-        # Get the first file from the file lists
-        model_path = "{}/{}".format(model_dir, model_files[0])
-        hyperparams_path = "{}/{}".format(config_dir, hyperparams_files[0])
-
-        # Only initialise the network once
-        if not hasattr(self, "__network"):
-            hyperparams = Hyperparameters.from_file(hyperparams_path)
-            self.__network = Network.get_from_model(model_path, hyperparams)
-
-    def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str, stretch_in_lang: str) -> List[SubRipItem]:
+    def __adjust_durations(self, subs: List[SubRipItem], audio_file_path: str, stretch_in_lang: str, lock: threading.RLock) -> List[SubRipItem]:
         from aeneas.executetask import ExecuteTask
         from aeneas.task import Task
         from aeneas.runtimeconfiguration import RuntimeConfiguration
@@ -470,8 +639,8 @@ class Predictor(Singleton):
         task = Task(config_string=task_config_string)
 
         try:
-            with self.__lock:
-                segment_path, _ = MediaHelper.extract_audio_from_start_to_end(
+            with lock:
+                segment_path, _ = self.__media_helper.extract_audio_from_start_to_end(
                     audio_file_path,
                     str(subs[0].start),
                     str(subs[len(subs) - 1].end),
@@ -490,11 +659,7 @@ class Predictor(Singleton):
                 task.text_file_path_absolute = text_file_path
                 task.sync_map_file_path_absolute = "{}.srt".format(root)
 
-                tee = False
-                if Logger.VERBOSE:
-                    tee = True
-                if Logger.QUIET:
-                    tee = False
+                tee = self.__LOGGER.level == getattr(logging, 'DEBUG')
 
                 # Execute the task
                 ExecuteTask(
@@ -514,7 +679,7 @@ class Predictor(Singleton):
                 sub_new_loaded.index = subs[index].index
 
             adjusted_subs.shift(
-                seconds=MediaHelper.get_duration_in_seconds(
+                seconds=self.__media_helper.get_duration_in_seconds(
                     start=None, end=str(subs[0].start)
                 )
             )
@@ -534,27 +699,6 @@ class Predictor(Singleton):
             if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
                 os.remove(task.sync_map_file_path_absolute)
 
-    @staticmethod
-    def __get_weights_path(weights_dir: str) -> str:
-        files = os.listdir(weights_dir)
-        weights_files = [
-            file
-            for file in files
-            if file.startswith("weights")
-        ]
-
-        if not weights_files:
-            raise TerminalException(
-                "Cannot find weights files at {}".format(weights_dir)
-            )
-
-        Predictor.__LOGGER.debug("weights files: {}".format(weights_files))
-
-        # Get the first file from the file lists
-        weights_path = os.path.join(weights_dir, weights_files[0])
-
-        return os.path.abspath(weights_path)
-
     def __predict(
             self,
             video_file_path: Optional[str],
@@ -564,6 +708,8 @@ class Predictor(Singleton):
             subtitles: Optional[SubRipFile] = None,
             max_shift_secs: Optional[float] = None,
             previous_gap: Optional[float] = None,
+            lock: threading.RLock = None,
+            network: Network = None
     ) -> Tuple[List[SubRipItem], str, "np.ndarray[float]"]:
         """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
 
@@ -581,20 +727,20 @@ class Predictor(Singleton):
         Returns:
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
-
-        thread_name = threading.current_thread().name
+        if network is None:
+            network = self.__initialise_network(os.path.dirname(weights_file_path), self.__LOGGER)
         result: Dict[str, Any] = {}
         pred_start = datetime.datetime.now()
         if audio_file_path is not None:
             result["audio_file_path"] = audio_file_path
         elif video_file_path is not None:
             t = datetime.datetime.now()
-            audio_file_path = MediaHelper.extract_audio(
+            audio_file_path = self.__media_helper.extract_audio(
                 video_file_path, True, 16000
             )
-            Predictor.__LOGGER.debug(
+            self.__LOGGER.debug(
                 "[{}] Audio extracted after {}".format(
-                    thread_name, str(datetime.datetime.now() - t)
+                    os.getpid(), str(datetime.datetime.now() - t)
                 )
             )
             result["video_file_path"] = video_file_path
@@ -610,7 +756,17 @@ class Predictor(Singleton):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
             raise TerminalException("ERROR: No subtitles passed in")
-        with self.__lock:
+        if lock is not None:
+            with lock:
+                try:
+                    train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
+                        audio_file_path, None, subtitles=subs
+                    )
+                except TerminalException:
+                    if os.path.exists(audio_file_path):
+                        os.remove(audio_file_path)
+                    raise
+        else:
             try:
                 train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
                     audio_file_path, None, subtitles=subs
@@ -627,16 +783,30 @@ class Predictor(Singleton):
 
         # Load neural network
         input_shape = (train_data.shape[1], train_data.shape[2])
-        Predictor.__LOGGER.debug("[{}] input shape: {}".format(thread_name, input_shape))
+        self.__LOGGER.debug("[{}] input shape: {}".format(os.getpid(), input_shape))
 
         # Network class is not thread safe so a new graph is created for each thread
         pred_start = datetime.datetime.now()
-        with self.__lock:
+        if lock is not None:
+            with lock:
+                try:
+                    self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
+                    voice_probabilities = network.get_predictions(train_data, weights_file_path)
+                except Exception as e:
+                    self.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
+                    traceback.print_tb(e.__traceback__)
+                    raise TerminalException("Prediction failed") from e
+                finally:
+                    del train_data
+                    del labels
+                    gc.collect()
+        else:
             try:
-                Predictor.__LOGGER.debug("[{}] Start predicting...".format(thread_name))
-                voice_probabilities = self.__network.get_predictions(train_data, weights_file_path)
+                self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
+                voice_probabilities = network.get_predictions(train_data, weights_file_path)
             except Exception as e:
-                Predictor.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(thread_name, str(e), "".join(traceback.format_stack())))
+                self.__LOGGER.error(
+                    "[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
                 traceback.print_tb(e.__traceback__)
                 raise TerminalException("Prediction failed") from e
             finally:
@@ -653,16 +823,18 @@ class Predictor(Singleton):
 
         result["time_predictions"] = str(datetime.datetime.now() - pred_start)
 
-        # for p in voice_probabilities: Predictor.__LOGGER.debug("{}, ".format(p))
-        # Predictor.__LOGGER.debug("predictions: {}".format(voice_probabilities))
-
         original_start = FeatureEmbedder.time_to_sec(subs[0].start)
         shifted_subs = deepcopy(subs)
         subs.shift(seconds=-original_start)
 
-        Predictor.__LOGGER.info("[{}] Aligning subtitle with video...".format(thread_name))
+        self.__LOGGER.info("[{}] Aligning subtitle with video...".format(os.getpid()))
 
-        with self.__lock:
+        if lock is not None:
+            with lock:
+                min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
+                    voice_probabilities, subs
+                )
+        else:
             min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
                 voice_probabilities, subs
             )
@@ -670,7 +842,7 @@ class Predictor(Singleton):
         pos_to_delay = min_log_loss_pos
         result["loss"] = min_log_loss
 
-        Predictor.__LOGGER.info("[{}] Subtitle aligned".format(thread_name))
+        self.__LOGGER.info("[{}] Subtitle aligned".format(os.getpid()))
 
         if subtitle_file_path is not None:  # for the first pass
             seconds_to_shift = (
@@ -696,24 +868,24 @@ class Predictor(Singleton):
         result["original_start"] = original_start
         total_elapsed_time = str(datetime.datetime.now() - pred_start)
         result["time_sync"] = total_elapsed_time
-        Predictor.__LOGGER.debug("[{}] Statistics: {}".format(thread_name, result))
+        self.__LOGGER.debug("[{}] Statistics: {}".format(os.getpid(), result))
 
-        Predictor.__LOGGER.debug("[{}] Total Time: {}".format(thread_name, total_elapsed_time))
-        Predictor.__LOGGER.debug(
-            "[{}] Seconds to shift: {}".format(thread_name, seconds_to_shift)
+        self.__LOGGER.debug("[{}] Total Time: {}".format(os.getpid(), total_elapsed_time))
+        self.__LOGGER.debug(
+            "[{}] Seconds to shift: {}".format(os.getpid(), seconds_to_shift)
         )
 
         # For each subtitle chunk, its end time should not be later than the end time of the audio segment
         if max_shift_secs is not None and seconds_to_shift <= max_shift_secs:
             shifted_subs.shift(seconds=seconds_to_shift)
         elif max_shift_secs is not None and seconds_to_shift > max_shift_secs:
-            Predictor.__LOGGER.warning(
-                "[{}] Maximum {} seconds shift has reached".format(thread_name, max_shift_secs)
+            self.__LOGGER.warning(
+                "[{}] Maximum {} seconds shift has reached".format(os.getpid(), max_shift_secs)
             )
             shifted_subs.shift(seconds=max_shift_secs)
         else:
             shifted_subs.shift(seconds=seconds_to_shift)
-        Predictor.__LOGGER.debug("[{}] Subtitle shifted".format(thread_name))
+        self.__LOGGER.debug("[{}] Subtitle shifted".format(os.getpid()))
         return shifted_subs, audio_file_path, voice_probabilities
 
 

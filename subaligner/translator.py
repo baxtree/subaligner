@@ -14,7 +14,6 @@ class Translator(Singleton):
     """Translate subtitles.
     """
 
-    __LOGGER = Logger().get_logger(__name__)
     __TENSOR_TYPE = "pt"
     __OPUS_MT = "Helsinki-NLP/opus-mt-{}-{}"
     __OPUS_TATOEBA = "Helsinki-NLP/opus-tatoeba-{}-{}"
@@ -57,6 +56,7 @@ class Translator(Singleton):
             NotImplementedError -- Thrown when the model of the specified language pair is not found.
         """
 
+        self.__LOGGER = Logger().get_logger(__name__)
         self.__initialise_model(src_language, tgt_language)
 
     @staticmethod
@@ -126,14 +126,14 @@ class Translator(Singleton):
         new_subs = deepcopy(subs)
         src_texts = [sub.text for sub in new_subs]
         num_of_batches = math.ceil(len(src_texts) / Translator.__TRANSLATING_BATCH_SIZE)
-        Translator.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
+        self.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
         for batch in tqdm(Translator.__batch(src_texts, Translator.__TRANSLATING_BATCH_SIZE), total=num_of_batches):
             tokenizer = self.tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
             translated = self.lang_model.generate(**tokenizer)
             translated_texts.extend([self.tokenizer.decode(t, skip_special_tokens=True) for t in translated])
         for index in range(len(new_subs)):
             new_subs[index].text = translated_texts[index]
-        Translator.__LOGGER.info("Subtitle translated")
+        self.__LOGGER.info("Subtitle translated")
         return new_subs
 
     def __initialise_model(self, src_lang: str, tgt_lang: str) -> None:
@@ -145,62 +145,61 @@ class Translator(Singleton):
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_MT.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_MT.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_MT.format(src_lang, tgt_lang)
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_TATOEBA.format(Translator.get_iso_639_alpha_2(src_lang), Translator.get_iso_639_alpha_2(tgt_lang))
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_TATOEBA.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_TATOEBA.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__log_and_back_off(mt_model_name)
+            self.__log_and_back_off(mt_model_name)
         try:
             mt_model_name = Translator.__OPUS_TATOEBA.format(src_lang, tgt_lang)
             self.__download_mt_model(mt_model_name)
             return
         except OSError:
-            Translator.__LOGGER.debug("Cannot download the MT model %s" % mt_model_name)
+            self.__LOGGER.debug("Cannot download the MT model %s" % mt_model_name)
             message = 'Cannot find the MT model for source language "{}" and destination language "{}"'.format(src_lang, tgt_lang)
-            Translator.__LOGGER.error(message)
+            self.__LOGGER.error(message)
             raise NotImplementedError(message)
 
     def __download_mt_model(self, mt_model_name: str) -> None:
-        Translator.__LOGGER.debug("Trying to download the MT model %s" % mt_model_name)
+        self.__LOGGER.debug("Trying to download the MT model %s" % mt_model_name)
         self.tokenizer = MarianTokenizer.from_pretrained(mt_model_name)
         self.lang_model = MarianMTModel.from_pretrained(mt_model_name)
-        Translator.__LOGGER.debug("MT model %s downloaded" % mt_model_name)
+        self.__LOGGER.debug("MT model %s downloaded" % mt_model_name)
 
-    @staticmethod
-    def __log_and_back_off(mt_model_name: str):
-        Translator.__LOGGER.debug("Cannot download the MT model %s" % mt_model_name)
+    def __log_and_back_off(self, mt_model_name: str):
+        self.__LOGGER.debug("Cannot download the MT model %s" % mt_model_name)
         time.sleep(1)
 
     @staticmethod

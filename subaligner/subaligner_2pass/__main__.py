@@ -214,9 +214,10 @@ def main():
             source, target = FLAGS.translate.split(",")
             translator = Translator(source, target)
             subs_list = translator.translate(subs)
-            Subtitle.export_subtitle(local_subtitle_path, subs_list, aligned_subtitle_path, frame_rate, "utf-8")
+            Subtitle.save_subs_as_target_format(subs_list, local_subtitle_path, aligned_subtitle_path, frame_rate, "utf-8")
+
         else:
-            Subtitle.export_subtitle(local_subtitle_path, subs_list, aligned_subtitle_path, frame_rate)
+            Subtitle.save_subs_as_target_format(subs_list, local_subtitle_path, aligned_subtitle_path, frame_rate)
 
         log_loss = predictor.get_log_loss(voice_probabilities, subs_list)
         if log_loss is None or log_loss > FLAGS.max_logloss:

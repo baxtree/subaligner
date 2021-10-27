@@ -57,6 +57,7 @@ def run_subaligner_with_translation(step, aligner, mode, language_pair):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_path_or_selector,
             "-t", language_pair,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
             "-q"], shell=False)
     else:
         process = subprocess.Popen([
@@ -65,6 +66,7 @@ def run_subaligner_with_translation(step, aligner, mode, language_pair):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_path_or_selector,
             "-t", language_pair,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
             "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
@@ -341,15 +343,25 @@ def aligned_dir(step, aligned_dir):
     step.context.aligning_output = os.path.join(step.context.temp_dir, aligned_dir)
 
 
+@given('I want to save the alignment output in directory "{aligned_dir:S}" with format "{format:S}"')
+def aligned_dir(step, aligned_dir, format):
+    step.context.aligning_output = os.path.join(step.context.temp_dir, aligned_dir)
+    step.context.subtitle_format = format
+
+
 @when('I run the subaligner_batch on them with {mode:S} stage')
 def run_subaligner_batch(step, mode):
-    process = subprocess.Popen([
+    cmd = [
         os.path.join(PWD, "..", "..", "..", "bin", "subaligner_batch"),
         "-m", mode,
         "-vd", step.context.av_dir,
         "-sd", step.context.sub_dir,
         "-od", step.context.aligning_output,
-        "-q"], shell=False)
+        "-q"
+    ]
+    if hasattr(step.context, "subtitle_format"):
+        cmd.extend(["-of", step.context.subtitle_format])
+    process = subprocess.Popen(cmd, shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
