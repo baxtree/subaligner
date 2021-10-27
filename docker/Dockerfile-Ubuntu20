@@ -1,11 +1,12 @@
 # Subaligner Ubuntu 20 Docker Image
-FROM ubuntu:20.10
-
 ARG RELEASE_VERSION 
+
+FROM ubuntu:20.10
+ARG RELEASE_VERSION
+ENV RELEASE_VERSION=${RELEASE_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
-ENV RELEASE_VERSION=$RELEASE_VERSION
 
 RUN apt-get -y update &&\
     apt-get -y install ffmpeg &&\
@@ -15,4 +16,4 @@ RUN apt-get -y update &&\
     apt-get -y install python3-tk &&\
     apt-get -y install python3-pip &&\
     python3 -m pip install --upgrade pip &&\
-    python3 -m pip install 'subaligner[harmony]==$RELEASE_VERSION'
+    python3 -m pip install 'subaligner[harmony]==${RELEASE_VERSION}'
