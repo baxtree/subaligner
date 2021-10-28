@@ -8,7 +8,7 @@
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
 [![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
-[![Docker Hub](https://zenodo.org/badge/doi/10.5281/zenodo.1234.svg)](https://doi.org/10.5281/zenodo.1234)
+[![Citation](https://zenodo.org/badge/228440472.svg)](https://doi.org/10.5281/zenodo.5603083)
 
 ## Supported Formats
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
@@ -187,8 +187,6 @@ Second Stage (Parallelised Individual Alignment):
 ![](figures/2nd_stage.png)
 
 ## Acknowledgement
-Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.
-
 This tool wouldn't be possible without the following packages:
 [librosa](https://librosa.github.io/librosa/)
 [tensorflow](https://www.tensorflow.org/)
@@ -198,3 +196,5 @@ This tool wouldn't be possible without the following packages:
 [pysubs2](https://github.com/tkarabela/pysubs2)
 [aeneas](https://www.readbeyond.it/aeneas/)
 [transformers](https://huggingface.co/transformers/).
+
+Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.

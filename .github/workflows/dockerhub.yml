@@ -1,0 +1,142 @@
+name: Docker Hub
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        
+      - name: checkout repo
+        uses: actions/checkout@v2
+        
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER_NAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: baxtree/subaligner:latest
+      
+      - name: Extract the tag
+        id: tag
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\/v/}
+
+      - name: Build and push the latest image
+        id: docker_build_latest
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Ubuntu20"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:latest
+          push: true
+
+      - name: Build and push the Ubuntu 20 image
+        id: docker_build_u20
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Ubuntu20"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u20
+          push: true
+
+      - name: Build and push the Ubuntu 18 image
+        id: docker_build_u18
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Ubuntu18"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u18
+          push: true
+
+      - name: Build and push the Fedora 31 image
+        id: docker_build_fed31
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Fedora31"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.fed31
+          push: true
+
+      - name: Build and push the Debian 10 image
+        id: docker_build_deb10
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Debian10"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.deb10
+          push: true
+      
+      - name: Build and push the ArchLinux image
+        id: docker_build_arch
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-ArchLinux"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.arch
+          push: true
+
+      - name: Build and push the CentOS 8 image
+        id: docker_build_el8
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-CentOS8"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.el8
+          push: true
+
+      - name: Build and push the CentOS 7 image
+        id: docker_build_el7
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-CentOS7"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.el7
+          push: true
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}

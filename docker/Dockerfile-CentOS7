@@ -3,6 +3,8 @@ From centos:7
 
 ARG RELEASE_VERSION
 
+ENV RELEASE_VERSION=${RELEASE_VERSION}
+
 RUN ["/bin/bash", "-c", "yum update -y &&\
     yum update-to -y openssl-libs-1:1.0.2k-21.el7_9 &&\
     yum install -y epel-release &&\
@@ -16,4 +18,5 @@ RUN ["/bin/bash", "-c", "yum update -y &&\
     yum install -y python36-setuptools &&\
     easy_install-3.6 pip &&\
     pip install --upgrade pip &&\
-    python3 -m pip install 'subaligner[harmony]==${RELEASE_VERSION:1}'"]
+    python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
+    python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
