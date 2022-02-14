@@ -123,6 +123,12 @@ $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
 $ subaligner -m script -v https://example.com/video.mp4 -s https://example.com/subtitle.txt -o subtitle_aligned.srt
 ```
 ```
+# Alignment on multiple subtitles against the single media file
+
+$ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt -s subtitle_lang_2.txt
+$ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt subtitle_lang_2.txt
+```
+```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
 
 $ subaligner_1pass --languages
