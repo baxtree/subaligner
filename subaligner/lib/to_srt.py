@@ -598,32 +598,3 @@ class TT:
 
     def __iter__(self):
         return iter(self.subs)
-
-if __name__ == '__main__':
-
-    from optparse import OptionParser
-    import sys
-
-    parser = OptionParser(usage = 'usage: %prog [options] input output')
-    parser.set_defaults(reader_class=STL)
-    parser.add_option('-d', '--debug', dest='debug_level', action='store_const', const=logging.DEBUG, default=logging.ERROR)
-    parser.add_option('-r', '--rich', dest='rich_formatting', action='store_true', default=False, help='Output text with some formatting, the following HTML tags are used: b i u font(color)')
-    parser.add_option("-s", "--stl", dest="reader_class", action="store_const", const=STL,
-                            help="Set input file format as STL (default)")
-    parser.add_option("-t", "--tt", dest="reader_class", action="store_const", const=TT,
-                            help="Set input file format as TT, handles both the EBU and SMPTE variants")
-
-    (options, args) = parser.parse_args()
-
-    if len(args) != 2:
-        parser.print_help()
-        sys.exit(1)
-
-    logging.basicConfig(level=options.debug_level)
-
-    input = options.reader_class(args[0], options.rich_formatting)
-    c = SRT(args[1])
-    for sub in input:
-        (tci, tco, txt) = sub
-        c.write(tci, tco, txt)
-    c.file.close()

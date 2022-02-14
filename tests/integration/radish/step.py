@@ -49,6 +49,17 @@ def run_subaligner(step, aligner, mode):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when("I run the manual shift with offset of {offset_seconds:g} in seconds")
+def run_subaligner_manual_shift(step, offset_seconds):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner"),
+        "-m", "shift",
+        "-s", step.context.subtitle_path_or_selector,
+        "-os", str(offset_seconds),
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and {language_pair:S} for translation")
 def run_subaligner_with_translation(step, aligner, mode, language_pair):
     if mode == "<NULL>":

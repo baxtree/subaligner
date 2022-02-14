@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-usage: subaligner [-h] [-m {single,dual}] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-so]
+usage: subaligner [-h] [-m {single,dual,script,shift}] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-so]
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-lan] [-d] [-q] [-ver]
+                  [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS] [-lgs] [-d] [-q] [-ver]
 
 Subaligner command line interface
 
@@ -10,7 +10,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
-  -so, --stretch_on     Switch on stretch on subtitles
+  -so, --stretch_on     Switch on stretch on subtitles)
   -sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --stretch_in_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].
                         NB: This will be ignored if neither -so nor --stretch_on is present
@@ -21,18 +21,20 @@ optional arguments:
                         Path to the output subtitle file
   -t TRANSLATE, --translate TRANSLATE
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -os OFFSET_SECONDS, --offset_seconds OFFSET_SECONDS
+                        Offset by which the subtitle will be shifted
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
 
 required arguments:
-  -m {single,dual, script}, --mode {single,dual,script}
-                        Alignment mode: either single or dual or script
+  -m {single,dual,script,shift}, --mode {single,dual,script,shift}
+                        Alignment mode: either single or dual
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .ttml, .vtt, .tmp, .dfxp, .xml, .sami, .scc, .sub, .txt, .stl, .ssa, .ytt, .srt, .sbv, .ass, .smi) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .sbv, .srt, .sami, .smi, .ssa, .tmp, .scc, .stl, .txt, .ttml, .dfxp, .vtt, .sub, .xml, .ytt, .ass) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -61,7 +63,7 @@ def main():
         "--mode",
         type=str,
         default="",
-        choices=["single", "dual", "script"],
+        choices=["single", "dual", "script", "shift"],
         help="Alignment mode: either single or dual",
     )
     required_args.add_argument(
@@ -127,6 +129,12 @@ def main():
         type=str,
         help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
     )
+    parser.add_argument(
+        "-os",
+        "--offset_seconds",
+        type=float,
+        help="Offset by which the subtitle will be shifted"
+    )
     parser.add_argument("-lgs", "--languages", action="store_true",
                         help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
@@ -143,34 +151,46 @@ def main():
         print("ERROR: --mode was not passed in")
         parser.print_usage()
         sys.exit(21)
-    if FLAGS.video_path == "":
-        print("ERROR: --video_path was not passed in")
-        parser.print_usage()
-        sys.exit(21)
     if FLAGS.subtitle_path == "":
         print("ERROR: --subtitle_path was not passed in")
         parser.print_usage()
         sys.exit(21)
-    if FLAGS.subtitle_path.lower().startswith("http") and FLAGS.output == "":
-        print("ERROR: --output was not passed in for alignment on a remote subtitle file")
-        parser.print_usage()
-        sys.exit(21)
-    if FLAGS.subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
-        print("ERROR: --output was not passed in for alignment on embedded subtitles")
-        parser.print_usage()
-        sys.exit(21)
-    if FLAGS.mode == "script" and FLAGS.output == "":
-        print("ERROR: --output was not passed in for alignment on plain texts")
-        parser.print_usage()
-        sys.exit(21)
-    if FLAGS.translate is not None:
-        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
-            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+    if FLAGS.mode != "shift":
+        if FLAGS.video_path == "":
+            print("ERROR: --video_path was not passed in")
+            parser.print_usage()
             sys.exit(21)
-    if FLAGS.stretch_on or FLAGS.mode == "script":
-        if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
-            print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
+        if FLAGS.subtitle_path.lower().startswith("http") and FLAGS.output == "":
+            print("ERROR: --output was not passed in for alignment on a remote subtitle file")
+            parser.print_usage()
             sys.exit(21)
+        if FLAGS.subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
+            print("ERROR: --output was not passed in for alignment on embedded subtitles")
+            parser.print_usage()
+            sys.exit(21)
+        if FLAGS.mode == "script" and FLAGS.output == "":
+            print("ERROR: --output was not passed in for alignment on plain texts")
+            parser.print_usage()
+            sys.exit(21)
+        if FLAGS.translate is not None:
+            if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+                print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+                sys.exit(21)
+        if FLAGS.stretch_on or FLAGS.mode == "script":
+            if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
+                print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
+                sys.exit(21)
+    else:
+        if FLAGS.offset_seconds is None:
+            print("ERROR: --offset_seconds was not passed in during subtitle shifting")
+            sys.exit(21)
+        from subaligner.subtitle import Subtitle
+
+        shifted_subtitle_file_path = Subtitle.shift_subtitle(subtitle_file_path=FLAGS.subtitle_path,
+                                                             seconds=FLAGS.offset_seconds,
+                                                             shifted_subtitle_file_path=FLAGS.output or None)
+        print("Shifted subtitle saved to: {}".format(shifted_subtitle_file_path))
+        exit(0)
 
     local_video_path = FLAGS.video_path
     local_subtitle_path = FLAGS.subtitle_path

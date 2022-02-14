@@ -135,6 +135,12 @@ $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
 ```
 ```
+# Shift subtitle manually by offset in seconds
+
+$ subaligner -m shift --subtitle_path subtitle.srt -os 5.5
+$ subaligner -m shift --subtitle_path subtitle.srt -os -5.5 -o subtitle_shifted.srt
+```
+```
 # Run batch alignment against directories
 
 $ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/

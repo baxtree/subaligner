@@ -42,6 +42,11 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
 
+**Shift subtitle manually by offset in seconds**::
+
+    (.venv) $ subaligner -m shift --subtitle_path subtitle.srt -os 5.5
+    (.venv) $ subaligner -m shift --subtitle_path subtitle.srt -os -5.5 -o subtitle_shifted.srt
+
 **Run batch alignment against directories**::
 
     (.venv) $ subaligner_batch -m single -vd videos/ -sd subtitles/ -od aligned_subtitles/

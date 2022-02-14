@@ -324,6 +324,10 @@ class Subtitle(object):
             string -- The path to the shifted subtitle file.
         """
         _, file_extension = os.path.splitext(subtitle_file_path)
+        if shifted_subtitle_file_path is None:
+            shifted_subtitle_file_path = subtitle_file_path.replace(
+                file_extension, "{}{}".format(suffix, file_extension)
+            )
         if file_extension.lower() in cls.TTML_EXTENSIONS:
             subs = cls(cls.__secret, subtitle_file_path, "ttml").subs
             subs.shift(seconds=seconds)
@@ -333,10 +337,6 @@ class Subtitle(object):
             for index, cue in enumerate(cues):
                 cue.attrib["begin"] = str(subs[index].start).replace(",", ".")
                 cue.attrib["end"] = str(subs[index].end).replace(",", ".")
-            if shifted_subtitle_file_path is None:
-                shifted_subtitle_file_path = subtitle_file_path.replace(
-                    file_extension, "{}{}".format(suffix, file_extension)
-                )
             encoding = Utils.detect_encoding(subtitle_file_path)
             tree.write(shifted_subtitle_file_path, encoding=encoding)
         elif file_extension.lower() in cls.STL_EXTENSIONS:

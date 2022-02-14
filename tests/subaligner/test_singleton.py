@@ -4,7 +4,7 @@ from subaligner.singleton import Singleton
 
 class SingletonTests(unittest.TestCase):
     def test_singleton(self):
-        class Single(Singleton):
+        class Single(metaclass=Singleton):
             pass
 
         a = Single()

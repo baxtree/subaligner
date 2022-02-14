@@ -31,6 +31,9 @@ jobs:
           cat requirements-dev.txt | xargs -L 1 pip install
           cat requirements-site.txt | xargs -L 1 pip install
           pip install -e . --ignore-installed
+      - name: Type checking
+        run: |
+          python -m mypy subaligner
       - name: Linting
         run: |
           pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
