@@ -741,7 +741,7 @@ class Subtitle(object):
                 # Change single quotes in the XML header to double quotes
                 with open(target_file_path, "w", encoding=encoding) as target:
                     if "xml_declaration" in inspect.getfullargspec(ElementTree.tostring).kwonlyargs:  # for >= python 3.8
-                        encoded = ElementTree.tostring(tt, encoding=encoding, method="xml", xml_declaration=True)
+                        encoded = ElementTree.tostring(tt, encoding=encoding, method="xml", xml_declaration=True) # type: ignore
                     else:
                         encoded = ElementTree.tostring(tt, encoding=encoding, method="xml")
                     normalised = encoded.decode(encoding) \

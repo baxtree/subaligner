@@ -33,6 +33,7 @@ jobs:
           pip install -e . --ignore-installed
       - name: Type checking
         run: |
+          mypy --install-types --non-interactive
           python -m mypy --follow-imports=skip subaligner
       - name: Linting
         run: |
