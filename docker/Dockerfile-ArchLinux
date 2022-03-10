@@ -5,7 +5,7 @@ ARG RELEASE_VERSION
 
 ENV RELEASE_VERSION=${RELEASE_VERSION}
 
-RUN ["/bin/bash", "-c", "pacman --noconfirm -Sy gcc ffmpeg espeak &&\
+RUN ["/bin/bash", "-c", "pacman --noconfirm -Sy gcc ffmpeg espeak-ng &&\
     pacman --noconfirm -Sy libsndfile &&\
     pacman --noconfirm -Sy libnsl &&\
     pacman --noconfirm -Syu python python-pip &&\
