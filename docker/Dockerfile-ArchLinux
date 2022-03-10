@@ -1,5 +1,5 @@
 # ArchLinux base
-FROM archlinux:base
+FROM archlinux:base-20211024.0.37588
 
 ARG RELEASE_VERSION
 
