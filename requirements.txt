@@ -12,7 +12,7 @@ click==5.1
 cloudpickle~=1.6.0
 cycler==0.10.0
 Cython~=0.29.22
-dask>=2021.10.0
+dask<2022.1.0
 decorator==4.3.0
 distributed==1.13.0
 filelock==3.0.12
