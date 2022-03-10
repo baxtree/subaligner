@@ -8,7 +8,7 @@ ENV RELEASE_VERSION=${RELEASE_VERSION}
 RUN ["/bin/bash", "-c", "pacman --noconfirm -Sy gcc ffmpeg espeak-ng &&\
     pacman --noconfirm -Sy libsndfile &&\
     pacman --noconfirm -Sy libnsl &&\
-    pacman --noconfirm -Syu python python-pip &&\
+    pacman --noconfirm -Syu python38 python-pip &&\
     ln -s /usr/lib/libffi.so.7 /usr/lib/libffi.so.6 &&\
     python -m pip install wheel &&\
     python -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
