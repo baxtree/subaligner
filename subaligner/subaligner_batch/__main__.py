@@ -4,7 +4,7 @@ usage: subaligner_batch [-h] [-m {single,dual}] [-vd VIDEO_DIRECTORY] [-sd SUBTI
                         [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                         [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-od OUTPUT_DIRECTORY] [-t TRANSLATE] [-lgs] [-d] [-q] [-ver]
 
-Batch align multiple subtitle files and audiovisual files (v0.1.4)
+Batch align multiple subtitle files and audiovisual files
 
 Subtitle files and their companion audiovisual files need to be stored in two separate directories.
 Each file pair needs to share the same base filename, the part before the extension.

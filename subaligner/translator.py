@@ -10,7 +10,7 @@ from .singleton import Singleton
 from .logger import Logger
 
 
-class Translator(Singleton):
+class Translator(metaclass=Singleton):
     """Translate subtitles.
     """
 

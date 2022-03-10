@@ -175,7 +175,7 @@ Feature: Subaligner CLI
         |  subaligner_2pass |  <NULL>   |
         |  subaligner       |  dual     |
 
-    @quality-management
+    @quality-control
     Scenario Outline: Test exit when alignment log loss is too high
         Given I have a video file "test.mp4"
         And I have a subtitle file "test.srt"
@@ -302,3 +302,25 @@ Feature: Subaligner CLI
         |  subaligner_1pass |
         |  subaligner_2pass |
         |  subaligner       |
+
+    @manual_shift
+    Scenario Outline: Shift the subtitle by offset in seconds
+        Given I have a subtitle file <subtitle-in>
+        When I run the manual shift with offset of <offset> in seconds
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |   subtitle-in |   subtitle-out             |  offset  |
+        |   "test.srt"  |   "test_shifted.srt"       |  1.1     |
+        |   "test.ttml" |   "test_shifted.ttml"      |  2.2     |
+        |   "test.xml"  |   "test_shifted.xml"       |  3       |
+        |   "test.dfxp" |   "test_shifted.dfxp"      |  4.25    |
+        |   "test.vtt"  |   "test_shifted.vtt"       |  +0      |
+        |   "test.sami" |   "test_shifted.sami"      |  0       |
+        |   "test.ssa"  |   "test_shifted.ssa"       |  -0      |
+        |   "test.ass"  |   "test_shifted.ass"       |  -1.1    |
+        |   "test.sub"  |   "test_shifted.sub"       |  -2.2    |
+        |   "test.tmp"  |   "test_shifted.tmp"       |  -3      |
+        |   "test.smi"  |   "test_shifted.smi"       |  -4.25   |
+        |   "test.scc"  |   "test_shifted.scc"       |  1.1     |
+        |   "test.sbv"  |   "test_shifted.sbv"       |  2.2     |
+        |   "test.ytt"  |   "test_shifted.ytt"       |  3       |

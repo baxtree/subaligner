@@ -26,6 +26,29 @@ def subtitle_file(step, file_name):
         step.context.subtitle_path_or_selector = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name).replace("[]", " ")
 
 
+@given('I have a list of subtitle files "{file_names:S}"')
+def subtitle_file_list(step, file_names):
+    step.context.subtitle_path_or_selector = [os.path.join(PWD, "..", "..", "subaligner", "resource", file_name).replace("[]", " ") for file_name in file_names.split(",")]
+
+
+@when('I run the alignment with subaligner on all of them')
+def run_subaligner_on_multi_subtitles(step):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner"),
+        "-m", "single",
+        "-v", step.context.video_file_path,
+        "-q"] + [["-s", path] for path in step.context.subtitle_path_or_selector], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@then('a list of subtitle files "{file_names:S}" are generated')
+def expect_result_list(step, file_names):
+    for file_name in file_names.split(","):
+        output_file_path = os.path.join(step.context.aligning_output, file_name)
+        assert os.path.isfile(output_file_path) is True
+    assert step.context.exit_code == 0
+
+
 @given('I have selector "{selector:S}" for the embedded subtitle')
 def subtitle_selector(step, selector):
     step.context.subtitle_path_or_selector = selector
@@ -46,6 +69,17 @@ def run_subaligner(step, aligner, mode):
             "-v", step.context.video_file_path,
             "-s", step.context.subtitle_path_or_selector,
             "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@when("I run the manual shift with offset of {offset_seconds:g} in seconds")
+def run_subaligner_manual_shift(step, offset_seconds):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner"),
+        "-m", "shift",
+        "-s", step.context.subtitle_path_or_selector,
+        "-os", str(offset_seconds),
+        "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 

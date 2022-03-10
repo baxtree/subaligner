@@ -8,7 +8,7 @@ import math
 import logging
 import numpy as np
 import multiprocessing as mp
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Tuple, List, Optional, Dict, Any, Iterable
 from pysrt import SubRipTime, SubRipItem, SubRipFile
 from sklearn.metrics import log_loss
 from copy import deepcopy
@@ -23,7 +23,7 @@ from .exception import NoFrameRateException
 from .logger import Logger
 
 
-class Predictor(Singleton):
+class Predictor(metaclass=Singleton):
     """ Predictor for working out the time to shift subtitles
     """
     __MAX_SHIFT_IN_SECS = (
@@ -456,8 +456,8 @@ class Predictor(Singleton):
                 os.remove(segment_path)
 
     @staticmethod
-    def __minibatch(total, batch_size):
-        batch = []
+    def __minibatch(total: int, batch_size: int) -> Iterable[List[int]]:
+        batch: List = []
         for i in range(total):
             if len(batch) == batch_size:
                 yield batch
@@ -708,8 +708,8 @@ class Predictor(Singleton):
             subtitles: Optional[SubRipFile] = None,
             max_shift_secs: Optional[float] = None,
             previous_gap: Optional[float] = None,
-            lock: threading.RLock = None,
-            network: Network = None
+            lock: Optional[threading.RLock] = None,
+            network: Optional[Network] = None
     ) -> Tuple[List[SubRipItem], str, "np.ndarray[float]"]:
         """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
 

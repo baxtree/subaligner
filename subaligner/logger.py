@@ -6,7 +6,7 @@ from .singleton import Singleton
 absl_logging._warn_preinit_stderr = 0
 
 
-class Logger(Singleton):
+class Logger(metaclass=Singleton):
     """Common logging."""
 
     VERBOSE = False
