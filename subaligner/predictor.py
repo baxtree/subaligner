@@ -58,7 +58,7 @@ class Predictor(metaclass=Singleton):
             self,
             video_file_path: str,
             subtitle_file_path: str,
-            weights_dir: str = os.path.join(os.path.dirname(__file__), "models/training/weights"),
+            weights_dir: str = os.path.join(os.path.dirname(__file__), "models", "training", "weights"),
     ) -> Tuple[List[SubRipItem], str, Union[np.ndarray, List[float]], Optional[float]]:
         """Predict time to shift with single pass
 
@@ -93,7 +93,7 @@ class Predictor(metaclass=Singleton):
             self,
             video_file_path: str,
             subtitle_file_path: str,
-            weights_dir: str = os.path.join(os.path.dirname(__file__), "models/training/weights"),
+            weights_dir: str = os.path.join(os.path.dirname(__file__), "models", "training", "weights"),
             stretch: bool = False,
             stretch_in_lang: str = "eng",
             exit_segfail: bool = False,
@@ -468,8 +468,8 @@ class Predictor(metaclass=Singleton):
 
     @staticmethod
     def __initialise_network(weights_dir: str, logger: logging.Logger) -> Network:
-        model_dir = weights_dir.replace("/weights", "/model")
-        config_dir = weights_dir.replace("/weights", "/config")
+        model_dir = weights_dir.replace("/weights", "/model").replace("\\weights", "\\model")
+        config_dir = weights_dir.replace("/weights", "/config").replace("\\weights", "\\config")
         files = os.listdir(model_dir)
         model_files = [
             file
@@ -492,8 +492,8 @@ class Predictor(metaclass=Singleton):
         logger.debug("config files: {}".format(hyperparams_files))
 
         # Get the first file from the file lists
-        model_path = "{}/{}".format(model_dir, model_files[0])
-        hyperparams_path = "{}/{}".format(config_dir, hyperparams_files[0])
+        model_path = os.path.join(model_dir, model_files[0])
+        hyperparams_path = os.path.join(config_dir, hyperparams_files[0])
         hyperparams = Hyperparameters.from_file(hyperparams_path)
         return Network.get_from_model(model_path, hyperparams)
 

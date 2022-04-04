@@ -99,5 +99,31 @@ jobs:
           tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.deb10
           push: true
 
+      - name: Build and push the ArchLinux image
+        id: docker_build_arch
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-ArchLinux"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.arch
+          push: true
+
+      - name: Build and push the CentOS 7 image
+        id: docker_build_el7
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-CentOS7"
+          build-args: |
+            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.el7
+          push: true
+
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

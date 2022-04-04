@@ -1,5 +1,5 @@
-# Subaligner CentOS 8 Docker Image
-From centos:8
+# Subaligner Oracle Linux 8 Docker Image
+From oraclelinux:8
 
 ARG RELEASE_VERSION
 
@@ -8,17 +8,15 @@ ENV RELEASE_VERSION=${RELEASE_VERSION}
 RUN ["/bin/bash", "-c", "dnf install -y epel-release dnf-utils &&\
     dnf upgrade -y openssl-libs bind-export-libs &&\
     yum install dnf-plugins-core &&\
-    yum-config-manager --set-enabled powertools &&\
     yum-config-manager --add-repo=https://negativo17.org/repos/epel-multimedia.repo &&\
-    dnf install -y ffmpeg &&\
+    dnf install -y --skip-broken ffmpeg &&\
     dnf install -y espeak-ng &&\
     ln -s /usr/lib64/libespeak-ng.so.1 /usr/lib64/libespeak.so &&\
-    dnf install -y libsndfile-devel &&\
     dnf install -y python3 &&\
     dnf install -y gcc &&\
     dnf install -y python3-wheel &&\
     dnf install -y python3-devel &&\
     dnf install -y python3-pip &&\
     pip3 install --upgrade pip &&\
-    python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
-    python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
+    python3 -m pip install \"subaligner==0.2.3\" &&\
+    python3 -m pip install \"subaligner[harmony]==0.2.3\""]
