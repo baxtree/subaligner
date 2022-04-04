@@ -8,7 +8,7 @@ import math
 import logging
 import numpy as np
 import multiprocessing as mp
-from typing import Tuple, List, Optional, Dict, Any, Iterable
+from typing import Tuple, List, Optional, Dict, Any, Iterable, Union
 from pysrt import SubRipTime, SubRipItem, SubRipFile
 from sklearn.metrics import log_loss
 from copy import deepcopy
@@ -59,7 +59,7 @@ class Predictor(metaclass=Singleton):
             video_file_path: str,
             subtitle_file_path: str,
             weights_dir: str = os.path.join(os.path.dirname(__file__), "models/training/weights"),
-    ) -> Tuple[List[SubRipItem], str, List[float], Optional[float]]:
+    ) -> Tuple[List[SubRipItem], str, Union[np.ndarray, List[float]], Optional[float]]:
         """Predict time to shift with single pass
 
             Arguments:
@@ -97,7 +97,7 @@ class Predictor(metaclass=Singleton):
             stretch: bool = False,
             stretch_in_lang: str = "eng",
             exit_segfail: bool = False,
-    ) -> Tuple[List[SubRipItem], List[SubRipItem], List[float], Optional[float]]:
+    ) -> Tuple[List[SubRipItem], List[SubRipItem], Union[np.ndarray, List[float]], Optional[float]]:
         """Predict time to shift with single pass
 
             Arguments:
@@ -216,7 +216,7 @@ class Predictor(metaclass=Singleton):
             if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
                 os.remove(task.sync_map_file_path_absolute)
 
-    def get_log_loss(self, voice_probabilities: "np.ndarray[float]", subs: List[SubRipItem]) -> float:
+    def get_log_loss(self, voice_probabilities: np.ndarray, subs: List[SubRipItem]) -> float:
         """Returns a single loss value on voice prediction
 
             Arguments:
@@ -253,7 +253,7 @@ class Predictor(metaclass=Singleton):
         self.__LOGGER.debug("Log loss: {}".format(result))
         return result
 
-    def get_min_log_loss_and_index(self, voice_probabilities: "np.ndarray[float]", subs: SubRipFile) -> Tuple[float, int]:
+    def get_min_log_loss_and_index(self, voice_probabilities: np.ndarray, subs: SubRipFile) -> Tuple[float, int]:
         """Returns the minimum loss value and its shift position after going through all possible shifts.
             Arguments:
                 voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
@@ -710,7 +710,7 @@ class Predictor(metaclass=Singleton):
             previous_gap: Optional[float] = None,
             lock: Optional[threading.RLock] = None,
             network: Optional[Network] = None
-    ) -> Tuple[List[SubRipItem], str, "np.ndarray[float]"]:
+    ) -> Tuple[List[SubRipItem], str, np.ndarray]:
         """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
 
         Arguments:

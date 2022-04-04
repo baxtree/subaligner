@@ -107,7 +107,6 @@ class NetworkTests(unittest.TestCase):
     @parameterized.expand([
         ["lstm"],
         ["bi_lstm"],
-        ["conv_1d"],
     ])
     def test_fit_lstm_and_get_history(self, network_type):
         self.hyperparameters.network_type = network_type
