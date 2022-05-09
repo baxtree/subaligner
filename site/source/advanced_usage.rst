@@ -49,6 +49,17 @@ To filter out sound effect subtitles and only preserve the vocal ones, you can p
 `seem` or `--sound_effect_end_marker` with strings which will be used by subaligner for finding sound effects and ignoring them within the training process.
 For example, the above exemplary command will treat any strings starting with "(" and ending with ")" as sound effects.
 
+**Train with embedded subtitles**::
+
+    (.venv) $ subaligner_train -vd av_directory -ess embedded:stream_index=0,file_extension=srt -tod training_output_directory
+
+If your audiovisual files all contain embedded subtitles or teletexts of the same format and have been encoded in the same fashion, `-sd` or `--subtitle_directory`
+can be omitted and subtitles will be extracted based on the specified subtitle selector. For instance, "embedded:stream_index=0,file_extension=srt"
+can be passed in with `-ess` or `--embedded_subtitle_selector` and indicates that the embedded subtitle is located at
+stream 0 (the first subtitle track) and will be extracted as a SubRip file pre and post synchronisation, while
+"embedded:page_num=888,file_extension=srt" means the teletext is located on page 888. When `-sd` or `--subtitle_directory`
+is present, make sure the folder passed in is empty.
+
 **Run alignments after training**::
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -tod training_output_directory

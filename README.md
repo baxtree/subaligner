@@ -129,6 +129,12 @@ $ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt -s subtitle_lang_2.txt
 $ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt subtitle_lang_2.txt
 ```
 ```
+# Alignment on embedded subtitles
+
+$ subaligner -m single -v video.mkv -s embedded:stream_index=0,file_extension=srt
+$ subaligner -m dual -v video.mkv -s embedded:stream_index=0,file_extension=srt
+```
+```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
 
 $ subaligner_1pass --languages

@@ -166,7 +166,7 @@ def main():
         subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
             video_file_path=local_video_path,
             subtitle_file_path=local_subtitle_path,
-            weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights")
+            weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights")
         )
 
         aligned_subtitle_path = "_aligned.".join(

@@ -5,18 +5,21 @@ ARG RELEASE_VERSION
 
 ENV RELEASE_VERSION=${RELEASE_VERSION}
 
-RUN ["/bin/bash", "-c", "yum update -y &&\
-    yum update-to -y openssl-libs-1:1.0.2k-21.el7_9 &&\
-    yum install -y epel-release &&\
+RUN ["/bin/bash", "-c", "yum install -y epel-release &&\
+    yum update -y &&\
+    yum groupinstall -y \"Development Tools\" &&\
     rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm &&\
+    yum install -y openssl-devel bzip2-devel libffi-devel xz-devel &&\
+    yum install -y wget &&\
     yum install -y ffmpeg &&\
     yum install -y espeak espeak-devel &&\
     yum install -y libsndfile-devel &&\
     yum install -y gcc &&\
-    yum install -y python36 &&\
-    yum install -y python36-devel &&\
-    yum install -y python36-setuptools &&\
-    easy_install-3.6 pip &&\
-    pip install --upgrade pip &&\
-    python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
-    python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
+    wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tgz &&\
+    tar xvf Python-3.8.12.tgz &&\
+    cd Python-3.8.12 &&\
+    ./configure --enable-optimizations &&\
+    make altinstall &&\
+    python3.8 -m pip install --upgrade pip &&\
+    python3.8 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
+    python3.8 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]

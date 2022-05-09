@@ -64,12 +64,12 @@ class MediaHelper(object):
         # However the former will result in larger temporary audio files saved on the disk.
         if decompress:
             assert freq is not None, "Frequency is needed for decompression"
-            audio_file_path = "{0}/{1}{2}".format(
-                TEMP_DIR_PATH, basename, self.AUDIO_FILE_EXTENSION[0]
+            audio_file_path = os.path.join(
+                TEMP_DIR_PATH, f"{basename}{self.AUDIO_FILE_EXTENSION[0]}"
             )
         else:
-            audio_file_path = "{0}/{1}{2}".format(
-                TEMP_DIR_PATH, basename, self.AUDIO_FILE_EXTENSION[1]
+            audio_file_path = os.path.join(
+                TEMP_DIR_PATH, f"{basename}{self.AUDIO_FILE_EXTENSION[1]}"
             )
 
         command = (
@@ -178,7 +178,7 @@ class MediaHelper(object):
         start = start.replace(",", ".")
         if end is not None:
             end = end.replace(",", ".")
-        segment_path = "{0}/{1}_{2}_{3}{4}".format(TEMP_DIR_PATH, filename, str(start), str(end), extension)
+        segment_path = os.path.join(TEMP_DIR_PATH, f"{filename}_{str(start)}_{str(end)}{extension}")
 
         if end is not None:
             duration = self.get_duration_in_seconds(start, end)
@@ -313,8 +313,10 @@ class MediaHelper(object):
             float -- The frame rate
         """
 
+        discarded = "NUL:" if os.name == "nt" else "/dev/null"
+
         with subprocess.Popen(
-                shlex.split("{0} -i '{1}' -t 00:00:10 -f null /dev/null".format(self.FFMPEG_BIN, file_path)),
+                shlex.split("{0} -i '{1}' -t 00:00:10 -f null {2}".format(self.FFMPEG_BIN, file_path, discarded)),
                 shell=False,
                 stderr=subprocess.PIPE,
                 close_fds=True,

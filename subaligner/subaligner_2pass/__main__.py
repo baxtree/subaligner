@@ -200,7 +200,7 @@ def main():
         subs_list, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
             video_file_path=local_video_path,
             subtitle_file_path=local_subtitle_path,
-            weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights"),
+            weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights"),
             stretch=stretch,
             stretch_in_lang=stretch_in_lang,
             exit_segfail=exit_segfail,

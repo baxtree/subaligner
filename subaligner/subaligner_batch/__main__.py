@@ -211,13 +211,13 @@ Each file pair needs to share the same base filename, the part before the extens
                 aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
                     video_file_path=local_video_path,
                     subtitle_file_path=local_subtitle_path,
-                    weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights")
+                    weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights")
                 )
             else:
                 aligned_subs, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
                     video_file_path=local_video_path,
                     subtitle_file_path=local_subtitle_path,
-                    weights_dir=os.path.join(FLAGS.training_output_directory, "models/training/weights"),
+                    weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights"),
                     stretch=stretch,
                     stretch_in_lang=stretch_in_lang,
                     exit_segfail=exit_segfail,
