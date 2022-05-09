@@ -3,7 +3,7 @@ name: ci pipeline
 on:
   - push
   - pull_request
-  workflow_dispatch:
+  - workflow_dispatch
 
 jobs:
   main:
