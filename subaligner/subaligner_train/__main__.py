@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """
-usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE]
-                        [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT]
-                        [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-sesm SOUND_EFFECT_START_MARKER] [-seem SOUND_EFFECT_END_MARKER] [-utd] [-d] [-q] [-ver]
+usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-sesm SOUND_EFFECT_START_MARKER] [-seem SOUND_EFFECT_END_MARKER] [-ess EMBEDDED_SUBTITLE_SELECTOR] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS]
+                        [-p PATIENCE] [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT] [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q] [-ver]
 
 Train the Subaligner model
 
@@ -17,6 +16,12 @@ optional arguments:
   -r, --resume          Continue with previous training result if present (hyperparameters passed in will be ignored except for --epochs)
   -dde, --display_done_epochs
                         Display the number of completed epochs
+  -sesm SOUND_EFFECT_START_MARKER, --sound_effect_start_marker SOUND_EFFECT_START_MARKER
+                        Marker indicating the start of the sound effect which will be ignored during training
+  -seem SOUND_EFFECT_END_MARKER, --sound_effect_end_marker SOUND_EFFECT_END_MARKER
+                        Marker indicating the end of the sound effect which will be ignored during training and used with sound_effect_start_marker
+  -ess EMBEDDED_SUBTITLE_SELECTOR, --embedded_subtitle_selector EMBEDDED_SUBTITLE_SELECTOR
+                        E.g., "embedded:page_num=888,file_extension=srt" or "embedded:stream_index=0,file_extension=srt" (supported file extensions: ssa, vtt, ass, srt and ttml).
   -utd, --use_training_dump
                         Use training dump instead of files in the video or subtitle directory
   -d, --debug           Print out debugging information
@@ -48,10 +53,6 @@ optional hyperparameters:
                         Fraction between 0 and 1 of the training data to be used as validation data
   -o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}, --optimizer {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}
                         TensorFlow optimizer
-  -sesm SOUND_EFFECT_START_MARKER, --sound_effect_start_marker SOUND_EFFECT_START_MARKER
-                        Marker indicating the start of the sound effect which will be ignored during training
-  -seem SOUND_EFFECT_END_MARKER, --sound_effect_end_marker SOUND_EFFECT_END_MARKER
-                        Marker indicating the end of the sound effect which will be ignored during training
 """
 
 import os
@@ -123,6 +124,13 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         type=str,
         default=None,
         help="Marker indicating the end of the sound effect which will be ignored during training and used with sound_effect_start_marker",
+    )
+    parser.add_argument(
+        "-ess",
+        "--embedded_subtitle_selector",
+        type=str,
+        default=None,
+        help='E.g., "embedded:page_num=888,file_extension=srt" or "embedded:stream_index=0,file_extension=srt" (supported file extensions: ssa, vtt, ass, srt and ttml).'
     )
     hyperparameter_args = parser.add_argument_group("optional hyperparameters")
     hyperparameter_args.add_argument(
@@ -227,6 +235,7 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         from subaligner.hyperparameters import Hyperparameters
         from subaligner.embedder import FeatureEmbedder
         from subaligner.trainer import Trainer
+        from subaligner.utils import Utils
 
         output_dir = os.path.abspath(FLAGS.training_output_directory)
         os.makedirs(FLAGS.training_output_directory, exist_ok=True)
@@ -247,13 +256,43 @@ Each subtitle file and its companion audiovisual file need to share the same bas
                 print("ERROR: --video_directory was not passed in")
                 parser.print_usage()
                 sys.exit(21)
-            if FLAGS.subtitle_directory == "":
-                print("ERROR: --subtitle_directory was not passed in")
-                parser.print_usage()
-                sys.exit(21)
             video_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
                                 os.walk(FLAGS.video_directory) for p in files if not p.startswith(".")]
             video_file_paths = sorted(video_file_paths, key=lambda x: os.path.splitext(os.path.basename(x))[0])
+
+            if FLAGS.embedded_subtitle_selector and FLAGS.embedded_subtitle_selector.lower().startswith("embedded:"):
+                if FLAGS.subtitle_directory:
+                    os.makedirs(FLAGS.subtitle_directory, exist_ok=True)
+                else:
+                    subtitle_directory = f"{os.path.dirname(video_file_paths[0])}_subtitles"
+                    os.makedirs(subtitle_directory)
+                    FLAGS.subtitle_directory = subtitle_directory
+                params = FLAGS.embedded_subtitle_selector.lower().split(":")[1].split(",")
+                if params and "=" in params[0]:
+                    params = {param.split("=")[0]: param.split("=")[1] for param in params}
+                    for video_file_path in video_file_paths:
+                        basename = os.path.basename(video_file_path)
+                        filename, _ = os.path.splitext(basename)
+                        if "page_num" in params:
+                            file_extension = params.get("file_extension", "txt")
+                            subtitle_file_path = os.path.join(FLAGS.subtitle_directory, f"{filename}.{file_extension}")
+                            Utils.extract_teletext_as_subtitle(video_file_path, int(params.get("page_num", "888")),
+                                                               subtitle_file_path)
+                        elif "stream_index" in params:
+                            file_extension = params.get("file_extension", "srt")
+                            subtitle_file_path = os.path.join(FLAGS.subtitle_directory, f"{filename}.{file_extension}")
+                            Utils.extract_matroska_subtitle(video_file_path, int(params.get("stream_index", "0")),
+                                                            subtitle_file_path)
+                else:
+                    print("ERROR: Embedded subtitle selector cannot be empty")
+                    parser.print_usage()
+                    sys.exit(21)
+            else:
+                if FLAGS.subtitle_directory == "":
+                    print("ERROR: --subtitle_directory was not passed in")
+                    parser.print_usage()
+                    sys.exit(21)
+
             subtitle_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in
                                    os.walk(FLAGS.subtitle_directory) for p in files if not p.startswith(".")]
             subtitle_file_paths = sorted(subtitle_file_paths, key=lambda x: os.path.splitext(os.path.basename(x))[0])

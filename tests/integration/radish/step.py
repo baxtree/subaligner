@@ -293,6 +293,17 @@ def train(step):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when('I run the subaligner_train with subtitle selector "{subtitle_selector:S}" and the following options')
+def train_with_subtitle_selector(step, subtitle_selector):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner_train"),
+        "-vd", step.context.av_dir,
+        "-ess", subtitle_selector,
+        "-tod", step.context.training_output,
+        "-q"] + step.text.split(" "), shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @then("a model and a training log file are generated")
 def model_trained(step):
     output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
@@ -310,6 +321,15 @@ def model_trained(step):
     output_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(step.context.training_output)) for f in fn]
     assert step.context.exit_code == 21
     assert output_files == []
+
+
+@then('the embedded subtitles are extracted into "{subtitle_dir:S}"')
+def embedded_subtitle_extracted(step, subtitle_dir):
+    step.context.ext_dir = os.path.join(PWD, "..", "..", "subaligner", "resource", subtitle_dir)
+    assert os.path.isdir(step.context.ext_dir)
+    av_files = [file for file in os.listdir(step.context.av_dir) if os.path.isfile(os.path.join(step.context.av_dir, file))]
+    subtitle_files = [file for file in os.listdir(step.context.ext_dir) if os.path.isfile(os.path.join(step.context.ext_dir, file))]
+    assert len(subtitle_files) == len(av_files)
 
 
 @then("a hyperparameter file is generated")
@@ -415,3 +435,5 @@ def create_training_output_dir(scenario):
 def remove_training_output_dir(scenario):
     if os.path.isdir(scenario.context.temp_dir):
         shutil.rmtree(scenario.context.temp_dir)
+    if hasattr(scenario.context, "ext_dir") and os.path.isdir(scenario.context.ext_dir):
+        shutil.rmtree(scenario.context.ext_dir)

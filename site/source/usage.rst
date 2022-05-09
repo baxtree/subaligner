@@ -36,6 +36,12 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt -s subtitle_lang_2.txt
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt subtitle_lang_2.txt
 
+
+**Alignment on embedded subtitles**::
+
+    (.venv) $ subaligner -m single -v video.mkv -s embedded:stream_index=0,file_extension=srt
+    (.venv) $ subaligner -m dual -v video.mkv -s embedded:stream_index=0,file_extension=srt
+
 **Translative alignment with the ISO 639-3 language code pair (src,tgt)**::
 
     (.venv) $ subaligner_1pass --languages

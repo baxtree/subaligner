@@ -52,6 +52,19 @@ Feature: Subaligner CLI
             """
         Then it exits with code "21"
 
+    @train @embedded-subtitle
+    Scenario: Test training on video and embedded subtitles
+        Given I have an audiovisual file directory "av_embedded"
+        And I want to save the training output in directory "output"
+        When I run the subaligner_train with subtitle selector "embedded:stream_index=0,file_extension=srt" and the following options
+            """
+            -bs 10 -do 0.5 -e 2 -p 1 -fhs 10 -bhs 5,2 -lr 0.01 -nt lstm -vs 0.3 -o adam
+            """
+        Then the embedded subtitles are extracted into "av_embedded_subtitles"
+        And a model and a training log file are generated
+        When I run the subaligner_train to display the finished epochs
+        Then it shows the done epochs equal to 2
+
     @hyperparameter-tuning @lstm
     Scenario: Test hyperparameter tuning on the LSTM network
         Given I have an audiovisual file directory "av"
