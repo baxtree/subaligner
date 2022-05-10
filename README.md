@@ -7,7 +7,7 @@
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
-[![Docker Hub](https://img.shields.io/docker/cloud/automated/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
+[![Docker](https://img.shields.io/docker/cloud/build/baxtree/subaligner?label=Docker&style=flat)](https://hub.docker.com/r/baxtree/subaligner/builds)
 [![Citation](https://zenodo.org/badge/228440472.svg)](https://doi.org/10.5281/zenodo.5603083)
 
 ## Supported Formats
@@ -131,8 +131,8 @@ $ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt subtitle_lang_2.txt
 ```
 # Alignment on embedded subtitles
 
-$ subaligner -m single -v video.mkv -s embedded:stream_index=0,file_extension=srt
-$ subaligner -m dual -v video.mkv -s embedded:stream_index=0,file_extension=srt
+$ subaligner -m single -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned.srt
+$ subaligner -m dual -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned.srt
 ```
 ```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)

@@ -39,8 +39,8 @@ Make sure you have got the virtual environment activated upfront.
 
 **Alignment on embedded subtitles**::
 
-    (.venv) $ subaligner -m single -v video.mkv -s embedded:stream_index=0,file_extension=srt
-    (.venv) $ subaligner -m dual -v video.mkv -s embedded:stream_index=0,file_extension=srt
+    (.venv) $ subaligner -m single -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned.srt
+    (.venv) $ subaligner -m dual -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned.srt
 
 **Translative alignment with the ISO 639-3 language code pair (src,tgt)**::
 
