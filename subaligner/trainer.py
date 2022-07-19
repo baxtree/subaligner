@@ -315,8 +315,8 @@ class Trainer(object):
         train_data = [x for x in train_data if x is not None]
         labels = [x for x in labels if x is not None]
 
-        train_data = np.concatenate(train_data)
-        labels = np.concatenate(labels)
+        train_data: np.ndarray = np.concatenate(train_data)  # type: ignore
+        labels: np.ndarray = np.concatenate(labels)  # type: ignore
         self.__LOGGER.debug(
             "Data and labels extracted after {} seconds".format(
                 str(datetime.datetime.now() - extraction_start)
