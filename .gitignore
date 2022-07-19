@@ -28,6 +28,7 @@ examples/tmp
 examples/training.log
 docs/*.html
 scripts*
+!docker/scripts
 misc/tmp
 wheels*
 /training.log

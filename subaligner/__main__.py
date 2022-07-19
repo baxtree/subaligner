@@ -169,7 +169,7 @@ def main():
                 print("ERROR: --output was not passed in for alignment on a remote subtitle file")
                 parser.print_usage()
                 sys.exit(21)
-            if subtitle_path.lower().startswith("teletext:") and FLAGS.output == "":
+            if subtitle_path.lower().startswith("embedded:") and FLAGS.output == "":
                 print("ERROR: --output was not passed in for alignment on embedded subtitles")
                 parser.print_usage()
                 sys.exit(21)
