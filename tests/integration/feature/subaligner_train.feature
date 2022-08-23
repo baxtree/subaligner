@@ -53,7 +53,7 @@ Feature: Subaligner CLI
         Then it exits with code "21"
 
     @train @embedded-subtitle
-    Scenario: Test training on video and embedded subtitles
+    Scenario: Test training on video with embedded subtitles
         Given I have an audiovisual file directory "av_embedded"
         And I want to save the training output in directory "output"
         When I run the subaligner_train with subtitle selector "embedded:stream_index=0,file_extension=srt" and the following options

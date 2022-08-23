@@ -7,12 +7,6 @@ services:
       dockerfile: Dockerfile-CentOS7
     image: baxtree/subaligner:${SUBALIGNER_VERSION}.el7
 
-  subaligner-centos8:
-    build:
-      context: ./
-      dockerfile: Dockerfile-CentOS8
-    image: baxtree/subaligner:${SUBALIGNER_VERSION}.el8
-
   subaligner-ubuntu18:
     build:
       context: ./

@@ -128,8 +128,8 @@ class Translator(metaclass=Singleton):
         num_of_batches = math.ceil(len(src_texts) / Translator.__TRANSLATING_BATCH_SIZE)
         self.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
         for batch in tqdm(Translator.__batch(src_texts, Translator.__TRANSLATING_BATCH_SIZE), total=num_of_batches):
-            tokenizer = self.tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
-            translated = self.lang_model.generate(**tokenizer)
+            input_ids = self.tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
+            translated = self.lang_model.generate(**input_ids)
             translated_texts.extend([self.tokenizer.decode(t, skip_special_tokens=True) for t in translated])
         for index in range(len(new_subs)):
             new_subs[index].text = translated_texts[index]
