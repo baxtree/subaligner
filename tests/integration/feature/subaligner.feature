@@ -230,6 +230,7 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.srt"       |   eng,zho         |   "test_aligned.srt"      |
         |  subaligner       |  dual     |  "test.srt"       |   eng,spa         |   "test_aligned.srt"      |
         |  subaligner       |  script   |  "test_plain.txt" |   eng,ita         |   "test_aligned.srt"      |
+        |  subaligner       |  script   |  "test_plain.txt" |   eng,por         |   "test_aligned.srt"      |
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |   eng,fra         |   "test_aligned.srt"      |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |   eng,deu         |   "test_aligned.srt"      |
 

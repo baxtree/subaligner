@@ -16,6 +16,7 @@ class Translator(metaclass=Singleton):
 
     __TENSOR_TYPE = "pt"
     __OPUS_MT = "Helsinki-NLP/opus-mt-{}-{}"
+    __OPUS_MT_TC_BIG = "Helsinki-NLP/opus-mt-tc-big-{}-{}"
     __OPUS_TATOEBA = "Helsinki-NLP/opus-tatoeba-{}-{}"
     __TRANSLATING_BATCH_SIZE = 10
     __LANGUAGE_CODE_MAPPER = {
@@ -140,59 +141,100 @@ class Translator(metaclass=Singleton):
         src_lang = Translator.normalise_single(src_lang)
         tgt_lang = Translator.normalise_single(tgt_lang)
         src_lang, tgt_lang = Translator.normalise_pair(src_lang, tgt_lang)
-        try:
-            mt_model_name = Translator.__OPUS_MT.format(Translator.get_iso_639_alpha_2(src_lang), Translator.get_iso_639_alpha_2(tgt_lang))
-            self.__download_mt_model(mt_model_name)
+
+        if self.__download_mt_model(src_lang, tgt_lang):
             return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_MT.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
-            self.__download_mt_model(mt_model_name)
+        elif self.__download_mt_tc_big_model(src_lang, tgt_lang):
             return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_MT.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
-            self.__download_mt_model(mt_model_name)
+        elif self.__download_tatoeba_model(src_lang, tgt_lang):
             return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_MT.format(src_lang, tgt_lang)
-            self.__download_mt_model(mt_model_name)
-            return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_TATOEBA.format(Translator.get_iso_639_alpha_2(src_lang), Translator.get_iso_639_alpha_2(tgt_lang))
-            self.__download_mt_model(mt_model_name)
-            return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_TATOEBA.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
-            self.__download_mt_model(mt_model_name)
-            return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_TATOEBA.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
-            self.__download_mt_model(mt_model_name)
-            return
-        except OSError:
-            self.__log_and_back_off(mt_model_name)
-        try:
-            mt_model_name = Translator.__OPUS_TATOEBA.format(src_lang, tgt_lang)
-            self.__download_mt_model(mt_model_name)
-            return
-        except OSError:
-            self.__LOGGER.debug("Cannot download the MT model %s" % mt_model_name)
+        else:
             message = 'Cannot find the MT model for source language "{}" and destination language "{}"'.format(src_lang, tgt_lang)
             self.__LOGGER.error(message)
             raise NotImplementedError(message)
 
-    def __download_mt_model(self, mt_model_name: str) -> None:
+    def __download_mt_model(self, src_lang: str, tgt_lang: str) -> bool:
+        try:
+            mt_model_name = Translator.__OPUS_MT.format(Translator.get_iso_639_alpha_2(src_lang), Translator.get_iso_639_alpha_2(tgt_lang))
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        try:
+            mt_model_name = Translator.__OPUS_MT.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        try:
+            mt_model_name = Translator.__OPUS_MT.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        try:
+            mt_model_name = Translator.__OPUS_MT.format(src_lang, tgt_lang)
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        return False
+
+    def __download_mt_tc_big_model(self, src_lang: str, tgt_lang: str) -> bool:
+        try:
+            mt_tc_model_name = Translator.__OPUS_MT_TC_BIG.format(Translator.get_iso_639_alpha_2(src_lang), Translator.get_iso_639_alpha_2(tgt_lang))
+            self.__download(mt_tc_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_tc_model_name)
+        try:
+            mt_tc_model_name = Translator.__OPUS_MT_TC_BIG.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
+            self.__download(mt_tc_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_tc_model_name)
+        try:
+            mt_tc_model_name = Translator.__OPUS_MT_TC_BIG.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
+            self.__download(mt_tc_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_tc_model_name)
+        try:
+            mt_tc_model_name = Translator.__OPUS_MT_TC_BIG.format(src_lang, tgt_lang)
+            self.__download(mt_tc_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_tc_model_name)
+        return False
+
+    def __download_tatoeba_model(self, src_lang: str, tgt_lang: str) -> bool:
+        try:
+            mt_model_name = Translator.__OPUS_TATOEBA.format(Translator.get_iso_639_alpha_2(src_lang), Translator.get_iso_639_alpha_2(tgt_lang))
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        try:
+            mt_model_name = Translator.__OPUS_TATOEBA.format(src_lang, Translator.get_iso_639_alpha_2(tgt_lang))
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        try:
+            mt_model_name = Translator.__OPUS_TATOEBA.format(Translator.get_iso_639_alpha_2(src_lang), tgt_lang)
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        try:
+            mt_model_name = Translator.__OPUS_TATOEBA.format(src_lang, tgt_lang)
+            self.__download(mt_model_name)
+            return True
+        except OSError:
+            self.__log_and_back_off(mt_model_name)
+        return False
+
+    def __download(self, mt_model_name: str) -> None:
         self.__LOGGER.debug("Trying to download the MT model %s" % mt_model_name)
         self.tokenizer = MarianTokenizer.from_pretrained(mt_model_name)
         self.lang_model = MarianMTModel.from_pretrained(mt_model_name)
