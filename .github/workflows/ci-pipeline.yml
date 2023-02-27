@@ -1,9 +1,11 @@
 name: ci pipeline
 
 on:
-  - push
-  - pull_request
-  - workflow_dispatch
+  push:
+    branches: [ master, development ]
+  pull_request:
+    branches: [ master, development ]
+  workflow_dispatch:
 
 jobs:
   main:
