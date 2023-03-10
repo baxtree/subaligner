@@ -149,7 +149,7 @@ manual: clean-manual ## generate manual pages
 test-dist:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	.$(PYTHON)/bin/pip install -e . --use-feature=2020-resolver; \
+	.$(PYTHON)/bin/pip install -e .
 
 dist: clean-dist test-dist
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
