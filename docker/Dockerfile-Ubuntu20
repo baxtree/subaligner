@@ -7,7 +7,6 @@ ENV RELEASE_VERSION=${RELEASE_VERSION}
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
 
-RUN echo "$RELEASE_VERSION"
 RUN ["/bin/bash", "-c", "apt-get -y update &&\
     apt-get -y install ffmpeg &&\
     apt-get -y install espeak libespeak1 libespeak-dev espeak-data &&\

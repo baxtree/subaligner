@@ -26,7 +26,7 @@ hand, advanced users can train their own synchronisers with a single command and
 and can be converted from one to another either during synchronisation and translation or on on-demand.
 
 Even without any subtitles available beforehand, Subaligner provides transcription by utilising SOTA Large Language
-models. This pipeline, combined with translation, can generate near ready-to-use subtitles of increasingly higher quality in
+Models (LLMs). This pipeline, combined with translation, can generate near ready-to-use subtitles of increasingly higher quality in
 various languages and formats which cater to your preferences, thanks to those models continually advancing over time.
 
 Subligner supports the following subtitle formats: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP,

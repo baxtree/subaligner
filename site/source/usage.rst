@@ -32,6 +32,7 @@ Make sure you have got the virtual environment activated upfront.
 **Generate subtitles by transcribing audiovisual files**::
 
     (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml zho -mr whisper -mf medium -o subtitle_aligned.srt
 
 **Alignment on segmented plain texts (double newlines as the delimiter)**::
 
@@ -55,7 +56,7 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
-    (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml src -mr whisper -mf small -o subtitle_aligned.srt -t src,tgt
 
 **Shift subtitle manually by offset in seconds**::
 
