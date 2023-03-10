@@ -19,7 +19,7 @@ Installation
 
 **Install dependencies for enabling translation**::
 
-    $ pip install 'subaligner[translation]'
+    $ pip install 'subaligner[llm]'
 
 **Pre-install additional dependencies before installing subaligner[stretch] or subaligner[dev]**::
 

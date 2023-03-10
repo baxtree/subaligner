@@ -173,7 +173,7 @@ Each file pair needs to share the same base filename, the part before the extens
         sys.exit(21)
     if FLAGS.translate is not None:
         if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
-            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+            print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[llm]" and run your command again.')
             sys.exit(21)
 
     video_file_paths = [os.path.abspath(os.path.join(path, p)) for path, _, files in

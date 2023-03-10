@@ -34,9 +34,9 @@ $ pip install subaligner
 
 ## Installation with Optional Packages Supporting Additional Features
 ```
-# Install dependencies for enabling translation
+# Install dependencies for enabling translation and transcription
 
-$ pip install 'subaligner[translation]'
+$ pip install 'subaligner[llm]'
 ```
 ```
 # Install dependencies for enabling forced alignment
@@ -118,6 +118,10 @@ $ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/s
 $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
+# Generate subtitles by transcribing audiovisual files
+$ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
+```
+```
 # Alignment on segmented plain texts (double newlines as the delimiter)
 
 $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
@@ -137,15 +141,11 @@ $ subaligner -m dual -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned
 ```
 ```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
-
-$ subaligner_1pass --languages
-$ subaligner_1pass -v video.mp4 -s subtitle.srt -t src,tgt
-$ subaligner_2pass --languages
-$ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner --languages
 $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
+$ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt -t src,tgt
 ```
 ```
 # Shift subtitle manually by offset in seconds
@@ -214,6 +214,7 @@ This tool wouldn't be possible without the following packages:
 [pysrt](https://github.com/byroot/pysrt)
 [pysubs2](https://github.com/tkarabela/pysubs2)
 [aeneas](https://www.readbeyond.it/aeneas/)
-[transformers](https://huggingface.co/transformers/).
+[transformers](https://huggingface.co/transformers/)
+[openai-whisper](https://github.com/openai/whisper).
 
 Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.

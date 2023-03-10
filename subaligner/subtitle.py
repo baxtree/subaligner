@@ -59,6 +59,8 @@ class Subtitle(object):
 
         if subtitle_format == "subrip":
             self.__subs = self.__load_subrip(subtitle_file_path)
+        elif subtitle_format == "subrip_raw":
+            self.__subs = pysrt.SubRipFile().from_string(subtitle_file_path)
         elif subtitle_format == "ttml":
             self.__subs = self.__convert_ttml_to_subs(subtitle_file_path)
         elif subtitle_format == "webvtt":
@@ -104,6 +106,19 @@ class Subtitle(object):
         """
 
         return cls(cls.__secret, subtitle_file_path, "subrip")
+
+    @classmethod
+    def load_subrip_str(cls, subrip_raw: str) -> "Subtitle":
+        """Load a SubRip subtitle string.
+
+        Arguments:
+            subrip_str {string} -- The string representation of the SubRip content.
+
+        Returns:
+            Subtitle -- Subtitle object.
+        """
+
+        return cls(cls.__secret, subrip_raw, "subrip_raw")
 
     @classmethod
     def load_ttml(cls, subtitle_file_path: str) -> "Subtitle":

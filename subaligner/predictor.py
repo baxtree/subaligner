@@ -37,7 +37,7 @@ class Predictor(metaclass=Singleton):
     __SEGMENT_PREDICTION_TIMEOUT = 60  # Maximum waiting time in seconds when predicting each segment
 
     __THREAD_QUEUE_SIZE = 8
-    __THREAD_NUMBER = 4
+    __THREAD_NUMBER = 1  # Do not change
 
     def __init__(self, **kwargs) -> None:
         """Feature predictor initialiser.

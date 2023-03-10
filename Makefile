@@ -31,7 +31,7 @@ install:
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-translation.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/pip install -e . --ignore-installed
 	cp ./bin/subaligner_1pass .$(PYTHON)/bin/subaligner_1pass
@@ -55,7 +55,7 @@ install-basic:
 	.$(PYTHON)/bin/pip install -e '.' --no-cache-dir
 
 install-translation:
-	.$(PYTHON)/bin/pip install -e '.[translation]' --no-cache-dir
+	.$(PYTHON)/bin/pip install -e '.[llm]' --no-cache-dir
 
 install-stretch:
 	.$(PYTHON)/bin/pip install -e '.[stretch]' --no-cache-dir
@@ -82,7 +82,7 @@ test:
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-translation.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
 	PYTHONPATH=. .$(PYTHON)/bin/python -m unittest discover
 	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
@@ -95,7 +95,7 @@ test-int: ## integration test
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-translation.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
 	.$(PYTHON)/bin/pip install -e . --ignore-installed
 	( \
@@ -108,7 +108,7 @@ pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-translation.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/python -m pydoc -w subaligner; mv subaligner.html docs/index.html
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.embedder; mv subaligner.embedder.html docs
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.exception; mv subaligner.exception.html docs
@@ -131,7 +131,7 @@ coverage: ## check code coverage quickly with the default Python
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-translation.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
 	.$(PYTHON)/bin/coverage run --source subaligner -m unittest discover
 	.$(PYTHON)/bin/coverage report
@@ -167,7 +167,7 @@ profile:
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-translation.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/python -c "import misc.profiler; misc.profiler.generate_profiles()"
 	.$(PYTHON)/bin/kernprof -v -l ./misc/profiler.py
@@ -176,7 +176,7 @@ app: clean-wheels
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
 	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	.$(PYTHON)/bin/pip wheel --no-cache-dir --wheel-dir=./wheels -r requirements.txt -r requirements-stretch.txt -r requirements-translation.txt; \
+	.$(PYTHON)/bin/pip wheel --no-cache-dir --wheel-dir=./wheels -r requirements.txt -r requirements-stretch.txt -r requirements-llm.txt; \
 	STRETCH_OFF=True .$(PYTHON)/bin/python setup.py bdist_wheel -d ./wheels; \
 	.$(PYTHON)/bin/pex subaligner==$(SUBALIGNER_VERSION) --repo=./wheels --platform $(PLATFORM) --no-pypi --no-build --python-shebang="/usr/bin/env python3" -e subaligner -o subaligner-$(PLATFORM).app; \
 

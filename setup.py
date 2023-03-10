@@ -20,18 +20,19 @@ with open("requirements-stretch.txt") as stretch_requirements_file:
 with open("requirements-site.txt") as docs_requirements_file:
     docs_requirements = docs_requirements_file.read().splitlines()[::-1]
 
-with open("requirements-translation.txt") as translate_requirements_file:
-    translate_requirements = translate_requirements_file.read().splitlines()[::-1]
+with open("requirements-llm.txt") as llm_requirements_file:
+    llm_requirements = llm_requirements_file.read().splitlines()[::-1]
 
 with open("requirements-dev.txt") as dev_requirements_file:
     dev_requirements = dev_requirements_file.read().splitlines()[::-1]
 
 EXTRA_DEPENDENCIES = {
-    "harmony": stretch_requirements + translate_requirements,
-    "dev": dev_requirements + stretch_requirements + translate_requirements + docs_requirements,
+    "harmony": stretch_requirements + llm_requirements,
+    "dev": dev_requirements + stretch_requirements + llm_requirements + docs_requirements,
     "docs": docs_requirements,
     "stretch": stretch_requirements,
-    "translation": translate_requirements,
+    "translation": llm_requirements,    # for backward compatibility and will be deprecated with "llm"
+    "llm": llm_requirements,
 }
 
 setup(name="subaligner",
