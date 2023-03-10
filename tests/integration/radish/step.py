@@ -105,6 +105,20 @@ def run_subaligner_with_translation(step, aligner, mode, language_pair):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when('I run the alignment with {aligner:S} on them with {mode:S} stage with {language:S} language, {recipe:S} recipe and {flavour:S} flavour')
+def run_subaligner_with_transcription(step, aligner, mode, language, recipe, flavour):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", aligner),
+        "-m", mode,
+        "-v", step.context.video_file_path,
+        "-ml", language,
+        "-mr", recipe,
+        "-mf", flavour,
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when('I run the alignment with {aligner:S} on them with {mode:S} stage and output "{file_name:S}"')
 def run_subaligner_with_output(step, aligner, mode, file_name):
     if mode == "<NULL>":

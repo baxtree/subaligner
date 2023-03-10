@@ -2,3 +2,4 @@ pycountry~=20.7.3
 sentencepiece~=0.1.95
 torch<1.13.0
 transformers<4.27.0
+openai-whisper==20230124

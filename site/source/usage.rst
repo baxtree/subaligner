@@ -7,6 +7,9 @@ lower latency and shifts all subtitle segments globally. The latter way has high
 segments individually with an option of stretching each segment. Multilingual translation on subtitles can be achieved
 together with the alignment in one go or separately (see in :ref:`Advanced Usage`).
 
+With no subtitles in your hand beforehand, Subligner's transcribe mode utilises Large Language Models (LLMs) to transcribe
+audiovisual content and generates subtitles in various formats which suit your needs.
+
 Make sure you have got the virtual environment activated upfront.
 
 **Single-stage alignment (high-level shift with lower latency)**::
@@ -26,6 +29,10 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
+**Generate subtitles by transcribing audiovisual files**::
+
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
+
 **Alignment on segmented plain texts (double newlines as the delimiter)**::
 
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
@@ -44,14 +51,11 @@ Make sure you have got the virtual environment activated upfront.
 
 **Translative alignment with the ISO 639-3 language code pair (src,tgt)**::
 
-    (.venv) $ subaligner_1pass --languages
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -t src,tgt
-    (.venv) $ subaligner_2pass --languages
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner --languages
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt -t src,tgt
 
 **Shift subtitle manually by offset in seconds**::
 
