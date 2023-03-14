@@ -13,11 +13,6 @@ class TranslatorTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
 
-    def test_get_iso_639_alpha_2(self):
-        self.assertEqual("en", Undertest.get_iso_639_alpha_2("eng"))
-        self.assertEqual("ada", Undertest.get_iso_639_alpha_2("ada"))
-        self.assertEqual("xyz", Undertest.get_iso_639_alpha_2("xyz"))
-
     @patch("transformers.MarianMTModel.from_pretrained")
     @patch("transformers.MarianTokenizer.from_pretrained")
     def test_translate(self, tokenizer_from_pretrained, model_from_pretrained):

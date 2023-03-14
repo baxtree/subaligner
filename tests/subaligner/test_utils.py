@@ -298,6 +298,20 @@ class UtilsTests(unittest.TestCase):
     def test_get_language_table(self):
         self.assertEqual(200, len(Undertest.get_language_table()))
 
+    def test_get_iso_639_alpha_2(self):
+        self.assertEqual("en", Undertest.get_iso_639_alpha_2("eng"))
+        self.assertEqual("ada", Undertest.get_iso_639_alpha_2("ada"))
+        self.assertEqual("xyz", Undertest.get_iso_639_alpha_2("xyz"))
+
+    def test_format_timestamp(self):
+        test_cases = [
+            (0, "00:00:00,000"),
+            (100, "00:01:40,000"),
+            (100.1, "00:01:40,100"),
+        ]
+        for seconds, time_code in test_cases:
+            self.assertEqual(time_code, Undertest.format_timestamp(seconds))
+
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):
         self._assert_exception_on_subproces(lambda: Undertest.srt2vtt(self.real_srt_path, "output"), mock_communicate)

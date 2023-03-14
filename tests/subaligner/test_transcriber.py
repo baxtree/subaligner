@@ -1,5 +1,6 @@
 import os
 import unittest
+from subaligner.llm import TranscriptionRecipe, WhisperFlavour
 from subaligner.transcriber import Transcriber as Undertest
 from subaligner.exception import TranscriptionException
 
@@ -8,7 +9,7 @@ class TranscriberTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.video_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resource", "test.mp4")
-        self.undertest = Undertest(recipe="whisper", flavour="tiny")
+        self.undertest = Undertest(recipe=TranscriptionRecipe.WHISPER.value, flavour=WhisperFlavour.TINY.value)
 
     def test_transcribe(self):
         subtitle, frame_rate = self.undertest.transcribe(self.video_file_path, "eng")
@@ -26,7 +27,7 @@ class TranscriberTest(unittest.TestCase):
 
     def test_throw_exception_on_unknown_flavour(self):
         try:
-            Undertest(recipe="whisper", flavour="unknown")
+            Undertest(recipe=TranscriptionRecipe.WHISPER.value, flavour="unknown")
         except Exception as e:
             self.assertTrue(isinstance(e, NotImplementedError))
             self.assertEqual(str(e), "Unknown whisper flavour: unknown")

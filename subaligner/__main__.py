@@ -4,14 +4,15 @@ usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                   [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
                   [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}] [-lgs] [-d] [-q] [-ver]
+                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}] [-tr {helsinki-nlp,whisper}] [-tf TRANSLATION_FLAVOUR] [-lgs]
+                  [-d] [-q] [-ver]
 
 Subaligner command line interface
 
 optional arguments:
   -h, --help            show this help message and exit
   -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .ssa, .vtt, .srt, .txt, .smi, .ytt, .sub, .xml, .sbv, .ass, .sami, .scc, .tmp, .stl, .ttml, .dfxp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ttml, .sub, .ytt, .smi, .sami, .tmp, .txt, .ssa, .vtt, .stl, .xml, .ass, .scc, .dfxp, .sbv, .srt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -32,7 +33,11 @@ optional arguments:
   -mr {whisper}, --llm_recipe {whisper}
                         LLM recipe used for transcribing video files
   -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}, --llm_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}
-                        Flavour variation for a specific LLM recipe
+                        Flavour variation for a specific LLM recipe supporting transcription
+  -tr {helsinki-nlp,whisper}, --translation_recipe {helsinki-nlp,whisper}
+                        LLM recipe used for translating subtitles
+  -tf TRANSLATION_FLAVOUR, --translation_flavour TRANSLATION_FLAVOUR
+                        Flavour variation for a specific LLM recipe supporting translation
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
@@ -152,21 +157,40 @@ def main():
         choices=Utils.get_stretch_language_codes(),
         help="Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]",
     )
+    from subaligner.llm import TranscriptionRecipe
+    from subaligner.llm import WhisperFlavour
     parser.add_argument(
         "-mr",
         "--llm_recipe",
         type=str.lower,
-        default="whisper",
-        choices=["whisper"],
+        default=TranscriptionRecipe.WHISPER.value,
+        choices=[r.value for r in TranscriptionRecipe],
         help="LLM recipe used for transcribing video files"
     )
     parser.add_argument(
         "-mf",
         "--llm_flavour",
         type=str.lower,
-        default="small",
-        choices=["tiny", "tiny.en", "small", "medium", "medium.en", "base", "base.en", "large-v1", "large-v2", "large"],
-        help="Flavour variation for a specific LLM recipe"
+        default=WhisperFlavour.SMALL.value,
+        choices=[wf.value for wf in WhisperFlavour],
+        help="Flavour variation for a specific LLM recipe supporting transcription"
+    )
+    from subaligner.llm import TranslationRecipe
+    from subaligner.llm import HelsinkiNLPFlavour
+    parser.add_argument(
+        "-tr",
+        "--translation_recipe",
+        type=str.lower,
+        default=TranslationRecipe.HELSINKI_NLP.value,
+        choices=[r.value for r in TranslationRecipe],
+        help="LLM recipe used for translating subtitles"
+    )
+    parser.add_argument(
+        "-tf",
+        "--translation_flavour",
+        type=str.lower,
+        default=None,
+        help="Flavour variation for a specific LLM recipe supporting translation"
     )
     parser.add_argument("-lgs", "--languages", action="store_true",
                         help="Print out language codes used for stretch and translation")
@@ -312,8 +336,8 @@ def main():
                 if FLAGS.translate is not None:
                     from subaligner.translator import Translator
                     source, target = FLAGS.translate.split(",")
-                    translator = Translator(source, target)
-                    aligned_subs = translator.translate(aligned_subs)
+                    translator = Translator(src_language=source, tgt_language=target, recipe=FLAGS.translation_recipe, flavour=FLAGS.translation_flavour)
+                    aligned_subs = translator.translate(aligned_subs, local_video_path)
                     Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path,
                                                         frame_rate, "utf-8")
                 elif FLAGS.mode == "transcribe":

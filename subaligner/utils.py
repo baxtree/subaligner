@@ -5,6 +5,7 @@ import requests
 import shutil
 import cchardet
 import shlex
+import pycountry
 
 from pycaption import (
     CaptionConverter,
@@ -651,6 +652,41 @@ class Utils(object):
              'niu', 'nso', 'nyk', 'pag', 'phi', 'pis', 'pon', 'poz', 'pqe', 'pqw', 'prl', 'rnd', 'roa', 'run', 'sal',
              'sem', 'sit', 'sla', 'srn', 'ssp', 'swc', 'taw', 'tdt', 'tiv', 'tll', 'toi', 'tpi', 'trk', 'tum', 'tut',
              'tvl', 'tzo', 'umb', 'urj', 'vsl', 'wal', 'war', 'wls', 'yap', 'yua', 'zai', 'zle', 'zls', 'zlw', 'zne']
+
+    @staticmethod
+    def get_iso_639_alpha_2(language_code: str) -> str:
+        """Find the alpha 2 language code based on an alpha 3 one.
+
+        Arguments:
+            language_code {string} -- An alpha 3 language code derived from ISO 639-3.
+
+        Returns:
+            string -- The alpha 2 language code if exists otherwise the alpha 3 one.
+
+        Raises:
+            ValueError -- Thrown when the input language code cannot be recognised.
+        """
+
+        lang = pycountry.languages.get(alpha_3=language_code)
+        if lang is None:
+            return language_code
+        elif hasattr(lang, "alpha_2"):
+            return lang.alpha_2
+        else:
+            return lang.alpha_3
+
+    @staticmethod
+    def format_timestamp(seconds: float) -> str:
+        assert seconds >= 0, "non-negative timestamp expected"
+        milliseconds = round(seconds * 1000.0)
+        hours = milliseconds // 3_600_000
+        milliseconds -= hours * 3_600_000
+        minutes = milliseconds // 60_000
+        milliseconds -= minutes * 60_000
+        seconds = milliseconds // 1_000
+        milliseconds -= seconds * 1_000
+        hours_marker = f"{hours:02d}:"
+        return f"{hours_marker}{minutes:02d}:{seconds:02d},{milliseconds:03d}"
 
     @staticmethod
     def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> Tuple[str, str]:

@@ -31,6 +31,12 @@ $ brew install ffmpeg
 $ pip install -U pip
 $ pip install subaligner
 ```
+or install from source:
+```
+$ git clone git@github.com:baxtree/subaligner.git
+$ cd subaligner
+$ python setup.py install
+```
 
 ## Installation with Optional Packages Supporting Additional Features
 ```
@@ -61,31 +67,10 @@ To install all supported features:
 $ pip install 'subaligner[harmony]'
 ```
 
-## Alternative Installations
-```
-# Install via pipx
-$ pip install -U pip pipx
-$ pipx install subaligner
-```
-or
-```
-# Install from GitHub via Pipenv
-$ pipenv install subaligner
-$ pipenv install 'subaligner[stretch]'
-$ pipenv install 'subaligner[dev]'
-```
-or
-```
-# Install from source
+## Container Support
+If you prefer using a containerised environment over installing everything locally, run:
 
-$ git clone git@github.com:baxtree/subaligner.git
-$ cd subaligner
-$ python setup.py install
 ```
-or
-```
-# Use dockerised installation
-
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
 For users on Windows 10: [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) is the only option at present.
@@ -99,22 +84,13 @@ docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash
 ```
 # Single-stage alignment (high-level shift with lower latency)
 
-$ subaligner_1pass -v video.mp4 -s subtitle.srt
-$ subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+$ subaligner -m single -v video.mp4 -s subtitle.srt
+$ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
 # Dual-stage alignment (low-level shift with higher latency)
 
-$ subaligner_2pass -v video.mp4 -s subtitle.srt
-$ subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
-```
-or
-```
-# Pass in single-stage or dual-stage as the alignment mode
-
-$ subaligner -m single -v video.mp4 -s subtitle.srt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt
-$ subaligner -m single -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
 ```
@@ -142,6 +118,7 @@ $ subaligner -m dual -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned
 ```
 ```
 # Translative alignment with the ISO 639-3 language code pair (src,tgt)
+
 $ subaligner --languages
 $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
@@ -171,20 +148,17 @@ $ pipx run subaligner -m dual -v video.mp4 -s subtitle.srt
 # Run the module as a script
 $ python -m subaligner -m single -v video.mp4 -s subtitle.srt
 $ python -m subaligner -m dual -v video.mp4 -s subtitle.srt
-$ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
-$ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
 ```
 ```
 # Run alignments with the docker image
 
 $ docker pull baxtree/subaligner
-$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
-$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
-$ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
-$ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner -m single -v video.mp4 -s subtitle.srt
+$ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner -m dual -v video.mp4 -s subtitle.srt
+$ docker run -it baxtree/subaligner subaligner -m single -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+$ docker run -it baxtree/subaligner subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
-The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLI, run `subaligner_1pass -h`, `subaligner_2pass -h` or `subaligner -h`.
-Additional utilities can be used after consulting `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h`.
+The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLIs, run `subaligner -h` or `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h` for additional utilities. `subaligner_1pass` and `subaligner_2pass` are shortcuts for running `subaligner` with `-m single` and `-m dual` options, respectively.
 
 ![](figures/screencast.gif)
 

@@ -64,8 +64,6 @@ is present, make sure the folder passed in is empty.
 
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -tod training_output_directory
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tod training_output_directory
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -tod training_output_directory
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -tod training_output_directory
 
 To apply your trained model to subtitle alignment, pass in the training_output_directory containing training results as
 shown above with `-tod` or `--training_output_directory`.
