@@ -245,7 +245,7 @@ class UtilsTests(unittest.TestCase):
     def test_extract_teletext_as_srt(self, mocked_run_command):
         Undertest.extract_teletext_as_subtitle("ts_file_path", 888, "srt_file_path")
 
-        mocked_run_command.assert_called_once_with("ffmpeg -y -fix_sub_duration -txt_page 888 -txt_format text -i {} {}".format("'ts_file_path'", "'srt_file_path'"), ANY, ANY, ANY, ANY)
+        mocked_run_command.assert_called_once_with("ffmpeg -y -fix_sub_duration -txt_page 888 -txt_format text -i {} {}".format("\"ts_file_path\"", "\"srt_file_path\""), ANY, ANY, ANY, ANY)
 
     def test_extract_matroska_subtitle(self):
         output_file_path = os.path.join(self.resource_tmp, "extracted.matroska.srt")
@@ -311,6 +311,10 @@ class UtilsTests(unittest.TestCase):
         ]
         for seconds, time_code in test_cases:
             self.assertEqual(time_code, Undertest.format_timestamp(seconds))
+
+    def test_double_quoted(self):
+        self.assertEqual("\"file'path\"", Undertest.double_quoted("file'path"))
+        self.assertEqual("\"file\\\"path\"", Undertest.double_quoted("file\"path"))
 
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):

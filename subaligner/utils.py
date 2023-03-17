@@ -88,7 +88,7 @@ class Utils(object):
 
         _vtt_file_path = srt_file_path.replace(".srt", ".vtt") if vtt_file_path is None else vtt_file_path
         encoding = Utils.detect_encoding(srt_file_path)
-        command = "{0} -y -sub_charenc {1} -i '{2}' -f webvtt '{3}'".format(Utils.FFMPEG_BIN, encoding, srt_file_path, _vtt_file_path)
+        command = "{0} -y -sub_charenc {1} -i {2} -f webvtt {3}".format(Utils.FFMPEG_BIN, encoding, Utils.double_quoted(srt_file_path), Utils.double_quoted(_vtt_file_path))
         timeout_msg = "Timeout on converting SubRip to WebVTT: {}".format(srt_file_path)
         error_msg = "Cannot convert SubRip to WebVTT: {}".format(srt_file_path)
 
@@ -115,7 +115,7 @@ class Utils(object):
 
         _srt_file_path = vtt_file_path.replace(".vtt", ".srt") if srt_file_path is None else srt_file_path
         encoding = Utils.detect_encoding(vtt_file_path)
-        command = "{0} -y -sub_charenc {1} -i '{2}' -f srt '{3}'".format(Utils.FFMPEG_BIN, encoding, vtt_file_path, _srt_file_path)
+        command = "{0} -y -sub_charenc {1} -i {2} -f srt {3}".format(Utils.FFMPEG_BIN, encoding, Utils.double_quoted(vtt_file_path), Utils.double_quoted(_srt_file_path))
         timeout_msg = "Timeout on converting WebVTT to SubRip: {}".format(vtt_file_path)
         error_msg = "Cannot convert WebVTT to SubRip: {}".format(vtt_file_path)
 
@@ -492,7 +492,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
         """
 
-        command = "{0} -y -fix_sub_duration -txt_page {1} -txt_format text -i '{2}' '{3}'".format(Utils.FFMPEG_BIN, page_num, ts_file_path, output_file_path)
+        command = "{0} -y -fix_sub_duration -txt_page {1} -txt_format text -i {2} {3}".format(Utils.FFMPEG_BIN, page_num, Utils.double_quoted(ts_file_path), Utils.double_quoted(output_file_path))
         timeout_msg = "Timeout on extracting Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
         error_msg = "Cannot extract Teletext from transport stream: {} on page: {}".format(ts_file_path, page_num)
 
@@ -518,7 +518,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
         """
 
-        command = "{0} -y -i '{1}' -map 0:s:{2} '{3}'".format(Utils.FFMPEG_BIN, mkv_file_path, stream_index, output_file_path)
+        command = "{0} -y -i {1} -map 0:s:{2} {3}".format(Utils.FFMPEG_BIN, Utils.double_quoted(mkv_file_path), stream_index, Utils.double_quoted(output_file_path))
         timeout_msg = "Timeout on extracting the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
         error_msg = "Cannot extract the subtitle from file: {} with stream index: {}".format(mkv_file_path, stream_index)
 
@@ -570,7 +570,7 @@ class Utils(object):
             bool -- True if the video contains embedded subtitles or False otherwise.
         """
 
-        command = "{0} -y -i '{1}' -c copy -map 0:s -f null - -v 0 -hide_banner".format(Utils.FFMPEG_BIN, video_file_path)
+        command = "{0} -y -i {1} -c copy -map 0:s -f null - -v 0 -hide_banner".format(Utils.FFMPEG_BIN, Utils.double_quoted(video_file_path))
         timeout_msg = "Timeout on detecting embedded subtitles from file: {}".format(video_file_path)
         error_msg = "Embedded subtitle detection failed for file: {}".format(video_file_path)
 
@@ -687,6 +687,10 @@ class Utils(object):
         milliseconds -= seconds * 1_000
         hours_marker = f"{hours:02d}:"
         return f"{hours_marker}{minutes:02d}:{seconds:02d},{milliseconds:03d}"
+
+    @staticmethod
+    def double_quoted(s: str) -> str:
+        return "\"{}\"".format(s.replace('"', "\\\""))
 
     @staticmethod
     def __convert_subtitle(source_file_path: str, source_ext: str, target_file_path: Optional[str], target_ext: str, format: str, frame_rate: Optional[float] = None) -> Tuple[str, str]:

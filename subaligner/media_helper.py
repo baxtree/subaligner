@@ -16,6 +16,7 @@ from .embedder import FeatureEmbedder
 from .exception import TerminalException
 from .exception import NoFrameRateException
 from .logger import Logger
+from .utils import Utils
 
 TEMP_DIR_PATH = tempfile.mkdtemp()
 
@@ -73,14 +74,15 @@ class MediaHelper(object):
             )
 
         command = (
-            "{0} -y -xerror -i '{1}' -ac 2 -ar {2} -vn '{3}'".format(
-                self.FFMPEG_BIN, video_file_path, freq, audio_file_path
+            "{0} -y -xerror -i {1} -ac 2 -ar {2} -vn {3}".format(
+                self.FFMPEG_BIN, Utils.double_quoted(video_file_path), freq, Utils.double_quoted(audio_file_path)
             )
             if decompress
-            else "{0} -y -xerror -i '{1}' -vn -acodec copy '{2}'".format(
-                self.FFMPEG_BIN, video_file_path, audio_file_path
+            else "{0} -y -xerror -i {1} -vn -acodec copy {2}".format(
+                self.FFMPEG_BIN, Utils.double_quoted(video_file_path), Utils.double_quoted(audio_file_path)
             )
         )
+        print(command)
         with subprocess.Popen(
             shlex.split(command),
             shell=False,
@@ -182,12 +184,12 @@ class MediaHelper(object):
 
         if end is not None:
             duration = self.get_duration_in_seconds(start, end)
-            command = "{0} -y -xerror -i '{1}' -ss {2} -t {3} -acodec copy '{4}'".format(
-                self.FFMPEG_BIN, audio_file_path, start, duration, segment_path
+            command = "{0} -y -xerror -i {1} -ss {2} -t {3} -acodec copy {4}".format(
+                self.FFMPEG_BIN, Utils.double_quoted(audio_file_path), start, duration, Utils.double_quoted(segment_path)
             )
         else:
-            command = "{0} -y -xerror -i '{1}' -ss {2} -acodec copy '{3}'".format(
-                self.FFMPEG_BIN, audio_file_path, start, segment_path
+            command = "{0} -y -xerror -i {1} -ss {2} -acodec copy {3}".format(
+                self.FFMPEG_BIN, Utils.double_quoted(audio_file_path), start, Utils.double_quoted(segment_path)
             )
         with subprocess.Popen(
             shlex.split(command),
@@ -316,7 +318,7 @@ class MediaHelper(object):
         discarded = "NUL:" if os.name == "nt" else "/dev/null"
 
         with subprocess.Popen(
-                shlex.split("{0} -i '{1}' -t 00:00:10 -f null {2}".format(self.FFMPEG_BIN, file_path, discarded)),
+                shlex.split("{0} -i {1} -t 00:00:10 -f null {2}".format(self.FFMPEG_BIN, Utils.double_quoted(file_path), discarded)),
                 shell=False,
                 stderr=subprocess.PIPE,
                 close_fds=True,
