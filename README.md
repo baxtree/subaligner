@@ -3,7 +3,7 @@
 </div>
 
 [![Build Status](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml/badge.svg?branch=master)](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml?query=branch%3Amaster) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/) [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/) [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/) [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
@@ -15,6 +15,8 @@
 Subtitle: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP, EBU STL, SAMI, SCC and SBV.
 
 Video/Audio: MP4, WebM, Ogg, 3GP, FLV, MOV, Matroska, MPEG TS, WAV, MP3, AAC, FLAC, etc.
+
+:information_source: <small style="line-height: 1.2;">Subaligner relies on file extensions as default hints to process a wide range of audiovisual or subtitle formats. It is recommended to use extensions widely acceppted by the community to ensure compatibility.</small>
 
 ## Dependencies
 Required by basic: [FFmpeg](https://www.ffmpeg.org/)
@@ -28,15 +30,16 @@ $ brew install ffmpeg
 
 ## Basic Installation
 ```
-$ pip install -U pip
+$ pip install -U pip && pip install -U setuptools
 $ pip install subaligner
 ```
 or install from source:
 ```
-$ git clone git@github.com:baxtree/subaligner.git
-$ cd subaligner
+$ git clone git@github.com:baxtree/subaligner.git && cd subaligner
+$ pip install -U pip && pip install -U setuptools
 $ python setup.py install
 ```
+:information_source: <small style="line-height: 1.2;">It is highly recommended creating a virtual environment prior to installation.</small>
 
 ## Installation with Optional Packages Supporting Additional Features
 ```

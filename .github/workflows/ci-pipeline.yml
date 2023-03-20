@@ -45,7 +45,7 @@ jobs:
           coverage run -m unittest discover
           coverage combine
           coverage xml
-          bash <(curl -s https://codecov.io/bash)
+          bash <(curl -s https://codecov.io/bash) -n patch -F 90
       - name: Integration tests
         run: |
           radish -b tests/integration/radish tests/integration/feature

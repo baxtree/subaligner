@@ -14,7 +14,7 @@ Installation
 
 **Install Subaligner via PyPI (pre-emptive NumPy)**::
 
-    $ pip install -U pip
+    $ pip install -U pip && pip install -U setuptools
     $ pip install subaligner
 
 **Install dependencies for enabling translation**::
@@ -65,9 +65,9 @@ to create a virtual environment and set up all the dependencies:
 
 **Install Subaligner from source**::
 
-    $ git clone git@github.com:baxtree/subaligner.git
-    $ cd subaligner
-    $ make install && source .venv/bin/activate
+    $ git clone git@github.com:baxtree/subaligner.git && cd subaligner
+    $ pip install -U pip && pip install -U setuptools
+    $ python setup.py install
 
 **Subaligner CLI should be on your PATH now**::
 
