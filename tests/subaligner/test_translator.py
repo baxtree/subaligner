@@ -3,6 +3,7 @@ import unittest
 from mock import Mock, patch
 from parameterized import parameterized
 from subaligner.subtitle import Subtitle
+from subaligner.llm import TranslationRecipe, HelsinkiNLPFlavour, FacebookMbartFlavour
 from subaligner.translator import Translator as Undertest
 
 
@@ -13,9 +14,9 @@ class TranslatorTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
 
-    @patch("transformers.MarianMTModel.from_pretrained")
     @patch("transformers.MarianTokenizer.from_pretrained")
-    def test_translate(self, tokenizer_from_pretrained, model_from_pretrained):
+    @patch("transformers.MarianMTModel.from_pretrained")
+    def test_translate_hel_nlp(self, model_from_pretrained, tokenizer_from_pretrained):
         subs = Subtitle.load(self.srt_file_path).subs
         mock_tokenizer = Mock()
         mock_tokenizer.return_value = {"input_ids": None, "attention_mask": None}
@@ -25,7 +26,26 @@ class TranslatorTests(unittest.TestCase):
         tokenizer_from_pretrained.return_value = mock_tokenizer
         model_from_pretrained.return_value = mock_model
 
-        translated_subs = Undertest("eng", "zho").translate(subs)
+        undertest = Undertest("eng", "zho", recipe=TranslationRecipe.HELSINKI_NLP.value)
+        translated_subs = undertest.translate(subs)
+
+        self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
+
+    @patch("transformers.MBart50TokenizerFast.from_pretrained")
+    @patch("transformers.MBartForConditionalGeneration.from_pretrained")
+    def test_translate_fb_mbart(self, model_from_pretrained, tokenizer_from_pretrained):
+        subs = Subtitle.load(self.srt_file_path).subs
+        mock_tokenizer = Mock()
+        mock_tokenizer.return_value = {"input_ids": None, "attention_mask": None}
+        mock_tokenizer.decode.return_value = "translated"
+        mock_tokenizer.lang_code_to_id = {"zh_CN": 250025}
+        mock_model = Mock()
+        mock_model.generate.return_value = [None] * len(subs)
+        tokenizer_from_pretrained.return_value = mock_tokenizer
+        model_from_pretrained.return_value = mock_model
+
+        undertest = Undertest("eng", "zho", recipe=TranslationRecipe.FACEBOOK_MBART.value, flavour=FacebookMbartFlavour.LARGE.value)
+        translated_subs = undertest.translate(subs)
 
         self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
 

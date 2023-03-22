@@ -8,6 +8,7 @@ class TranscriptionRecipe(Enum):
 class TranslationRecipe(Enum):
     HELSINKI_NLP = "helsinki-nlp"
     WHISPER = "whisper"
+    FACEBOOK_MBART = "facebook-mbart"
 
 
 class WhisperFlavour(Enum):
@@ -27,3 +28,7 @@ class HelsinkiNLPFlavour(Enum):
     OPUS_MT = "Helsinki-NLP/opus-mt-{}-{}"
     OPUS_MT_TC_BIG = "Helsinki-NLP/opus-mt-tc-big-{}-{}"
     OPUS_TATOEBA = "Helsinki-NLP/opus-tatoeba-{}-{}"
+
+
+class FacebookMbartFlavour(Enum):
+    LARGE = "large"

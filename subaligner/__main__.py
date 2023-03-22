@@ -4,15 +4,15 @@ usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                   [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
                   [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}] [-tr {helsinki-nlp,whisper}] [-tf TRANSLATION_FLAVOUR] [-lgs]
-                  [-d] [-q] [-ver]
+                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}] [-tr {helsinki-nlp,whisper,facebook-mbart}]
+                  [-tf TRANSLATION_FLAVOUR] [-lgs] [-d] [-q] [-ver]
 
 Subaligner command line interface
 
 optional arguments:
   -h, --help            show this help message and exit
   -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .ttml, .sub, .ytt, .smi, .sami, .tmp, .txt, .ssa, .vtt, .stl, .xml, .ass, .scc, .dfxp, .sbv, .srt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ttml, .ssa, .stl, .sbv, .dfxp, .srt, .txt, .ytt, .vtt, .sub, .sami, .xml, .scc, .ass, .smi, .tmp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -30,11 +30,11 @@ optional arguments:
                         Offset by which the subtitle will be shifted
   -ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --main_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
-  -mr {whisper}, --llm_recipe {whisper}
+  -mr {whisper}, --transcription_recipe {whisper}
                         LLM recipe used for transcribing video files
-  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}, --llm_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}
                         Flavour variation for a specific LLM recipe supporting transcription
-  -tr {helsinki-nlp,whisper}, --translation_recipe {helsinki-nlp,whisper}
+  -tr {helsinki-nlp,whisper,facebook-mbart}, --translation_recipe {helsinki-nlp,whisper,facebook-mbart}
                         LLM recipe used for translating subtitles
   -tf TRANSLATION_FLAVOUR, --translation_flavour TRANSLATION_FLAVOUR
                         Flavour variation for a specific LLM recipe supporting translation
@@ -161,7 +161,7 @@ def main():
     from subaligner.llm import WhisperFlavour
     parser.add_argument(
         "-mr",
-        "--llm_recipe",
+        "--transcription_recipe",
         type=str.lower,
         default=TranscriptionRecipe.WHISPER.value,
         choices=[r.value for r in TranscriptionRecipe],
@@ -169,7 +169,7 @@ def main():
     )
     parser.add_argument(
         "-mf",
-        "--llm_flavour",
+        "--transcription_flavour",
         type=str.lower,
         default=WhisperFlavour.SMALL.value,
         choices=[wf.value for wf in WhisperFlavour],
@@ -322,7 +322,7 @@ def main():
                     )
                 elif FLAGS.mode == "transcribe":
                     from subaligner.transcriber import Transcriber
-                    transcriber = Transcriber(recipe=FLAGS.llm_recipe, flavour=FLAGS.llm_flavour)
+                    transcriber = Transcriber(recipe=FLAGS.transcription_recipe, flavour=FLAGS.transcription_flavour)
                     subtitle, frame_rate = transcriber.transcribe(local_video_path, stretch_in_lang)
                     aligned_subs = subtitle.subs
                 else:
@@ -337,7 +337,7 @@ def main():
                     from subaligner.translator import Translator
                     source, target = FLAGS.translate.split(",")
                     translator = Translator(src_language=source, tgt_language=target, recipe=FLAGS.translation_recipe, flavour=FLAGS.translation_flavour)
-                    aligned_subs = translator.translate(aligned_subs, local_video_path)
+                    aligned_subs = translator.translate(aligned_subs, local_video_path, (source, target))
                     Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path,
                                                         frame_rate, "utf-8")
                 elif FLAGS.mode == "transcribe":
