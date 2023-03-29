@@ -10,7 +10,7 @@ click==5.1
 cloudpickle~=1.6.0
 cycler==0.10.0
 Cython~=0.29.22
-dask<2022.1.0
+dask>=2021.10.0,<2022.1.0
 decorator==4.3.0
 distributed==1.13.0
 filelock<4.0.0
@@ -23,6 +23,7 @@ html5lib==1.0b9
 hyperopt==0.2.4
 idna==2.8
 isort==4.3.4
+joblib>=1.2.0
 Keras-Applications>=1.0.8
 Keras-Preprocessing>=1.0.9
 kiwisolver==1.0.1

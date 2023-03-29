@@ -28,29 +28,12 @@ class Translator(object):
 
     __TENSOR_TYPE = "pt"
     __TRANSLATING_BATCH_SIZE = 10
-    __LANGUAGE_CODE_MAPPER = {
-        "bos": "zls",
-        "cmn": "zho",
-        "gla": "cel",
-        "grc": "grk",
-        "guj": "inc",
-        "ina": "art",
-        "jbo": "art",
-        "kan": "dra",
-        "kir": "trk",
-        "lat": "itc",
-        "lfn": "art",
-        "mya": "sit",
-        "nep": "inc",
-        "ori": "inc",
-        "sin": "inc",
-        "srp": "zls",
-        "tam": "dra",
-        "tat": "trk",
-        "tel": "dra",
-        "yue": "zho"
+    __HELSINKI_LANGUAGE_CODE_MAPPER = {
+        "bos": "zls", "cmn": "zho", "gla": "cel", "grc": "grk", "guj": "inc", "ina": "art", "jbo": "art", "kan": "dra",
+        "kir": "trk", "lat": "itc", "lfn": "art", "mya": "sit", "nep": "inc", "ori": "inc", "sin": "inc", "srp": "zls",
+        "tam": "dra", "tat": "trk", "tel": "dra", "yue": "zho"
     }
-    __LANGUAGE_PAIR_MAPPER = {
+    __HELSINKI_LANGUAGE_PAIR_MAPPER = {
         "eng-jpn": "eng-jap",
         "jpn-eng": "jap-eng"
     }
@@ -91,36 +74,6 @@ class Translator(object):
         self.__tokenizer: PreTrainedTokenizer = None
         self.__lang_model: PreTrainedModel = None
         self.__initialise_model(src_language, tgt_language, recipe, flavour)
-
-    @staticmethod
-    def normalise_single(language_code: str) -> str:
-        """Normalise a single language code.
-
-        Arguments:
-            language_code {string} -- A language code derived from ISO 639-3.
-
-        Returns:
-            string -- The language code understood by the language model.
-        """
-
-        return Translator.__LANGUAGE_CODE_MAPPER[language_code] if language_code in Translator.__LANGUAGE_CODE_MAPPER else language_code
-
-    @staticmethod
-    def normalise_pair(src_language: str, tgt_language: str) -> List[str]:
-        """Normalise a pair of language codes.
-
-        Arguments:
-            src_language {string} -- The source language code derived from ISO 639-3.
-            tgt_language {string} -- The target language code derived from ISO 639-3.
-
-        Returns:
-            list -- The language code pair understood by the language model.
-        """
-
-        if "{}-{}".format(src_language, tgt_language) in Translator.__LANGUAGE_PAIR_MAPPER:
-            return Translator.__LANGUAGE_PAIR_MAPPER["{}-{}".format(src_language, tgt_language)].split("-")
-        else:
-            return [src_language, tgt_language]
 
     def translate(self,
                   subs: List[SubRipItem],
@@ -198,9 +151,10 @@ class Translator(object):
 
     def __initialise_model(self, src_lang: str, tgt_lang: str, recipe: str, flavour: Optional[str]) -> None:
         if recipe == TranslationRecipe.HELSINKI_NLP.value:
-            src_lang = Translator.normalise_single(src_lang)
-            tgt_lang = Translator.normalise_single(tgt_lang)
-            src_lang, tgt_lang = Translator.normalise_pair(src_lang, tgt_lang)
+            src_lang = Translator.__HELSINKI_LANGUAGE_CODE_MAPPER.get(src_lang, src_lang)
+            tgt_lang = Translator.__HELSINKI_LANGUAGE_CODE_MAPPER.get(tgt_lang, tgt_lang)
+            lang_pair = "{}-{}".format(src_lang, tgt_lang)
+            src_lang, tgt_lang = Translator.__HELSINKI_LANGUAGE_PAIR_MAPPER.get(lang_pair, lang_pair).split("-")
 
             if self.__download_mt_model(src_lang, tgt_lang, HelsinkiNLPFlavour.OPUS_MT.value):
                 return

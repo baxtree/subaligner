@@ -3,7 +3,7 @@ import unittest
 from mock import Mock, patch
 from parameterized import parameterized
 from subaligner.subtitle import Subtitle
-from subaligner.llm import TranslationRecipe, HelsinkiNLPFlavour, FacebookMbartFlavour
+from subaligner.llm import TranslationRecipe, HelsinkiNLPFlavour, WhisperFlavour, FacebookMbartFlavour
 from subaligner.translator import Translator as Undertest
 
 
@@ -31,6 +31,19 @@ class TranslatorTests(unittest.TestCase):
 
         self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
 
+    @patch("whisper.load_audio")
+    @patch("whisper.load_model")
+    def test_translate_whisper(self, load_model, load_audio):
+        subs = Subtitle.load(self.srt_file_path).subs
+        model = Mock()
+        load_model.return_value = model
+        model.transcribe.return_value = {"segments": [{"start": 0, "end": 1, "text": "translated"}]}
+
+        undertest = Undertest("eng", "zho", recipe=TranslationRecipe.WHISPER.value, flavour=WhisperFlavour.TINY.value)
+        translated_subs = undertest.translate(subs, "video_path")
+
+        self.assertEqual(["translated"], [*map(lambda x: x.text, translated_subs)])
+
     @patch("transformers.MBart50TokenizerFast.from_pretrained")
     @patch("transformers.MBartForConditionalGeneration.from_pretrained")
     def test_translate_fb_mbart(self, model_from_pretrained, tokenizer_from_pretrained):
@@ -48,38 +61,6 @@ class TranslatorTests(unittest.TestCase):
         translated_subs = undertest.translate(subs)
 
         self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
-
-    @parameterized.expand([
-        ["bos", "zls"],
-        ["cmn", "zho"],
-        ["gla", "cel"],
-        ["grc", "grk"],
-        ["guj", "inc"],
-        ["ina", "art"],
-        ["jbo", "art"],
-        ["kan", "dra"],
-        ["kir", "trk"],
-        ["lat", "itc"],
-        ["lfn", "art"],
-        ["mya", "sit"],
-        ["nep", "inc"],
-        ["ori", "inc"],
-        ["sin", "inc"],
-        ["srp", "zls"],
-        ["tam", "dra"],
-        ["tat", "trk"],
-        ["tel", "dra"],
-        ["yue", "zho"],
-    ])
-    def test_normalise_single(self, original, normalised):
-        self.assertEqual(normalised, Undertest.normalise_single(original))
-
-    @parameterized.expand([
-        ["eng-jpn", "eng-jap"],
-        ["jpn-eng", "jap-eng"],
-    ])
-    def test_normalise_pair(self, original, normalised):
-        self.assertEqual(normalised, "-".join(Undertest.normalise_pair(*original.split("-"))))
 
     @patch("transformers.MarianTokenizer.from_pretrained", side_effect=OSError)
     def test_throw_exception_on_translating_subs(self, mock_tokenizer_from_pretrained):
