@@ -7,7 +7,6 @@
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
-[![Docker Build](https://img.shields.io/docker/cloud/build/baxtree/subaligner?label=Docker&style=flat)](https://hub.docker.com/r/baxtree/subaligner/builds)
 [![Docker Pulls](https://img.shields.io/docker/pulls/baxtree/subaligner)](https://hub.docker.com/r/baxtree/subaligner)
 [![Citation](https://zenodo.org/badge/228440472.svg)](https://doi.org/10.5281/zenodo.5603083)
 
@@ -126,7 +125,14 @@ $ subaligner --languages
 $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
-$ subaligner -m transcribe -v video.mp4 -ml src -mr whisper -mf small -o subtitle_aligned.srt -t src,tgt
+$ subaligner -m dual -v video.mp4 -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
+$ subaligner -m dual -v video.mp4 -tr facebook-mbart -tf large -o subtitle_aligned.srt -t src,tgt
+$ subaligner -m dual -v video.mp4 -tr whisper -tf small -o subtitle_aligned.srt -t src,eng
+```
+```
+# Transcribe audiovisual files and generate translated subtitles
+
+$ subaligner -m transcribe -v video.mp4 -ml src -mr whisper -mf small -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
 ```
 ```
 # Shift subtitle manually by offset in seconds

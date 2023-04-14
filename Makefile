@@ -1,7 +1,7 @@
 ifdef PYTHON
 PYTHON := $(PYTHON)
 else
-PYTHON := 3.7.7
+PYTHON := 3.8.2
 endif
 
 ifdef PLATFORM
