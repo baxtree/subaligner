@@ -55,7 +55,7 @@ class Transcriber(object):
             try:
                 audio = whisper.load_audio(audio_file_path)
                 self.__LOGGER.debug("Start transcribing the audio...")
-                result = self.__model.transcribe(audio, task="transcribe", language=LANGUAGES[lang], logprob_threshold=-1.2, no_speech_threshold=0.16)
+                result = self.__model.transcribe(audio, task="transcribe", language=LANGUAGES[lang])
                 self.__LOGGER.info("Finished transcribing the audio")
                 srt_str = ""
                 for i, segment in enumerate(result["segments"], start=1):

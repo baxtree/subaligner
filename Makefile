@@ -24,7 +24,7 @@ endef
 export BROWSER_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
-.PHONY: install uninstall build-gzip build-rpm test test-all pydoc coverage manual dist release clean clean-dist clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
+.PHONY: install uninstall build-gzip build-rpm test test-all docker-build pydoc coverage manual dist release clean clean-dist clean-doc clean-manual clean-build clean-pyc clean-test clean-rpm
 
 install:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
@@ -179,6 +179,13 @@ app: clean-wheels
 	.$(PYTHON)/bin/pip wheel --no-cache-dir --wheel-dir=./wheels -r requirements.txt -r requirements-stretch.txt -r requirements-llm.txt; \
 	STRETCH_OFF=True .$(PYTHON)/bin/python setup.py bdist_wheel -d ./wheels; \
 	.$(PYTHON)/bin/pex subaligner==$(SUBALIGNER_VERSION) --repo=./wheels --platform $(PLATFORM) --no-pypi --no-build --python-shebang="/usr/bin/env python3" -e subaligner -o subaligner-$(PLATFORM).app; \
+
+docker-build:
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Ubuntu20 .
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-ArchLinux .
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-CentOS7 .
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Debian11 .
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Fedora37 .
 
 docker-images:
 	SUBALIGNER_VERSION=$(SUBALIGNER_VERSION) docker-compose -f ./docker/docker-compose.yml build

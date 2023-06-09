@@ -1,5 +1,5 @@
 # Subaligner Debian docker image
-FROM debian:stable-20211011-slim
+FROM debian:stable-20230202-slim
 
 ARG RELEASE_VERSION
 

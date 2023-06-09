@@ -28,11 +28,11 @@ services:
   subaligner-debian10:
     build:
       context: ./
-      dockerfile: Dockerfile-Debian10
-    image: baxtree/subaligner:${SUBALIGNER_VERSION}.deb10
+      dockerfile: Dockerfile-Debian11
+    image: baxtree/subaligner:${SUBALIGNER_VERSION}.deb11
 
   subaligner-fedora31:
     build:
       context: ./
-      dockerfile: Dockerfile-Fedora31
-    image: baxtree/subaligner:${SUBALIGNER_VERSION}.fed31
+      dockerfile: Dockerfile-Fedora37
+    image: baxtree/subaligner:${SUBALIGNER_VERSION}.fed37
