@@ -112,11 +112,11 @@ class Translator(object):
         elif self.__recipe == TranslationRecipe.WHISPER.value:
             assert video_file_path is not None
             lang = Utils.get_iso_639_alpha_2(self.__tgt_language)
-            if lang not in LANGUAGES:
-                raise TranslationException(f'"{self.__tgt_language}" is not supported by {self.__recipe}')
+            if lang not in LANGUAGES or lang != "en":
+                raise TranslationException(f'"{self.__tgt_language}" is not supported by {self.__recipe} as a translation target by {self.__recipe}')
             audio = whisper.load_audio(video_file_path)
             self.__LOGGER.debug("Start translating the audio...")
-            result = self.__lang_model.transcribe(audio, task="translate", language=LANGUAGES[lang])
+            result = self.__lang_model.transcribe(audio, task="translate")
             self.__LOGGER.info("Finished translating the audio")
             srt_str = ""
             for i, segment in enumerate(result["segments"], start=1):
@@ -131,7 +131,7 @@ class Translator(object):
             self.__tokenizer.src_lang = Translator.__MBART_LANGUAGE_CODE_MAPPER.get(src_lang, None)
             lang_code = Translator.__MBART_LANGUAGE_CODE_MAPPER.get(tgt_lang, None)
             if src_lang is None or tgt_lang is None:
-                raise NotImplementedError(f"Language pair of {src_lang} and {src_lang} is not supported")
+                raise NotImplementedError(f"Language pair of {src_lang} and {src_lang} is not supported by {self.__recipe}")
             translated_texts = []
             self.__lang_model.eval()
             new_subs = deepcopy(subs)
@@ -163,7 +163,7 @@ class Translator(object):
             elif self.__download_mt_model(src_lang, tgt_lang, HelsinkiNLPFlavour.OPUS_MT_TC_BIG.value):
                 return
             else:
-                message = 'Cannot find the MT model for source language "{}" and destination language "{}"'.format(src_lang, tgt_lang)
+                message = f'Cannot find the {recipe} MT model for source language "{src_lang}" and destination language "{tgt_lang}"'
                 self.__LOGGER.error(message)
                 raise NotImplementedError(message)
         elif recipe == TranslationRecipe.WHISPER.value:

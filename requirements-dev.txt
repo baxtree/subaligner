@@ -2,13 +2,13 @@ mock==4.0.3
 coverage==5.5
 tox~=3.23.0
 pycodestyle==2.5.0
-twine>=3.1.1
+twine<4.0.0
 snakeviz==2.1.0
 line-profiler==3.1.0
 scikit-build==0.11.1
 radish-bdd~=0.13.3
 pex<=2.1.80
-mypy==0.931
+mypy==1.3.0
 types-requests==2.27.9
 types-setuptools==57.4.9
 typing-extensions<4.0.0

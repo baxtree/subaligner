@@ -31,7 +31,7 @@ EXTRA_DEPENDENCIES = {
     "dev": dev_requirements + stretch_requirements + llm_requirements + docs_requirements,
     "docs": docs_requirements,
     "stretch": stretch_requirements,
-    "translation": llm_requirements,    # for backward compatibility and will be deprecated with "llm"
+    "translation": llm_requirements,    # for backward compatibility and now deprecated with "llm"
     "llm": llm_requirements,
 }
 
@@ -41,17 +41,17 @@ setup(name="subaligner",
       author_email="xi.bai.ed@gmail.com",
       classifiers=[
           "License :: OSI Approved :: MIT License",
-          "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
           "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
           "Intended Audience :: Developers",
       ],
       license="MIT",
       url="https://subaligner.readthedocs.io/en/latest/",
-      description="Automatically synchronize and translate subtitles with pretrained deep neural networks, forced alignments and transformers.",
+      description="Automatically synchronize and translate subtitles, or create new ones by transcribing, using pre-trained DNNs, Forced Alignments and Transformers.",
       long_description=readme + "\n\n",
       long_description_content_type='text/markdown',
-      python_requires=">=3.6",
+      python_requires=">=3.8",
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",

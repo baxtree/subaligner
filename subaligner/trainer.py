@@ -8,7 +8,7 @@ import math
 import numpy as np
 import multiprocessing as mp
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 from .network import Network
 from .media_helper import MediaHelper
 from .hyperparameters import Hyperparameters
@@ -330,8 +330,8 @@ class Trainer(object):
         index: int,
         av_file_path: str,
         subtitle_file_path: str,
-        train_data: np.ndarray,
-        labels: np.ndarray,
+        train_data: Union[np.ndarray, List],
+        labels: Union[np.ndarray, List],
         sound_effect_start_marker: Optional[str],
         sound_effect_end_marker: Optional[str]
     ) -> Tuple[str, str]:
