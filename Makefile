@@ -182,10 +182,11 @@ app: clean-wheels
 
 docker-build:
 	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Ubuntu20 .
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Ubuntu22 .
 	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-ArchLinux .
 	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-CentOS7 .
 	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Debian11 .
-	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Fedora37 .
+	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Fedora34 .
 
 docker-images:
 	SUBALIGNER_VERSION=$(SUBALIGNER_VERSION) docker-compose -f ./docker/docker-compose.yml build

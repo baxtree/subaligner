@@ -1,5 +1,5 @@
 # Subaligner Fedora Docker Image
-From fedora:37
+From fedora:34
 
 ARG RELEASE_VERSION
 
