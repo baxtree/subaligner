@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 
 from setuptools import setup
 
@@ -10,6 +11,13 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
+
+if platform.machine() == "arm64":
+    with open("requirements-aarch64.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
+else:
+    with open("requirements.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
 
 with open("requirements.txt") as requirements_file:
     requirements = requirements_file.read().splitlines()[::-1]
@@ -52,6 +60,7 @@ setup(name="subaligner",
       long_description=readme + "\n\n",
       long_description_content_type='text/markdown',
       python_requires=">=3.8",
+      wheel=True,
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",
@@ -92,4 +101,5 @@ setup(name="subaligner",
               "subaligner_convert=subaligner.subaligner_convert.__main__:main",
               "subaligner_train=subaligner.subaligner_train.__main__:main",
               "subaligner_tune=subaligner.subaligner_tune.__main__:main",
-          ]})
+          ]
+      })

@@ -7,7 +7,13 @@ endif
 ifdef PLATFORM
 PLATFORM := $(PLATFORM)
 else
-PLATFORM := linux-x86_64-cp-37-cp37
+PLATFORM := linux-x86_64-cp-38-cp38
+endif
+
+ifdef PYTHON_TAG
+PYTHON_TAG := $(PYTHON_TAG)
+else
+PYTHON_TAG := py38
 endif
 
 SUBALIGNER_VERSION := $(SUBALIGNER_VERSION)
@@ -153,7 +159,7 @@ test-dist:
 
 dist: clean-dist test-dist
 	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	.$(PYTHON)/bin/python setup.py sdist bdist_wheel bdist_egg
+	.$(PYTHON)/bin/python setup.py sdist bdist_wheel --python-tag=$(PYTHON_TAG)
 
 release:
 	.$(PYTHON)/bin/twine upload dist/*
