@@ -281,8 +281,8 @@ class UtilsTests(unittest.TestCase):
         self.assertFalse(Undertest.contains_embedded_subtitles(self.mp4_file_path))
 
     def test_detect_encoding(self):
-        self.assertEqual("ASCII", Undertest.detect_encoding(self.real_srt_path))
-        self.assertEqual("UTF-8", Undertest.detect_encoding(self.mkv_file_path))
+        self.assertEqual("ascii", Undertest.detect_encoding(self.real_srt_path))
+        self.assertEqual("utf-8", Undertest.detect_encoding(self.mkv_file_path))
 
     def test_get_file_root_and_extension(self):
         root, extension = Undertest.get_file_root_and_extension("/path/to/root.ext1.ext2")

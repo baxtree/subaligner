@@ -1,4 +1,4 @@
-name: ci pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -28,6 +28,7 @@ jobs:
           sudo apt-get -y install espeak libespeak1 libespeak-dev espeak-data
           sudo apt-get -y install libsndfile-dev
           python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools wheel
           cat requirements.txt | xargs -L 1 pip install
           cat requirements-stretch.txt | xargs -L 1 pip install
           cat requirements-llm.txt | xargs -L 1 pip install

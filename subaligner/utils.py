@@ -3,7 +3,7 @@ import subprocess
 import pysubs2
 import requests
 import shutil
-import cchardet
+import chardet
 import shlex
 import pycountry
 
@@ -595,9 +595,9 @@ class Utils(object):
             # and hence this less memory-efficient solution:
             raw = b"".join(file.readlines())
 
-        detected = cchardet.detect(raw)
+        detected = chardet.detect(raw)
         detected = detected or {}
-        return detected["encoding"] if "encoding" in detected else None
+        return detected["encoding"] if "encoding" in detected and detected["encoding"] is not None else "utf-8"
 
     @staticmethod
     def get_file_root_and_extension(file_path: str) -> Tuple[str, str]:

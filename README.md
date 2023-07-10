@@ -29,7 +29,7 @@ $ brew install ffmpeg
 
 ## Basic Installation
 ```
-$ pip install -U pip && pip install -U setuptools
+$ pip install -U pip && pip install -U setuptools wheel
 $ pip install subaligner
 ```
 or install from source:

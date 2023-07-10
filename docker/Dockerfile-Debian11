@@ -11,9 +11,13 @@ RUN ["/bin/bash", "-c", "apt -y update &&\
     apt -y install ffmpeg &&\
     apt -y install espeak libespeak1 libespeak-dev espeak-data &&\
     apt -y install libsndfile-dev &&\
+    apt -y install libblas-dev liblapack-dev &&\
     apt -y install python3-dev &&\
     apt -y install python3-tk &&\
     apt -y install python3-pip &&\
+    apt -y install python3-venv &&\
+    python3 -m venv .venv &&\
+    source .venv/bin/activate &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
     python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]

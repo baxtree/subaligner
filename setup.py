@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import platform
-
+import sys
+from platform import architecture, machine
 from setuptools import setup
+from wheel.bdist_wheel import bdist_wheel
 
 with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
     exec(f.read())
@@ -12,15 +13,12 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-if platform.machine() == "arm64":
-    with open("requirements-aarch64.txt") as requirements_file:
+if machine() == "arm64":
+    with open("requirements-arm64.txt") as requirements_file:
         requirements = requirements_file.read().splitlines()[::-1]
 else:
     with open("requirements.txt") as requirements_file:
         requirements = requirements_file.read().splitlines()[::-1]
-
-with open("requirements.txt") as requirements_file:
-    requirements = requirements_file.read().splitlines()[::-1]
 
 with open("requirements-stretch.txt") as stretch_requirements_file:
     stretch_requirements = stretch_requirements_file.read().splitlines()[::-1]
@@ -43,6 +41,24 @@ EXTRA_DEPENDENCIES = {
     "llm": llm_requirements,
 }
 
+architecture = architecture()[0] if sys.platform == "win32" else machine()
+
+
+class bdist_wheel_local(bdist_wheel):
+
+    def get_tag(self):
+        python = f"py{sys.version_info.major}{sys.version_info.minor}"
+        if sys.platform == "darwin" and architecture == "arm64":
+            os_arch = "macosx_11_0_arm64"
+        elif sys.platform == "win32":
+            os_arch = "win32" if architecture == "32bit" else "win_amd64"
+        # elif sys.platform == "linux":
+        #     os_arch = f"manylinux_2_17_{architecture}"
+        else:
+            os_arch = "any"
+        return python, "none", os_arch
+
+
 setup(name="subaligner",
       version=__version__,
       author="Xi Bai",
@@ -58,7 +74,7 @@ setup(name="subaligner",
       url="https://subaligner.readthedocs.io/en/latest/",
       description="Automatically synchronize and translate subtitles, or create new ones by transcribing, using pre-trained DNNs, Forced Alignments and Transformers.",
       long_description=readme + "\n\n",
-      long_description_content_type='text/markdown',
+      long_description_content_type="text/markdown",
       python_requires=">=3.8",
       wheel=True,
       package_dir={"subaligner": "subaligner"},
@@ -102,4 +118,5 @@ setup(name="subaligner",
               "subaligner_train=subaligner.subaligner_train.__main__:main",
               "subaligner_tune=subaligner.subaligner_tune.__main__:main",
           ]
-      })
+      },
+      cmdclass={"bdist_wheel": bdist_wheel_local})
