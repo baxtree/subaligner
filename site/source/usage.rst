@@ -7,24 +7,25 @@ lower latency and shifts all subtitle segments globally. The latter way has high
 segments individually with an option of stretching each segment. Multilingual translation on subtitles can be achieved
 together with the alignment in one go or separately (see in :ref:`Advanced Usage`).
 
+With no subtitles in your hand beforehand, Subligner's transcribe mode utilises Large Language Models (LLMs) to transcribe
+audiovisual content and generates subtitles in various formats which suit your needs.
+
 Make sure you have got the virtual environment activated upfront.
 
 **Single-stage alignment (high-level shift with lower latency)**::
 
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner_1pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
+    (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt
+    (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
 
 **Dual-stage alignment (low-level shift with higher latency)**::
 
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner_2pass -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
-
-**Pass in single-stage or dual-stage as the alignment mode**::
-
-    (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt
-    (.venv) $ subaligner -m single -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt
     (.venv) $ subaligner -m dual -v https://example.org/video.mp4 -s https://example.org/subtitle.srt -o subtitle_aligned.srt
+
+**Generate subtitles by transcribing audiovisual files**::
+
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml zho -mr whisper -mf medium -o subtitle_aligned.srt
 
 **Alignment on segmented plain texts (double newlines as the delimiter)**::
 
@@ -44,14 +45,17 @@ Make sure you have got the virtual environment activated upfront.
 
 **Translative alignment with the ISO 639-3 language code pair (src,tgt)**::
 
-    (.venv) $ subaligner_1pass --languages
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -t src,tgt
-    (.venv) $ subaligner_2pass --languages
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner --languages
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -tr facebook-mbart -tf large -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -tr whisper -tf small -o subtitle_aligned.srt -t src,eng
+
+**Transcribe audiovisual files and generate translated subtitles**::
+
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml src -mr whisper -mf small -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
 
 **Shift subtitle manually by offset in seconds**::
 
@@ -67,10 +71,10 @@ Make sure you have got the virtual environment activated upfront.
 **Run alignments with the docker image**::
 
     $ docker pull baxtree/subaligner
-    $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_1pass -v video.mp4 -s subtitle.srt
-    $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner_2pass -v video.mp4 -s subtitle.srt
-    $ docker run -it baxtree/subaligner subaligner_1pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
-    $ docker run -it baxtree/subaligner subaligner_2pass -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+    $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner -m single -v video.mp4 -s subtitle.srt
+    $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner -m dual -v video.mp4 -s subtitle.srt
+    $ docker run -it baxtree/subaligner subaligner -m single -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
+    $ docker run -it baxtree/subaligner subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 
 **Run alignments with pipx**::
 
@@ -81,22 +85,16 @@ Make sure you have got the virtual environment activated upfront.
 
     $ python -m subaligner -m single -v video.mp4 -s subtitle.srt
     $ python -m subaligner -m dual -v video.mp4 -s subtitle.srt
-    $ python -m subaligner.subaligner_1pass -v video.mp4 -s subtitle.srt
-    $ python -m subaligner.subaligner_2pass -v video.mp4 -s subtitle.srt
 
 Currently the stretching is experimental and make sure subaligner[stretch] is installed before switching it on with `-so`
 or `--stretch_on` as shown below.
 
 **Switch on stretching when aligning subtitles**::
 
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -so
-    or
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -so
 
 **Save the aligned subtitle to a specific location**::
 
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
-    or
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
 
 **On Windows**::

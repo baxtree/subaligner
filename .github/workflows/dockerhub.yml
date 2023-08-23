@@ -60,43 +60,30 @@ jobs:
           tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u20
           push: true
 
-      - name: Build and push the Ubuntu 18 image
-        id: docker_build_u18
+      - name: Build and push the Ubuntu 22 image
+        id: docker_build_u22
         uses: docker/build-push-action@v2
         with:
           context: ./docker
-          file: "./docker/Dockerfile-Ubuntu18"
+          file: "./docker/Dockerfile-Ubuntu22"
           build-args: |
             "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
           allow: network.host
           github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u18
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u22
           push: true
 
-      - name: Build and push the Fedora 31 image
-        id: docker_build_fed31
+      - name: Build and push the Fedora 34 image
+        id: docker_build_fed34
         uses: docker/build-push-action@v2
         with:
           context: ./docker
-          file: "./docker/Dockerfile-Fedora31"
+          file: "./docker/Dockerfile-Fedora34"
           build-args: |
             "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
           allow: network.host
           github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.fed31
-          push: true
-
-      - name: Build and push the Debian 10 image
-        id: docker_build_deb10
-        uses: docker/build-push-action@v2
-        with:
-          context: ./docker
-          file: "./docker/Dockerfile-Debian10"
-          build-args: |
-            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
-          allow: network.host
-          github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.deb10
+          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.fed34
           push: true
 
       - name: Build and push the ArchLinux image

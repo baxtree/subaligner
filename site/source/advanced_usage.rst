@@ -7,7 +7,7 @@ the model can be imported and used for synchronising out-of-sync subtitles.
 
 **Start fresh training**::
 
-    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory
+    $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory
 
 Make sure each subtitle file and its companion audiovisual file are sharing the same base filename, e.g.,
 "awesome.mp4" and "awesome.srt" share the base filename "awesome". Then split them into two separate folders, e.g.,
@@ -17,7 +17,7 @@ the results after training is finished and make sure it is writable to Subaligne
 
 **Resume training**::
 
-    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory -e 200 -r
+    $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory -e 200 -r
 
 Training over a large dataset is usually an expensive process and time consuming. You can stop the training and resume it with
 `-r` or `--resume` at another convenient time to enhance an existing model stored in the aforementioned training output
@@ -26,14 +26,14 @@ already completed in the past. If the number is forgotten, you can pass in `-dde
 
 **Display completed epochs**::
 
-    (.venv) $ subaligner_train -dde -tod training_output_directory
+    $ subaligner_train -dde -tod training_output_directory
 
 Also note that on training resumption, av_directory and subtitle_directory will be ignored due to the reuse of feature
 embedding by default.
 
 **Reuse embeddings**::
 
-    (.venv) $ subaligner_train -utd -tod training_output_directory
+    $ subaligner_train -utd -tod training_output_directory
 
 Embeddings extracted from your media files can be reused with `-utd` or `--use_training_dump`. With that flag on, you can train a new
 model of another kind (instead of re-using the same model on training resumption) without going through the feature embedding process,
@@ -41,7 +41,7 @@ which could take quite long to finish for a large dataset so as to be unnecessar
 
 **Ignore sound effects**::
 
-    (.venv) $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory --sound_effect_start_marker "(" --sound_effect_end_marker ")"
+    $ subaligner_train -vd av_directory -sd subtitle_directory -tod training_output_directory --sound_effect_start_marker "(" --sound_effect_end_marker ")"
 
 It is not uncommon that subtitles sometimes contain sound effects (e.g., "BARK", "(applause)" and "[MUSIC]", etc.). For limited training
 data sets and not sophisticated enough network architectures, the model usually cannot capture all the sound effects very well.
@@ -51,7 +51,7 @@ For example, the above exemplary command will treat any strings starting with "(
 
 **Train with embedded subtitles**::
 
-    (.venv) $ subaligner_train -vd av_directory -ess embedded:stream_index=0,file_extension=srt -tod training_output_directory
+    $ subaligner_train -vd av_directory -ess embedded:stream_index=0,file_extension=srt -tod training_output_directory
 
 If your audiovisual files all contain embedded subtitles or teletexts of the same format and have been encoded in the same fashion, `-sd` or `--subtitle_directory`
 can be omitted and subtitles will be extracted based on the specified subtitle selector. For instance, "embedded:stream_index=0,file_extension=srt"
@@ -62,10 +62,8 @@ is present, make sure the folder passed in is empty.
 
 **Run alignments after training**::
 
-    (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -tod training_output_directory
-    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tod training_output_directory
-    (.venv) $ subaligner_1pass -v video.mp4 -s subtitle.srt -tod training_output_directory
-    (.venv) $ subaligner_2pass -v video.mp4 -s subtitle.srt -tod training_output_directory
+    $ subaligner -m single -v video.mp4 -s subtitle.srt -tod training_output_directory
+    $ subaligner -m dual -v video.mp4 -s subtitle.srt -tod training_output_directory
 
 To apply your trained model to subtitle alignment, pass in the training_output_directory containing training results as
 shown above with `-tod` or `--training_output_directory`.
@@ -98,7 +96,7 @@ Subaligner tune hyperparameters automatically and the how-to is shown below.
 
 **Hyperparameters tuning**::
 
-     (.venv) $ subaligner_tune -vd av_directory -sd subtitle_directory -tod training_output_directory
+     $ subaligner_tune -vd av_directory -sd subtitle_directory -tod training_output_directory
 
 Subaligner has used the `Tree-structured Parzen Estimator Approach (TPE) <https://en.wikipedia.org/wiki/Kernel_density_estimation>`_ to
 automatically run trails on different settings of hyper-parameter values and recommend the best one. You can pass in the following
@@ -117,17 +115,17 @@ flags to customise the configuration on tuning:
 
 **Convert the subtitle to another format**::
 
-    (.venv) $ subaligner_convert -i subtitle.srt -o subtitle.vtt
+    $ subaligner_convert -i subtitle.srt -o subtitle.vtt
 
 **Convert the subtitle to another format and translate**::
 
-    (.venv) $ subaligner_convert --languages
-    (.venv) $ subaligner_convert -i subtitle_en.srt -o subtitle_zh.vtt -t eng,zho
+    $ subaligner_convert --languages
+    $ subaligner_convert -i subtitle_en.srt -o subtitle_zh.vtt -t eng,zho
 
 **Translate the subtitle without changing the format**::
 
-    (.venv) $ subaligner_convert --languages
-    (.venv) $ subaligner_convert -i subtitle_en.srt -o subtitle_es.srt -t eng,spa
+    $ subaligner_convert --languages
+    $ subaligner_convert -i subtitle_en.srt -o subtitle_es.srt -t eng,spa
 
 For output subtitles like MicroDVD relying on the frame rate, its value needs to be passed in with `-fr` or `--frame_rate`.
 

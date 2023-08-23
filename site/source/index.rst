@@ -25,6 +25,10 @@ to developers wanting to perform those tasks programmatically. Moreover, with ex
 hand, advanced users can train their own synchronisers with a single command and zero setup. A handful of subtitle formats are supported
 and can be converted from one to another either during synchronisation and translation or on on-demand.
 
+Even without any subtitles available beforehand, Subaligner provides transcription by utilising SOTA Large Language
+Models (LLMs). This pipeline, combined with translation, can generate near ready-to-use subtitles of increasingly higher quality in
+various languages and formats which cater to your preferences, thanks to those models continually advancing over time.
+
 Subligner supports the following subtitle formats: SubRip, TTML, WebVTT, (Advanced) SubStation Alpha, MicroDVD, MPL2, TMP,
 EBU STL, SAMI, SCC and SBV. The source code can be found on GitHub: `subaligner <https://github.com/baxtree/subaligner>`_.
 

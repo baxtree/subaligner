@@ -1,9 +1,11 @@
-name: ci pipeline
+name: CI Pipeline
 
 on:
-  - push
-  - pull_request
-  - workflow_dispatch
+  push:
+    branches: [ master, development ]
+  pull_request:
+    branches: [ master, development ]
+  workflow_dispatch:
 
 jobs:
   main:
@@ -26,9 +28,10 @@ jobs:
           sudo apt-get -y install espeak libespeak1 libespeak-dev espeak-data
           sudo apt-get -y install libsndfile-dev
           python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools wheel
           cat requirements.txt | xargs -L 1 pip install
           cat requirements-stretch.txt | xargs -L 1 pip install
-          cat requirements-translation.txt | xargs -L 1 pip install
+          cat requirements-llm.txt | xargs -L 1 pip install
           cat requirements-dev.txt | xargs -L 1 pip install
           cat requirements-site.txt | xargs -L 1 pip install
           pip install -e . --ignore-installed
@@ -43,7 +46,7 @@ jobs:
           coverage run -m unittest discover
           coverage combine
           coverage xml
-          bash <(curl -s https://codecov.io/bash)
+          bash <(curl -s https://codecov.io/bash) -n patch -F 90
       - name: Integration tests
         run: |
           radish -b tests/integration/radish tests/integration/feature

@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 """
-usage: subaligner [-h] [-m {single,dual,script,shift}] [-v VIDEO_PATH] [-s SUBTITLE_PATH [SUBTITLE_PATH ...]] [-l MAX_LOGLOSS] [-so]
+usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH] [-s SUBTITLE_PATH [SUBTITLE_PATH ...]] [-l MAX_LOGLOSS] [-so]
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS] [-lgs] [-d] [-q] [-ver]
+                  [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
+                  [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
+                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}] [-tr {helsinki-nlp,whisper,facebook-mbart}]
+                  [-tf TRANSLATION_FLAVOUR] [-lgs] [-d] [-q] [-ver]
 
 Subaligner command line interface
 
 optional arguments:
   -h, --help            show this help message and exit
+  -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ttml, .ssa, .stl, .sbv, .dfxp, .srt, .txt, .ytt, .vtt, .sub, .sami, .xml, .scc, .ass, .smi, .tmp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -23,18 +28,26 @@ optional arguments:
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
   -os OFFSET_SECONDS, --offset_seconds OFFSET_SECONDS
                         Offset by which the subtitle will be shifted
+  -ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --main_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
+                        Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
+  -mr {whisper}, --transcription_recipe {whisper}
+                        LLM recipe used for transcribing video files
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}
+                        Flavour variation for a specific LLM recipe supporting transcription
+  -tr {helsinki-nlp,whisper,facebook-mbart}, --translation_recipe {helsinki-nlp,whisper,facebook-mbart}
+                        LLM recipe used for translating subtitles
+  -tf TRANSLATION_FLAVOUR, --translation_flavour TRANSLATION_FLAVOUR
+                        Flavour variation for a specific LLM recipe supporting translation
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
   -ver, --version       show program's version number and exit
 
 required arguments:
-  -m {single,dual,script,shift}, --mode {single,dual,script,shift}
-                        Alignment mode: either single or dual
+  -m {single,dual,script,shift,transcribe}, --mode {single,dual,script,shift,transcribe}
+                        Alignment mode: single, dual, script, shift or transcribe
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
-  -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .sami, .ssa, .vtt, .xml, .sub, .smi, .ass, .srt, .tmp, .dfxp, .stl, .ttml, .sbv, .txt, .ytt, .scc) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -61,10 +74,10 @@ def main():
     required_args.add_argument(
         "-m",
         "--mode",
-        type=str,
+        type=str.lower,
         default="",
-        choices=["single", "dual", "script", "shift"],
-        help="Alignment mode: either single or dual",
+        choices=["single", "dual", "script", "shift", "transcribe"],
+        help="Alignment mode: single, dual, script, shift or transcribe",
     )
     required_args.add_argument(
         "-v",
@@ -74,7 +87,7 @@ def main():
         help="File path or URL to the video file",
     )
     from subaligner.subtitle import Subtitle
-    required_args.add_argument(
+    parser.add_argument(
         "-s",
         "--subtitle_path",
         type=str,
@@ -100,7 +113,7 @@ def main():
     parser.add_argument(
         "-sil",
         "--stretch_in_language",
-        type=str,
+        type=str.lower,
         choices=Utils.get_stretch_language_codes(),
         default="eng",
         help="Stretch the subtitle with the supported ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes].\nNB: This will be ignored if neither -so nor --stretch_on is present",
@@ -137,6 +150,48 @@ def main():
         type=float,
         help="Offset by which the subtitle will be shifted"
     )
+    parser.add_argument(
+        "-ml",
+        "--main_language",
+        type=str.lower,
+        choices=Utils.get_stretch_language_codes(),
+        help="Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]",
+    )
+    from subaligner.llm import TranscriptionRecipe
+    from subaligner.llm import WhisperFlavour
+    parser.add_argument(
+        "-mr",
+        "--transcription_recipe",
+        type=str.lower,
+        default=TranscriptionRecipe.WHISPER.value,
+        choices=[r.value for r in TranscriptionRecipe],
+        help="LLM recipe used for transcribing video files"
+    )
+    parser.add_argument(
+        "-mf",
+        "--transcription_flavour",
+        type=str.lower,
+        default=WhisperFlavour.SMALL.value,
+        choices=[wf.value for wf in WhisperFlavour],
+        help="Flavour variation for a specific LLM recipe supporting transcription"
+    )
+    from subaligner.llm import TranslationRecipe
+    from subaligner.llm import HelsinkiNLPFlavour
+    parser.add_argument(
+        "-tr",
+        "--translation_recipe",
+        type=str.lower,
+        default=TranslationRecipe.HELSINKI_NLP.value,
+        choices=[r.value for r in TranslationRecipe],
+        help="LLM recipe used for translating subtitles"
+    )
+    parser.add_argument(
+        "-tf",
+        "--translation_flavour",
+        type=str.lower,
+        default=None,
+        help="Flavour variation for a specific LLM recipe supporting translation"
+    )
     parser.add_argument("-lgs", "--languages", action="store_true",
                         help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
@@ -153,33 +208,45 @@ def main():
         print("ERROR: --mode was not passed in")
         parser.print_usage()
         sys.exit(21)
+
     FLAGS.subtitle_path = [path for paths in FLAGS.subtitle_path for path in paths]
 
-    if not FLAGS.subtitle_path:
+    if not FLAGS.subtitle_path and FLAGS.mode != "transcribe":
         print("ERROR: --subtitle_path was not passed in")
         parser.print_usage()
         sys.exit(21)
-    if FLAGS.mode != "shift":
+    elif FLAGS.mode == "transcribe":
+        FLAGS.subtitle_path = ["{}.srt".format(tempfile.mkstemp()[1])]
+    if FLAGS.mode in ["single", "dual", "script", "transcribe"]:
         for subtitle_path in FLAGS.subtitle_path:
             if FLAGS.video_path == "":
                 print("ERROR: --video_path was not passed in")
                 parser.print_usage()
                 sys.exit(21)
             if subtitle_path.lower().startswith("http") and FLAGS.output == "":
-                print("ERROR: --output was not passed in for alignment on a remote subtitle file")
+                print("ERROR: --output was not passed in but required by alignment on a remote subtitle file")
                 parser.print_usage()
                 sys.exit(21)
             if subtitle_path.lower().startswith("embedded:") and FLAGS.output == "":
-                print("ERROR: --output was not passed in for alignment on embedded subtitles")
+                print("ERROR: --output was not passed in but required by alignment on embedded subtitles")
                 parser.print_usage()
                 sys.exit(21)
             if FLAGS.mode == "script" and FLAGS.output == "":
-                print("ERROR: --output was not passed in for alignment on plain texts")
+                print("ERROR: --output was not passed in but required by alignment on plain texts")
                 parser.print_usage()
                 sys.exit(21)
-            if FLAGS.translate is not None:
+            if FLAGS.mode == "transcribe":
+                if FLAGS.output == "":
+                    print("ERROR: --output was not passed in but required by mode 'transcribe'")
+                    parser.print_usage()
+                    sys.exit(21)
+                if FLAGS.main_language is None:
+                    print("ERROR: --main_language was not passed in but required by mode 'transcribe'")
+                    parser.print_usage()
+                    sys.exit(21)
+            if FLAGS.translate is not None or FLAGS.mode == "transcribe":
                 if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
-                    print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[translation]" and run your command again.')
+                    print('ERROR: Alignment has been configured to use language models. Please install "subaligner[llm]" and run your command again.')
                     sys.exit(21)
             if FLAGS.stretch_on or FLAGS.mode == "script":
                 if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
@@ -190,13 +257,13 @@ def main():
             local_subtitle_path = subtitle_path
             exit_segfail = FLAGS.exit_segfail
             stretch = FLAGS.stretch_on
-            stretch_in_lang = FLAGS.stretch_in_language
+            stretch_in_lang = FLAGS.main_language or FLAGS.stretch_in_language
 
             from subaligner.logger import Logger
             Logger.VERBOSE = FLAGS.debug
             Logger.QUIET = FLAGS.quiet
             from subaligner.predictor import Predictor
-            from subaligner.exception import UnsupportedFormatException
+            from subaligner.exception import UnsupportedFormatException, TranscriptionException
             from subaligner.exception import TerminalException
 
             try:
@@ -230,6 +297,7 @@ def main():
                         parser.print_usage()
                         sys.exit(21)
 
+                voice_probabilities = None
                 predictor = Predictor()
                 if FLAGS.mode == "single":
                     aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
@@ -252,6 +320,11 @@ def main():
                         subtitle_file_path=local_subtitle_path,
                         stretch_in_lang=stretch_in_lang,
                     )
+                elif FLAGS.mode == "transcribe":
+                    from subaligner.transcriber import Transcriber
+                    transcriber = Transcriber(recipe=FLAGS.transcription_recipe, flavour=FLAGS.transcription_flavour)
+                    subtitle, frame_rate = transcriber.transcribe(local_video_path, stretch_in_lang)
+                    aligned_subs = subtitle.subs
                 else:
                     print("ERROR: Unknown mode {}".format(FLAGS.mode))
                     parser.print_usage()
@@ -263,8 +336,11 @@ def main():
                 if FLAGS.translate is not None:
                     from subaligner.translator import Translator
                     source, target = FLAGS.translate.split(",")
-                    translator = Translator(source, target)
-                    aligned_subs = translator.translate(aligned_subs)
+                    translator = Translator(src_language=source, tgt_language=target, recipe=FLAGS.translation_recipe, flavour=FLAGS.translation_flavour)
+                    aligned_subs = translator.translate(aligned_subs, local_video_path, (source, target))
+                    Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path,
+                                                        frame_rate, "utf-8")
+                elif FLAGS.mode == "transcribe":
                     Subtitle.save_subs_as_target_format(aligned_subs, local_subtitle_path, aligned_subtitle_path,
                                                         frame_rate, "utf-8")
                 else:
@@ -277,35 +353,35 @@ def main():
                         print(
                             "ERROR: Alignment failed with a too high loss value: {}".format(log_loss)
                         )
-                        _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path)
+                        _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path, FLAGS.mode)
                         sys.exit(22)
 
                 print("Aligned subtitle saved to: {}".format(aligned_subtitle_path))
-            except UnsupportedFormatException as e:
+            except (UnsupportedFormatException, TranscriptionException) as e:
                 print(
                     "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
                 )
                 traceback.print_tb(e.__traceback__)
-                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path)
+                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path, FLAGS.mode)
                 sys.exit(23)
             except TerminalException as e:
                 print(
                     "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
                 )
                 traceback.print_tb(e.__traceback__)
-                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path)
+                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path, FLAGS.mode)
                 sys.exit(24)
             except Exception as e:
                 print(
                     "ERROR: {}\n{}".format(str(e), "".join(traceback.format_stack()) if FLAGS.debug else "")
                 )
                 traceback.print_tb(e.__traceback__)
-                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path)
+                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path, FLAGS.mode)
                 sys.exit(1)
             else:
-                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path)
+                _remove_tmp_files(FLAGS.video_path, subtitle_path, local_video_path, local_subtitle_path, FLAGS.mode)
         sys.exit(0)
-    else:
+    elif FLAGS.mode == "shift":
         if FLAGS.offset_seconds is None:
             print("ERROR: --offset_seconds was not passed in during subtitle shifting")
             sys.exit(21)
@@ -319,10 +395,12 @@ def main():
         sys.exit(0)
 
 
-def _remove_tmp_files(video_path, subtitle_path, local_video_path, local_subtitle_path):
+def _remove_tmp_files(video_path, subtitle_path, local_video_path, local_subtitle_path, mode):
     if video_path.lower().startswith("http") and os.path.exists(local_video_path):
         os.remove(local_video_path)
     if subtitle_path.lower().startswith("http") and os.path.exists(local_subtitle_path):
+        os.remove(local_subtitle_path)
+    if mode == "transcribe" and os.path.exists(local_subtitle_path):
         os.remove(local_subtitle_path)
 
 

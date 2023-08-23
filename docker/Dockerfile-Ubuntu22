@@ -1,10 +1,10 @@
-# Subaligner Ubuntu 18 Docker Image
-FROM ubuntu:18.04
+# Subaligner Ubuntu 22 Docker Image
+FROM ubuntu:22.04
 
 ARG RELEASE_VERSION
 
-ENV DEBIAN_FRONTEND=noninteractive
 ENV RELEASE_VERSION=${RELEASE_VERSION}
+ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
 
 RUN ["/bin/bash", "-c", "apt-get -y update &&\

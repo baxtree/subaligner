@@ -1,4 +1,0 @@
-pycountry~=20.7.3
-sentencepiece~=0.1.95
-torch<1.13.0
-transformers~=4.5.1

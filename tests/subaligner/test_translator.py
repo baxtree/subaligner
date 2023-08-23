@@ -3,6 +3,8 @@ import unittest
 from mock import Mock, patch
 from parameterized import parameterized
 from subaligner.subtitle import Subtitle
+from subaligner.llm import TranslationRecipe, HelsinkiNLPFlavour, WhisperFlavour, FacebookMbartFlavour
+from subaligner.exception import TranslationException
 from subaligner.translator import Translator as Undertest
 
 
@@ -13,14 +15,9 @@ class TranslatorTests(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__)), "resource/test.srt"
         )
 
-    def test_get_iso_639_alpha_2(self):
-        self.assertEqual("en", Undertest.get_iso_639_alpha_2("eng"))
-        self.assertEqual("ada", Undertest.get_iso_639_alpha_2("ada"))
-        self.assertEqual("xyz", Undertest.get_iso_639_alpha_2("xyz"))
-
-    @patch("transformers.MarianMTModel.from_pretrained")
     @patch("transformers.MarianTokenizer.from_pretrained")
-    def test_translate(self, tokenizer_from_pretrained, model_from_pretrained):
+    @patch("transformers.MarianMTModel.from_pretrained")
+    def test_translate_hel_nlp(self, model_from_pretrained, tokenizer_from_pretrained):
         subs = Subtitle.load(self.srt_file_path).subs
         mock_tokenizer = Mock()
         mock_tokenizer.return_value = {"input_ids": None, "attention_mask": None}
@@ -30,41 +27,41 @@ class TranslatorTests(unittest.TestCase):
         tokenizer_from_pretrained.return_value = mock_tokenizer
         model_from_pretrained.return_value = mock_model
 
-        translated_subs = Undertest("eng", "zho").translate(subs)
+        undertest = Undertest("eng", "zho", recipe=TranslationRecipe.HELSINKI_NLP.value)
+        translated_subs = undertest.translate(subs)
 
         self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
 
-    @parameterized.expand([
-        ["bos", "zls"],
-        ["cmn", "zho"],
-        ["gla", "cel"],
-        ["grc", "grk"],
-        ["guj", "inc"],
-        ["ina", "art"],
-        ["jbo", "art"],
-        ["kan", "dra"],
-        ["kir", "trk"],
-        ["lat", "itc"],
-        ["lfn", "art"],
-        ["mya", "sit"],
-        ["nep", "inc"],
-        ["ori", "inc"],
-        ["sin", "inc"],
-        ["srp", "zls"],
-        ["tam", "dra"],
-        ["tat", "trk"],
-        ["tel", "dra"],
-        ["yue", "zho"],
-    ])
-    def test_normalise_single(self, original, normalised):
-        self.assertEqual(normalised, Undertest.normalise_single(original))
+    @patch("whisper.load_audio")
+    @patch("whisper.load_model")
+    def test_translate_whisper(self, load_model, load_audio):
+        subs = Subtitle.load(self.srt_file_path).subs
+        model = Mock()
+        load_model.return_value = model
+        model.transcribe.return_value = {"segments": [{"start": 0, "end": 1, "text": "translated"}]}
 
-    @parameterized.expand([
-        ["eng-jpn", "eng-jap"],
-        ["jpn-eng", "jap-eng"],
-    ])
-    def test_normalise_pair(self, original, normalised):
-        self.assertEqual(normalised, "-".join(Undertest.normalise_pair(*original.split("-"))))
+        undertest = Undertest("eng", "eng", recipe=TranslationRecipe.WHISPER.value, flavour=WhisperFlavour.TINY.value)
+        translated_subs = undertest.translate(subs, "video_path")
+
+        self.assertEqual(["translated"], [*map(lambda x: x.text, translated_subs)])
+
+    @patch("transformers.MBart50TokenizerFast.from_pretrained")
+    @patch("transformers.MBartForConditionalGeneration.from_pretrained")
+    def test_translate_fb_mbart(self, model_from_pretrained, tokenizer_from_pretrained):
+        subs = Subtitle.load(self.srt_file_path).subs
+        mock_tokenizer = Mock()
+        mock_tokenizer.return_value = {"input_ids": None, "attention_mask": None}
+        mock_tokenizer.decode.return_value = "translated"
+        mock_tokenizer.lang_code_to_id = {"zh_CN": 250025}
+        mock_model = Mock()
+        mock_model.generate.return_value = [None] * len(subs)
+        tokenizer_from_pretrained.return_value = mock_tokenizer
+        model_from_pretrained.return_value = mock_model
+
+        undertest = Undertest("eng", "zho", recipe=TranslationRecipe.FACEBOOK_MBART.value, flavour=FacebookMbartFlavour.LARGE.value)
+        translated_subs = undertest.translate(subs)
+
+        self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
 
     @patch("transformers.MarianTokenizer.from_pretrained", side_effect=OSError)
     def test_throw_exception_on_translating_subs(self, mock_tokenizer_from_pretrained):
@@ -74,5 +71,19 @@ class TranslatorTests(unittest.TestCase):
         except Exception as e:
             self.assertTrue(mock_tokenizer_from_pretrained.called)
             self.assertTrue(isinstance(e, NotImplementedError))
+        else:
+            self.fail("Should have thrown exception")
+
+    @patch("whisper.load_model")
+    def test_throw_exception_on_unsupported_whisper_translation_target(self, load_model):
+        subs = Subtitle.load(self.srt_file_path).subs
+        model = Mock()
+        load_model.return_value = model
+        model.transcribe.return_value = {"segments": [{"start": 0, "end": 1, "text": "translated"}]}
+
+        try:
+            Undertest("eng", "unk", recipe=TranslationRecipe.WHISPER.value, flavour=WhisperFlavour.TINY.value).translate(subs, "video_path")
+        except Exception as e:
+            self.assertTrue(isinstance(e, TranslationException))
         else:
             self.fail("Should have thrown exception")

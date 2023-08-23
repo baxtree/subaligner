@@ -245,7 +245,7 @@ class UtilsTests(unittest.TestCase):
     def test_extract_teletext_as_srt(self, mocked_run_command):
         Undertest.extract_teletext_as_subtitle("ts_file_path", 888, "srt_file_path")
 
-        mocked_run_command.assert_called_once_with("ffmpeg -y -fix_sub_duration -txt_page 888 -txt_format text -i {} {}".format("'ts_file_path'", "'srt_file_path'"), ANY, ANY, ANY, ANY)
+        mocked_run_command.assert_called_once_with("ffmpeg -y -fix_sub_duration -txt_page 888 -txt_format text -i {} {}".format("\"ts_file_path\"", "\"srt_file_path\""), ANY, ANY, ANY, ANY)
 
     def test_extract_matroska_subtitle(self):
         output_file_path = os.path.join(self.resource_tmp, "extracted.matroska.srt")
@@ -281,8 +281,8 @@ class UtilsTests(unittest.TestCase):
         self.assertFalse(Undertest.contains_embedded_subtitles(self.mp4_file_path))
 
     def test_detect_encoding(self):
-        self.assertEqual("ASCII", Undertest.detect_encoding(self.real_srt_path))
-        self.assertEqual("UTF-8", Undertest.detect_encoding(self.mkv_file_path))
+        self.assertEqual("ascii", Undertest.detect_encoding(self.real_srt_path))
+        self.assertEqual("utf-8", Undertest.detect_encoding(self.mkv_file_path))
 
     def test_get_file_root_and_extension(self):
         root, extension = Undertest.get_file_root_and_extension("/path/to/root.ext1.ext2")
@@ -297,6 +297,24 @@ class UtilsTests(unittest.TestCase):
 
     def test_get_language_table(self):
         self.assertEqual(200, len(Undertest.get_language_table()))
+
+    def test_get_iso_639_alpha_2(self):
+        self.assertEqual("en", Undertest.get_iso_639_alpha_2("eng"))
+        self.assertEqual("ada", Undertest.get_iso_639_alpha_2("ada"))
+        self.assertEqual("xyz", Undertest.get_iso_639_alpha_2("xyz"))
+
+    def test_format_timestamp(self):
+        test_cases = [
+            (0, "00:00:00,000"),
+            (100, "00:01:40,000"),
+            (100.1, "00:01:40,100"),
+        ]
+        for seconds, time_code in test_cases:
+            self.assertEqual(time_code, Undertest.format_timestamp(seconds))
+
+    def test_double_quoted(self):
+        self.assertEqual("\"file'path\"", Undertest.double_quoted("file'path"))
+        self.assertEqual("\"file\\\"path\"", Undertest.double_quoted("file\"path"))
 
     @patch("subprocess.Popen.communicate", return_value=1)
     def test_throw_exception_on_srt2vtt_with_error_code(self, mock_communicate):

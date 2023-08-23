@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import sys
+from platform import architecture, machine
 from setuptools import setup
+from wheel.bdist_wheel import bdist_wheel
 
 with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
     exec(f.read())
@@ -11,8 +13,12 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-with open("requirements.txt") as requirements_file:
-    requirements = requirements_file.read().splitlines()[::-1]
+if machine() == "arm64":
+    with open("requirements-arm64.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
+else:
+    with open("requirements.txt") as requirements_file:
+        requirements = requirements_file.read().splitlines()[::-1]
 
 with open("requirements-stretch.txt") as stretch_requirements_file:
     stretch_requirements = stretch_requirements_file.read().splitlines()[::-1]
@@ -20,19 +26,38 @@ with open("requirements-stretch.txt") as stretch_requirements_file:
 with open("requirements-site.txt") as docs_requirements_file:
     docs_requirements = docs_requirements_file.read().splitlines()[::-1]
 
-with open("requirements-translation.txt") as translate_requirements_file:
-    translate_requirements = translate_requirements_file.read().splitlines()[::-1]
+with open("requirements-llm.txt") as llm_requirements_file:
+    llm_requirements = llm_requirements_file.read().splitlines()[::-1]
 
 with open("requirements-dev.txt") as dev_requirements_file:
     dev_requirements = dev_requirements_file.read().splitlines()[::-1]
 
 EXTRA_DEPENDENCIES = {
-    "harmony": stretch_requirements + translate_requirements,
-    "dev": dev_requirements + stretch_requirements + translate_requirements + docs_requirements,
+    "harmony": stretch_requirements + llm_requirements,
+    "dev": dev_requirements + stretch_requirements + llm_requirements + docs_requirements,
     "docs": docs_requirements,
     "stretch": stretch_requirements,
-    "translation": translate_requirements,
+    "translation": llm_requirements,    # for backward compatibility and now deprecated with "llm"
+    "llm": llm_requirements,
 }
+
+architecture = architecture()[0] if sys.platform == "win32" else machine()
+
+
+class bdist_wheel_local(bdist_wheel):
+
+    def get_tag(self):
+        python = f"py{sys.version_info.major}{sys.version_info.minor}"
+        if sys.platform == "darwin" and architecture == "arm64":
+            os_arch = "macosx_11_0_arm64"
+        elif sys.platform == "win32":
+            os_arch = "win32" if architecture == "32bit" else "win_amd64"
+        # elif sys.platform == "linux":
+        #     os_arch = f"manylinux_2_17_{architecture}"
+        else:
+            os_arch = "any"
+        return python, "none", os_arch
+
 
 setup(name="subaligner",
       version=__version__,
@@ -40,17 +65,18 @@ setup(name="subaligner",
       author_email="xi.bai.ed@gmail.com",
       classifiers=[
           "License :: OSI Approved :: MIT License",
-          "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
           "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
           "Intended Audience :: Developers",
       ],
       license="MIT",
       url="https://subaligner.readthedocs.io/en/latest/",
-      description="Automatically synchronize and translate subtitles with pretrained deep neural networks, forced alignments and transformers.",
+      description="Automatically synchronize and translate subtitles, or create new ones by transcribing, using pre-trained DNNs, Forced Alignments and Transformers.",
       long_description=readme + "\n\n",
-      long_description_content_type='text/markdown',
-      python_requires=">=3.6",
+      long_description_content_type="text/markdown",
+      python_requires=">=3.8",
+      wheel=True,
       package_dir={"subaligner": "subaligner"},
       packages=[
           "subaligner",
@@ -91,4 +117,6 @@ setup(name="subaligner",
               "subaligner_convert=subaligner.subaligner_convert.__main__:main",
               "subaligner_train=subaligner.subaligner_train.__main__:main",
               "subaligner_tune=subaligner.subaligner_tune.__main__:main",
-          ]})
+          ]
+      },
+      cmdclass={"bdist_wheel": bdist_wheel_local})

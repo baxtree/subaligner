@@ -12,5 +12,6 @@ Acknowledgement
     - `pysubs2 <https://github.com/tkarabela/pysubs2>`_
     - `aeneas <https://www.readbeyond.it/aeneas/>`_
     - `transformers <https://huggingface.co/transformers/>`_
+    - `openai-whisper <https://github.com/openai/whisper>`_
 
 Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.

@@ -8,3 +8,11 @@ class TerminalException(Exception):
 
 class NoFrameRateException(Exception):
     """ An exception raised due to frame rate not found."""
+
+
+class TranslationException(Exception):
+    """ An exception raised due to translation failures."""
+
+
+class TranscriptionException(Exception):
+    """ An exception raised due to transcription failures."""

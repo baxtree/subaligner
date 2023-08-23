@@ -230,8 +230,20 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.srt"       |   eng,zho         |   "test_aligned.srt"      |
         |  subaligner       |  dual     |  "test.srt"       |   eng,spa         |   "test_aligned.srt"      |
         |  subaligner       |  script   |  "test_plain.txt" |   eng,ita         |   "test_aligned.srt"      |
+        |  subaligner       |  script   |  "test_plain.txt" |   eng,por         |   "test_aligned.srt"      |
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |   eng,fra         |   "test_aligned.srt"      |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |   eng,deu         |   "test_aligned.srt"      |
+
+    @transcription
+    Scenario Outline: Test transcription on audiovisual input and subtitle generation
+        Given I have a video file <video-in>
+        And I have a subtitle file <subtitle-in>
+        When I run the alignment with <aligner> on them with <mode> stage with <language> language, <recipe> recipe and <flavour> flavour
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |   video-in    |   aligner     |  mode         |  subtitle-in      |   language    |   recipe      |   flavour     |   subtitle-out        |
+        |   "test.mp4"  |   subaligner  |  transcribe   |  "test.srt"       |   eng         |   whisper     |   tiny        |   "test_aligned.srt"  |
+        |   "test.wav"  |   subaligner  |  transcribe   |  "test.srt"       |   eng         |   whisper     |   tiny        |   "test_aligned.srt"  |
 
     @batch
     Scenario Outline: Test batch alignment
