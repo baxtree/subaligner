@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./figures/subaligner.png" alt="subaligner" width="300" />
+  <img src="https://raw.githubusercontent.com/baxtree/subaligner/master/figures/subaligner.png" alt="subaligner" width="300" />
 </div>
 
 [![Build Status](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml/badge.svg?branch=master)](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml?query=branch%3Amaster) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
