@@ -13,7 +13,7 @@ with open(os.path.join(os.getcwd(), "subaligner", "_version.py")) as f:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
-if machine() == "arm64":
+if sys.platform == "darwin" and machine() == "arm64":
     with open("requirements-arm64.txt") as requirements_file:
         requirements = requirements_file.read().splitlines()[::-1]
 else:
@@ -50,10 +50,6 @@ class bdist_wheel_local(bdist_wheel):
         python = f"py{sys.version_info.major}{sys.version_info.minor}"
         if sys.platform == "darwin" and architecture == "arm64":
             os_arch = "macosx_11_0_arm64"
-        elif sys.platform == "win32":
-            os_arch = "win32" if architecture == "32bit" else "win_amd64"
-        # elif sys.platform == "linux":
-        #     os_arch = f"manylinux_2_17_{architecture}"
         else:
             os_arch = "any"
         return python, "none", os_arch

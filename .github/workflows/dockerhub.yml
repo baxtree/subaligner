@@ -56,7 +56,7 @@ jobs:
           tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u20
           push: true
 
-      - name: Build and push the Ubuntu 22 AMD64 image
+      - name: Build and push the Ubuntu 22 image
         id: docker_build_u22
         uses: docker/build-push-action@v4
         with:
@@ -64,25 +64,11 @@ jobs:
           file: "./docker/Dockerfile-Ubuntu22"
           build-args: |
             "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
           tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u22
           push: true
-
-#      - name: Build and push the Ubuntu 22 ARM64 image
-#        id: docker_build_u22
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: ./docker
-#          file: "./docker/Dockerfile-Ubuntu22-ARM64"
-#          build-args: |
-#            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
-#          platforms: linux/arm64
-#          allow: network.host
-#          github-token: ${{ github.token }}
-#          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u22-arm64
-#          push: true
 
       - name: Build and push the Fedora 34 image
         id: docker_build_fed34

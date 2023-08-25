@@ -14,7 +14,7 @@ filelock<4.0.0
 google-pasta~=0.2
 graphviz==0.8.3
 HeapDict==1.0.0
-h5py<=3.6.0
+h5py<4.0.0
 html5lib==1.0b9
 hyperopt==0.2.4
 idna==2.8
