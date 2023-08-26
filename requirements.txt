@@ -8,14 +8,13 @@ chardet~=3.0.4
 click==5.1
 cloudpickle~=1.6.0
 cycler==0.10.0
-dask>=2021.10.0,<2022.1.0
 decorator==4.3.0
 distributed==1.13.0
 filelock<4.0.0
 google-pasta~=0.2
 graphviz==0.8.3
 HeapDict==1.0.0
-h5py<=3.6.0
+h5py<4.0.0
 html5lib==1.0b9
 hyperopt==0.2.4
 idna==2.8
