@@ -39,21 +39,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
-          tags: baxtree/subaligner:latest
-          push: true
-
-      - name: Build and push the Ubuntu 20 image
-        id: docker_build_u20
-        uses: docker/build-push-action@v4
-        with:
-          context: ./docker
-          file: "./docker/Dockerfile-Ubuntu20"
-          build-args: |
-            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
-          platforms: linux/amd64,linux/arm64
-          allow: network.host
-          github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u20
+          tags: |
+            baxtree/subaligner:latest
+            baxtree/subaligner:${{ steps.tag.outputs.TAG }}
+            baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u20
           push: true
 
       - name: Build and push the Ubuntu 22 image

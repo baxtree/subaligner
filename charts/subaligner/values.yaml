@@ -1,0 +1,34 @@
+replicaCount: 1
+
+image:
+  repository: baxtree/subaligner
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+alignmentMode: "dual"
+pathToTheVideoDirectory: ""
+pathToTheSubtitleDirectory: ""
+pathToTheOutputDirectory: ""

@@ -1,0 +1,29 @@
+name: Lint Helm charts
+
+on:
+  push:
+    paths:
+      - "charts/**"
+
+  workflow_dispatch:
+
+env:
+  HELM_VERSION: 3.11.2
+
+jobs:
+  lint-helm-charts:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup Helm
+        uses: mamezou-tech/setup-helmfile@v1.2.0
+        with:
+          helm-version: "v${{ env.HELM_VERSION }}"
+
+      - name: Lint Helm Charts
+        run: |
+          helm lint charts/*
+        working-directory: ${{ github.workspace }}
