@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{.Release.Name}}-{{ randAlphaNum 5 | lower }}
+  labels:
+    {{- include "subaligner.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "subaligner.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "subaligner.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command: ['/usr/local/bin/subaligner_batch', '-m', '{{ .Values.alignmentMode }}', '-vd', '/subaligner-media/videos', '-sd', '/subaligner-media/subtitles', '-od', '/subaligner-media/output']
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: videos
+              mountPath: /subaligner-media/videos
+            - name: subtitles
+              mountPath: /subaligner-media/subtitles
+            - name: output
+              mountPath: /subaligner-media/output
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "subaligner.fullname" . }}
+            - configMapRef:
+                name: {{ include "subaligner.fullname" . }}
+      volumes:
+        - name: videos
+          hostPath:
+            path: {{ .Values.pathToTheVideoDirectory }}
+            type: Directory
+        - name: subtitles
+          hostPath:
+            path: {{ .Values.pathToTheSubtitleDirectory }}
+            type: Directory
+        - name: output
+          hostPath:
+            path: {{ .Values.pathToTheOutputDirectory }}
+            type: Directory
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

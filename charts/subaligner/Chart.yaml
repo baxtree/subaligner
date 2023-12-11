@@ -1,0 +1,7 @@
+apiVersion: v2
+name: subaligner
+description: A Helm chart for subaligner CLIs
+icon: https://raw.githubusercontent.com/baxtree/subaligner/master/figures/subaligner.png
+type: application
+version: 0.1.0
+appVersion: "0.3.6"
