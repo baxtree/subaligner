@@ -12,20 +12,20 @@ Style: Default,Arial,20.0,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,10
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:12.44,0:00:14.95,Default,,0,0,0,,I've spent nearly two decades
-Dialogue: 0,0:00:14.97,0:00:18.53,Default,,0,0,0,,observing what makes people luckier than others
-Dialogue: 0,0:00:18.55,0:00:22.11,Default,,0,0,0,,and trying to help people increase their luck.
-Dialogue: 0,0:00:22.67,0:00:25.56,Default,,0,0,0,,You see, I teach entrepreneurship,
+Dialogue: 0,0:00:12.44,0:00:14.96,Default,,0,0,0,,I've spent nearly two decades
+Dialogue: 0,0:00:14.98,0:00:18.53,Default,,0,0,0,,observing what makes people luckier than others
+Dialogue: 0,0:00:18.56,0:00:22.12,Default,,0,0,0,,and trying to help people increase their luck.
+Dialogue: 0,0:00:22.68,0:00:25.57,Default,,0,0,0,,You see, I teach entrepreneurship,
 Dialogue: 0,0:00:25.59,0:00:29.14,Default,,0,0,0,,and we all know that most new ventures fail,
-Dialogue: 0,0:00:29.16,0:00:32.79,Default,,0,0,0,,and innovators and entrepreneurs need all the luck they can get.
-Dialogue: 0,0:00:33.84,0:00:35.13,Default,,0,0,0,,So what is luck?
+Dialogue: 0,0:00:29.16,0:00:32.80,Default,,0,0,0,,and innovators and entrepreneurs need all the luck they can get.
+Dialogue: 0,0:00:33.85,0:00:35.14,Default,,0,0,0,,So what is luck?
 Dialogue: 0,0:00:35.16,0:00:41.20,Default,,0,0,0,,Luck is defined as success or failure apparently caused by chance.
-Dialogue: 0,0:00:42.29,0:00:43.66,Default,,0,0,0,,Apparently.
-Dialogue: 0,0:00:43.68,0:00:45.32,Default,,0,0,0,,That's the operative word.
+Dialogue: 0,0:00:42.30,0:00:43.66,Default,,0,0,0,,Apparently.
+Dialogue: 0,0:00:43.69,0:00:45.32,Default,,0,0,0,,That's the operative word.
 Dialogue: 0,0:00:46.35,0:00:48.36,Default,,0,0,0,,It looks like it's chance
-Dialogue: 0,0:00:48.38,0:00:53.54,Default,,0,0,0,,because we rarely see all the levers that come into play to make people lucky.
-Dialogue: 0,0:00:53.56,0:00:56.56,Default,,0,0,0,,But I've realized, by watching so long,
-Dialogue: 0,0:00:56.58,0:00:59.91,Default,,0,0,0,,that luck is rarely a lightning strike,
-Dialogue: 0,0:00:59.94,0:01:01.69,Default,,0,0,0,,isolated and dramatic.
-Dialogue: 0,0:01:01.69,0:01:01.69,Default,,0,0,0,,(SOUND EFFECT)
-Dialogue: 0,0:01:01.69,0:01:01.69,Default,,0,0,0,,(SOUND EFFECT)
+Dialogue: 0,0:00:48.39,0:00:53.54,Default,,0,0,0,,because we rarely see all the levers that come into play to make people lucky.
+Dialogue: 0,0:00:53.57,0:00:56.56,Default,,0,0,0,,But I've realized, by watching so long,
+Dialogue: 0,0:00:56.59,0:00:59.92,Default,,0,0,0,,that luck is rarely a lightning strike,
+Dialogue: 0,0:00:59.94,0:01:01.70,Default,,0,0,0,,isolated and dramatic.
+Dialogue: 0,0:01:01.70,0:01:01.70,Default,,0,0,0,,(SOUND EFFECT)
+Dialogue: 0,0:01:01.70,0:01:01.70,Default,,0,0,0,,(SOUND EFFECT)
