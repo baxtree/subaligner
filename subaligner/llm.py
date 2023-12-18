@@ -21,6 +21,7 @@ class WhisperFlavour(Enum):
     BASE_EN = "base.en"
     LARGE_V1 = "large-v1"
     LARGE_V2 = "large-v2"
+    LARGE_V3 = "large-v3"
     LARGE = "large"
 
 

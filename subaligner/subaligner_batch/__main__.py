@@ -4,7 +4,7 @@ usage: subaligner_batch [-h] [-m {single,dual,script,transcribe}] [-sd SUBTITLE_
                         [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                         [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-od OUTPUT_DIRECTORY] [-of {srt,ytt,ttml,txt,smi,xml,ssa,ass,dfxp,sub,scc,tmp,sami,vtt,stl,sbv}] [-t TRANSLATE]
                         [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}] [-lgs] [-d] [-q] [-ver]
+                        [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}] [-lgs] [-d] [-q] [-ver]
 
 Batch align multiple subtitle files and audiovisual files
 
@@ -36,7 +36,7 @@ optional arguments:
                         Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
   -mr {whisper}, --transcription_recipe {whisper}
                         LLM recipe used for transcribing video files
-  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large}
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}
                         Flavour variation for a specific LLM recipe supporting transcription
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
@@ -52,7 +52,6 @@ import argparse
 import sys
 import traceback
 import os
-import pkg_resources
 import tempfile
 
 
@@ -208,11 +207,15 @@ Each file pair needs to share the same base filename, the part before the extens
         parser.print_usage()
         sys.exit(21)
     if FLAGS.translate is not None or FLAGS.mode == "transcribe":
-        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+        try:
+            import transformers
+        except ModuleNotFoundError:
             print('ERROR: Alignment has been configured to use language models. Please install "subaligner[llm]" and run your command again.')
             sys.exit(21)
     if FLAGS.stretch_on or FLAGS.mode == "script":
-        if "aeneas" not in {pkg.key for pkg in pkg_resources.working_set}:
+        try:
+            import aeneas
+        except ModuleNotFoundError:
             print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
             sys.exit(21)
     if FLAGS.mode == "transcribe":

@@ -31,7 +31,6 @@ import sys
 import traceback
 import os
 import tempfile
-import pkg_resources
 
 
 def main():
@@ -119,7 +118,9 @@ def main():
         parser.print_usage()
         sys.exit(21)
     if FLAGS.translate is not None:
-        if "transformers" not in {pkg.key for pkg in pkg_resources.working_set}:
+        try:
+            import transformers
+        except ModuleNotFoundError:
             print('ERROR: Alignment has been configured to perform translation. Please install "subaligner[llm]" and run your command again.')
             sys.exit(21)
 
