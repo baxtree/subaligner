@@ -26,7 +26,8 @@ jobs:
 
       - name: Extract the tag
         id: tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\/v/}
+        run: |
+          echo "SUBALIGNER_TAG=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
       - name: Build and push the latest image
         id: docker_build_latest
@@ -35,15 +36,21 @@ jobs:
           context: ./docker
           file: "./docker/Dockerfile-Ubuntu20"
           build-args: |
-            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
           tags: |
             baxtree/subaligner:latest
-            baxtree/subaligner:${{ steps.tag.outputs.TAG }}
-            baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u20
+            baxtree/subaligner:${{ env.SUBALIGNER_TAG }}
+            baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u20
           push: true
+
+      - name: Remove the local latest image
+        run: |
+          docker rmi -f baxtree/subaligner:latest
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u20
 
       - name: Build and push the Ubuntu 22 image
         id: docker_build_u22
@@ -52,12 +59,16 @@ jobs:
           context: ./docker
           file: "./docker/Dockerfile-Ubuntu22"
           build-args: |
-            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.u22
+          tags: baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u22
           push: true
+
+      - name: Remove the local Ubuntu 22 image
+        run: |
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u22
 
       - name: Build and push the Fedora 34 image
         id: docker_build_fed34
@@ -66,12 +77,16 @@ jobs:
           context: ./docker
           file: "./docker/Dockerfile-Fedora34"
           build-args: |
-            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.fed34
+          tags: baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.fed34
           push: true
+
+      - name: Remove the local Fedora 34 image
+        run: |
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.fed34
 
       - name: Build and push the ArchLinux image
         id: docker_build_arch
@@ -80,9 +95,13 @@ jobs:
           context: ./docker
           file: "./docker/Dockerfile-ArchLinux"
           build-args: |
-            "RELEASE_VERSION=${{ steps.tag.outputs.TAG }}"
+            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
           platforms: linux/amd64
           allow: network.host
           github-token: ${{ github.token }}
-          tags: baxtree/subaligner:${{ steps.tag.outputs.TAG }}.arch
+          tags: baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.arch
           push: true
+
+      - name: Remove the local ArchLinux image
+        run: |
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.arch
