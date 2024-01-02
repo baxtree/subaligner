@@ -20,7 +20,17 @@ podSecurityContext: {}
 
 securityContext: {}
 
+service:
+  type: ClusterIP
+  port: 80
+
 resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -28,7 +38,6 @@ tolerations: []
 
 affinity: {}
 
-alignmentMode: "dual"
-pathToTheVideoDirectory: ""
-pathToTheSubtitleDirectory: ""
-pathToTheOutputDirectory: ""
+videoDirectory: "CHANGE_ME"
+subtitleDirectory: "CHANGE_ME"
+outputDirectory: "CHANGE_ME"

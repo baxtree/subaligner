@@ -1,10 +1,16 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: {{.Release.Name}}-{{ randAlphaNum 5 | lower }}
+  name: {{ include "subaligner.fullname" . }}
   labels:
     {{- include "subaligner.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "subaligner.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -14,7 +20,6 @@ spec:
       labels:
         {{- include "subaligner.selectorLabels" . | nindent 8 }}
     spec:
-      restartPolicy: Never
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -26,35 +31,31 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          command: ['/usr/local/bin/subaligner_batch', '-m', '{{ .Values.alignmentMode }}', '-vd', '/subaligner-media/videos', '-sd', '/subaligner-media/subtitles', '-od', '/subaligner-media/output']
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/bash", "-c", "--"]
+          args: ["tail -f /dev/null"]
           volumeMounts:
             - name: videos
-              mountPath: /subaligner-media/videos
+              mountPath: /videos
             - name: subtitles
-              mountPath: /subaligner-media/subtitles
+              mountPath: /subtitles
             - name: output
-              mountPath: /subaligner-media/output
+              mountPath: /output
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          envFrom:
-            - secretRef:
-                name: {{ include "subaligner.fullname" . }}
-            - configMapRef:
-                name: {{ include "subaligner.fullname" . }}
       volumes:
         - name: videos
           hostPath:
-            path: {{ .Values.pathToTheVideoDirectory }}
+            path: {{ .Values.videoDirectory }}
             type: Directory
         - name: subtitles
           hostPath:
-            path: {{ .Values.pathToTheSubtitleDirectory }}
+            path: {{ .Values.subtitleDirectory }}
             type: Directory
         - name: output
           hostPath:
-            path: {{ .Values.pathToTheOutputDirectory }}
+            path: {{ .Values.outputDirectory }}
             type: Directory
       {{- with .Values.nodeSelector }}
       nodeSelector:
