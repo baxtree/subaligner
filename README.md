@@ -75,7 +75,8 @@ If you prefer using a containerised environment over installing everything local
 ```
 $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner bash
 ```
-For users on Windows 10: [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) is the only option at present.
+For Windows users, you can use Windows Subsystem for Linux ([WSL](https://learn.microsoft.com/en-us/windows/wsl/install)) to install Subaligner.
+Alternatively, you can use [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) to pull and run the image.
 Assuming your media assets are stored under `d:\media`, open built-in command prompt, PowerShell, or Windows Terminal and run:
 ```
 docker pull baxtree/subaligner

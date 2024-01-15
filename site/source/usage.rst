@@ -97,11 +97,11 @@ or `--stretch_on` as shown below.
 
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -o /path/to/the/output/subtitle.srt
 
-**On Windows**::
+**On Windows with Docker Desktop**::
 
     docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner COMMAND
 
-The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows 10.
+The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows. Nonetheless, it is recommended to use Windows Subsystem for Linux (`WSL <https://learn.microsoft.com/en-us/windows/wsl/install>`_) to install Subaligner.
 
 **Re-configure FFmpeg/Libav path**::
 

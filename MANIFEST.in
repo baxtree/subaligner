@@ -1,1 +1,4 @@
-include requirements.txt
+graft subaligner
+include pyproject.toml
+include setup.py
+global-exclude *.py[cod]

@@ -79,10 +79,10 @@ to create a virtual environment and set up all the dependencies:
     (.venv) $ subaligner_train --help
     (.venv) $ subaligner_tune --help
 
-**On Windows**::
+**On Windows with Docker Desktop**::
 
     docker pull baxtree/subaligner
     docker run -v "/d/media":/media -w "/media" -it baxtree/subaligner bash
 
 Assuming that your media assets are stored under "d:\\media", open built-in command prompt, PowerShell, or Windows Terminal and run the above.
-`Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ is the only option at present for Windows users.
+`Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ is the only option at present for Windows users. Nonetheless, it is recommended to use Windows Subsystem for Linux (`WSL <https://learn.microsoft.com/en-us/windows/wsl/install>`_) to install Subaligner.
