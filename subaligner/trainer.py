@@ -183,6 +183,9 @@ class Trainer(object):
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect (default: {"("}).
             sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect (default: {")"}).
+
+        Returns:
+            tuple -- The valuation loss and accuracy.
         """
 
         training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
@@ -234,6 +237,9 @@ class Trainer(object):
 
         Arguments:
             training_log {string} -- The path to the training log file.
+
+        Returns:
+            int -- The number of finished epochs.
         """
         if not os.path.isfile(training_log):
             return 0
@@ -260,6 +266,9 @@ class Trainer(object):
 
         Returns:
             tuple -- The training data and labels.
+
+        Raises:
+            TerminalException: If the extraction is interrupted by user hitting the interrupt key.
         """
 
         train_data, labels = (

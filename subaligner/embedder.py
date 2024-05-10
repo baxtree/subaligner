@@ -252,6 +252,9 @@ class FeatureEmbedder(object):
 
         Returns:
             tuple -- The training data and the training lables.
+
+        Raises:
+            TerminalException: Thrown when the subtitles are missing.
         """
 
         len_mfcc = self.get_len_mfcc()

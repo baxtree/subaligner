@@ -48,7 +48,7 @@ class Subtitle(object):
             format {string} -- Supported subtitle formats: subrip and ttml.
 
         Raises:
-            NotImplementedError --  Thrown when any subtitle attributes are modified.
+            UnsupportedFormatException: Thrown when the input subtitle format is not supported or no subtitle content is found.
         """
 
         assert (
@@ -337,6 +337,9 @@ class Subtitle(object):
 
         Returns:
             string -- The path to the shifted subtitle file.
+
+        Raises:
+            UnsupportedFormatException: Thrown when the input subtitle format is not supported.
         """
         _, file_extension = os.path.splitext(subtitle_file_path)
         if shifted_subtitle_file_path is None:

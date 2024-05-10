@@ -31,7 +31,11 @@ class Hyperparameters(object):
         self.__network_type = "lstm"
 
     def __eq__(self, other: Any) -> bool:
-        """Comparator for Hyperparameters objects"""
+        """Comparator for Hyperparameters objects
+
+        Returns:
+            bool -- If True, the compared hyperparameter object is the same
+        """
 
         if isinstance(other, Hyperparameters):
             return all([

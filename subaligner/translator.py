@@ -62,7 +62,7 @@ class Translator(object):
             flavour {string} -- the flavour variation for a specific LLM recipe (default: None).
 
         Raises:
-            NotImplementedError -- Thrown when the model of the specified language pair is not found.
+            NotImplementedError: Thrown when the model of the specified language pair is not found.
         """
 
         self.__LOGGER = Logger().get_logger(__name__)
@@ -89,7 +89,11 @@ class Translator(object):
             language_pair {Tuple[str, str]} -- Used for overriding the default language pair (default: None).
 
         Returns:
-            {list} -- A list of new SubRipItems holding the translation results.
+            list -- A list of new SubRipItems holding the translation results.
+
+        Raises:
+            NotImplementedError: Thrown when the input language pair is not supported.
+            TranslationException: Thrown when the source or the target language is not supported.
         """
 
         if self.__recipe == TranslationRecipe.HELSINKI_NLP.value:

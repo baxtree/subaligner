@@ -23,8 +23,9 @@ class Transcriber(object):
         Arguments:
             recipe {string} -- the LLM recipe used for transcribing video files (default: "whisper").
             flavour {string} -- the flavour variation for a specific LLM recipe (default: "small").
+
         Raises:
-            NotImplementedError -- Thrown when the LLM recipe is unknown.
+            NotImplementedError: Thrown when the LLM recipe is unknown.
         """
         if recipe not in [r.value for r in TranscriptionRecipe]:
             raise NotImplementedError(f"Unknown recipe: {recipe}")
@@ -43,9 +44,13 @@ class Transcriber(object):
         Arguments:
             video_file_path {string} -- The input video file path.
             language_code {string} -- An alpha 3 language code derived from ISO 639-3.
+
+        Returns:
+            {tuple} -- Generated subtitle after transcription and the detected frame rate
+
         Raises:
-            TranscriptionException -- Thrown when transcription is failed.
-            NotImplementedError -- Thrown when the LLM recipe is not supported.
+            TranscriptionException: Thrown when transcription is failed.
+            NotImplementedError: Thrown when the LLM recipe is not supported.
         """
         if self.__recipe == "whisper":
             lang = Utils.get_iso_639_alpha_2(language_code)

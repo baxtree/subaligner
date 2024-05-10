@@ -41,6 +41,9 @@ jobs:
       - name: Linting
         run: |
           pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
+      - name: Linting docstring
+        run: |
+          darglint -v 2 subaligner
       - name: Unit tests and coverage
         run: |
           coverage run -m unittest discover

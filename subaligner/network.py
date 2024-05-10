@@ -56,7 +56,7 @@ class Network(object):
         model_path: Optional[str] = None,
         backend: str = "tensorflow"
     ) -> None:
-        """ Network object initialiser used by factory methods.
+        """Network object initialiser used by factory methods.
 
         Arguments:
             secret {object} -- A hash only known by factory methods.
@@ -65,8 +65,9 @@ class Network(object):
             model_path {string} -- The path to the model file.
             backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
                                 by TF 2 and this parameter is here only for a historical reason.
+
         Raises:
-            NotImplementedError -- Thrown when any network attributes are modified.
+            ValueError: Thrown when the network type is not supported.
         """
         assert (
             secret == Network.__secret
@@ -124,6 +125,9 @@ class Network(object):
         Arguments:
             model_path {string} -- The path to the model file.
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
+
+        Returns:
+            Network: The model network.
         """
 
         hp = hyperparameters.clone()
@@ -236,8 +240,12 @@ class Network(object):
             logs_dir {string} -- The TensorBoard log file directory.
             training_log {string} -- The path to the log file of epoch results.
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
+
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
+
+        Raises:
+            TerminalException: If the predication is interrupted by user hitting the interrupt key
         """
 
         csv_logger = (
@@ -324,8 +332,12 @@ class Network(object):
             logs_dir {string} -- The TensorBoard log file directory.
             training_log {string} -- The path to the log file of epoch results.
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
+
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
+
+        Raises:
+            TerminalException: If the training is interrupted by user hitting the interrupt key
         """
 
         initial_epoch = 0
@@ -455,6 +467,7 @@ class Network(object):
             train_data_raw {list} -- The HDF5 raw training data.
             labels_raw {list} -- The HDF5 raw training labels.
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
+
         Returns:
             tuple -- A tuple contains validation losses and validation accuracies.
         """

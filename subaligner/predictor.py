@@ -101,15 +101,15 @@ class Predictor(metaclass=Singleton):
         """Predict time to shift with single pass
 
             Arguments:
-            video_file_path {string} -- The input video file path.
-            subtitle_file_path {string} -- The path to the subtitle file.
-            weights_dir {string} -- The the model weights directory.
-            stretch {bool} -- True to stretch the subtitle segments (default: {False})
-            stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
-            exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
+                video_file_path {string} -- The input video file path.
+                subtitle_file_path {string} -- The path to the subtitle file.
+                weights_dir {string} -- The the model weights directory.
+                stretch {bool} -- True to stretch the subtitle segments (default: {False})
+                stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
+                exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
-            tuple -- The shifted subtitles, the globally shifted subtitles and the voice probabilities of the original audio.
+                tuple -- The shifted subtitles, the globally shifted subtitles and the voice probabilities of the original audio.
         """
 
         weights_file_path = self.__get_weights_path(weights_dir)
@@ -143,12 +143,15 @@ class Predictor(metaclass=Singleton):
         """Predict time to shift with plain texts
 
             Arguments:
-            video_file_path {string} -- The input video file path.
-            subtitle_file_path {string} -- The path to the subtitle file.
-            stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
+                video_file_path {string} -- The input video file path.
+                subtitle_file_path {string} -- The path to the subtitle file.
+                stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
 
             Returns:
-            tuple -- The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
+                tuple -- The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
+
+            Raises:
+                TerminalException: If the predication is interrupted by user hitting the interrupt key.
         """
         from aeneas.executetask import ExecuteTask
         from aeneas.task import Task
@@ -223,8 +226,11 @@ class Predictor(metaclass=Singleton):
                 voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
                 subs {list} -- A list of subtitle segments.
 
-                Returns:
-                    float -- The loss value.
+            Returns:
+                float -- The loss value.
+
+            Raises:
+                TerminalException: If the subtitle mask is empty.
         """
 
         subtitle_mask = Predictor.__get_subtitle_mask(self, subs)
@@ -258,8 +264,12 @@ class Predictor(metaclass=Singleton):
             Arguments:
                 voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
                 subs {list} -- A list of subtitle segments.
+
             Returns:
                 tuple -- The minimum loss value and its position.
+
+            Raises:
+                TerminalException: If subtitle is empty or suspicious audio/subtitle duration is detected.
         """
 
         local_subs = deepcopy(subs)
@@ -526,6 +536,13 @@ class Predictor(metaclass=Singleton):
             stretch {bool} -- True to stretch the subtitle segments.
             stretch_in_lang {str} -- The language used for stretching subtitles.
             exit_segfail {bool} -- True to exit on any segment alignment failures.
+
+        Returns:
+            list -- A list of aligned SubRip files
+
+        Raises:
+            TerminalException: If the alignment is interrupted by user hitting the interrupt key or times out
+            Exception: Thrown when any other exceptions occur.
         """
 
         segment_starts, segment_ends, subs = self.__media_helper.get_audio_segment_starts_and_ends(subs)
@@ -726,6 +743,10 @@ class Predictor(metaclass=Singleton):
 
         Returns:
             tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+
+        Raises:
+            TerminalException: If the prediction failed on invalid input or on other exceptions.
+            ValueError: Thrown when no subtitle is passed in.
         """
         if network is None:
             network = self.__initialise_network(os.path.dirname(weights_file_path), self.__LOGGER)

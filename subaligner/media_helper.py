@@ -52,11 +52,17 @@ class MediaHelper(object):
 
         Arguments:
             video_file_path {string} -- The input video file path.
+
         Keyword Arguments:
             decompress {bool} -- Extract WAV if True otherwise extract AAC (default: {False}).
             freq {int} -- The audio sample frequency (default: {16000}).
+
         Returns:
             string -- The file path of the extracted audio.
+
+        Raises:
+            TerminalException: If audio extraction is interrupted by user hitting the interrupt key or timed out.
+            Exception: Thrown when any other exceptions occur.
         """
 
         basename = os.path.basename(video_file_path)
@@ -173,6 +179,10 @@ class MediaHelper(object):
 
         Returns:
             tuple -- The file path to the extracted audio and its duration.
+
+        Raises:
+            TerminalException: If audio extraction is interrupted by user hitting the interrupt key or timed out.
+            Exception: Thrown when any other exceptions occur.
         """
         segment_duration = self.get_duration_in_seconds(start, end)
         basename = os.path.basename(audio_file_path)
@@ -311,8 +321,14 @@ class MediaHelper(object):
 
         Arguments:
             file_path {string} -- The input audiovisual file path.
+
         Returns:
             float -- The frame rate
+
+        Raises:
+            TerminalException: If frame rate extraction is interrupted by user hitting the interrupt key or timed out.
+            NoFrameRateException: If no frame rate is detected on the input audiovisual file.
+            Exception: Thrown when any other exceptions occur.
         """
 
         discarded = "NUL:" if os.name == "nt" else "/dev/null"
@@ -378,6 +394,7 @@ class MediaHelper(object):
         Arguments:
             subs {list} -- A list of SupRip cues.
             minimum_segment_duration {float} -- The minimum duration in seconds for each output subtitle cue.
+
         Returns:
             list -- A list of new SupRip cues after fragmentation.
         """
