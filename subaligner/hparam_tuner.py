@@ -10,7 +10,21 @@ from .network import Network
 
 
 class HyperParameterTuner(object):
-    """Hyperparameter tuning using the Tree of Parzen Estimators algorithm"""
+    """Hyperparameter tuning using the Tree of Parzen Estimators algorithm
+
+    Arguments:
+        av_file_paths {list}: A list of paths to the input audio/video files.
+        subtitle_file_paths {list}: A list of paths to the subtitle files.
+        training_dump_dir {string}:  The directory of the training data dump file.
+
+    Keyword Arguments:
+        av_file_paths {List[str]} -- The list of audiovisual file paths.
+        subtitle_file_paths List[str] -- The list of subtitle files.
+        training_dump_dir: {string} -- The directory path of the training dump.
+        num_of_trials {int} -- The number of trials for tuning (default: {5}).
+        tuning_epochs {int} -- The number of training epochs for each trial (default: {5}).
+        network_type {string} -- The type of the network (default: {"lstm"}, range: ["lstm", "bi_lstm", "conv_1d"]).
+    """
 
     SEARCH_SPACE = {
         "learning_rate": hp.loguniform("learning_rate", np.log(0.00001), np.log(0.1)),
@@ -30,19 +44,6 @@ class HyperParameterTuner(object):
                  tuning_epochs: int = 5,
                  network_type: str = Network.LSTM,
                  **kwargs) -> None:
-        """Hyperparameter tuner initialiser
-
-        Arguments:
-            av_file_paths {list} -- A list of paths to the input audio/video files.
-            subtitle_file_paths {list} -- A list of paths to the subtitle files.
-            training_dump_dir {string} --  The directory of the training data dump file.
-
-        Keyword Arguments:
-            num_of_trials {int} -- The number of trials for tuning (default: {5}).
-            tuning_epochs {int} -- The number of training epochs for each trial (default: {5}).
-            network_type {string} -- The type of the network (default: {"lstm"}, range: ["lstm", "bi_lstm", "conv_1d"]).
-        """
-
         assert network_type in Network.TYPES, "Supported network type values: %s" % Network.TYPES
         hyperparameters = Hyperparameters()
         hyperparameters.network_type = network_type

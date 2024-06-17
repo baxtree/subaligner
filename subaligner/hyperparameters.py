@@ -10,8 +10,6 @@ class Hyperparameters(object):
     OPTIMIZERS = ["adadelta", "adagrad", "adam", "adamax", "ftrl", "nadam", "rmsprop", "sgd"]
 
     def __init__(self) -> None:
-        """Hyperparameters initialiser setting default values"""
-
         self.__learning_rate = 0.001
         self.__hidden_size = {
             "front_layers": [64],
@@ -33,8 +31,11 @@ class Hyperparameters(object):
     def __eq__(self, other: Any) -> bool:
         """Comparator for Hyperparameters objects
 
+        Arguments:
+            other {Any} -- Any comparable object
+
         Returns:
-            bool -- If True, the compared hyperparameter object is the same
+            bool: If True, the compared hyperparameter object is the same
         """
 
         if isinstance(other, Hyperparameters):
@@ -195,7 +196,7 @@ class Hyperparameters(object):
         """Serialise hyperparameters into JSON string
 
         Returns:
-            string -- The serialised hyperparameters in JSON
+            str: The serialised hyperparameters in JSON
         """
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
@@ -212,7 +213,7 @@ class Hyperparameters(object):
         """Make a cloned hyperparameters object
 
         Returns:
-            Hyperparameters -- The cloned Hyperparameters object.
+            Hyperparameters: The cloned Hyperparameters object.
         """
         return self.from_json(self.to_json())
 
@@ -224,7 +225,7 @@ class Hyperparameters(object):
             json_str {string} -- Hyperparameters in JSON.
 
         Returns:
-            Hyperparameters -- The deserialised Hyperparameters object.
+            Hyperparameters: The deserialised Hyperparameters object.
         """
         hp = cls()
         hp.__dict__ = json.loads(json_str)
@@ -238,7 +239,7 @@ class Hyperparameters(object):
             file_path {string} -- The path to the file containing hyperparameters.
 
         Returns:
-            Hyperparameters -- The deserialised Hyperparameters object.
+            Hyperparameters: The deserialised Hyperparameters object.
         """
         with open(file_path, "r", encoding="utf8") as file:
             return cls.from_json(file.read())

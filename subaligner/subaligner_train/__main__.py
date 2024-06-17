@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 """
-usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-sesm SOUND_EFFECT_START_MARKER] [-seem SOUND_EFFECT_END_MARKER] [-ess EMBEDDED_SUBTITLE_SELECTOR] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS]
-                        [-p PATIENCE] [-fhs FRONT_HIDDEN_SIZE] [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT] [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q] [-ver]
+usage: subaligner_train [-h] -tod TRAINING_OUTPUT_DIRECTORY [-vd VIDEO_DIRECTORY] [-sd SUBTITLE_DIRECTORY] [-r] [-dde] [-sesm SOUND_EFFECT_START_MARKER] [-seem SOUND_EFFECT_END_MARKER]
+                        [-ess EMBEDDED_SUBTITLE_SELECTOR] [-fet FEATURE_EMBEDDING_TIMEOUT] [-mpt MEDIA_PROCESS_TIMEOUT] [-bs BATCH_SIZE] [-do DROPOUT] [-e EPOCHS] [-p PATIENCE] [-fhs FRONT_HIDDEN_SIZE]
+                        [-bhs BACK_HIDDEN_SIZE] [-lr LEARNING_RATE] [-nt {lstm,bi_lstm,conv_1d}] [-vs VALIDATION_SPLIT] [-o {adadelta,adagrad,adam,adamax,ftrl,nadam,rmsprop,sgd}] [-utd] [-d] [-q] [-ver]
 
 Train the Subaligner model
 
 Each subtitle file and its companion audiovisual file need to share the same base filename, the part before the extension.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -vd VIDEO_DIRECTORY, --video_directory VIDEO_DIRECTORY
                         Path to the video directory
@@ -22,6 +23,10 @@ optional arguments:
                         Marker indicating the end of the sound effect which will be ignored during training and used with sound_effect_start_marker
   -ess EMBEDDED_SUBTITLE_SELECTOR, --embedded_subtitle_selector EMBEDDED_SUBTITLE_SELECTOR
                         E.g., "embedded:page_num=888,file_extension=srt" or "embedded:stream_index=0,file_extension=srt" (supported file extensions: ssa, vtt, ass, srt and ttml).
+  -fet FEATURE_EMBEDDING_TIMEOUT, --feature_embedding_timeout FEATURE_EMBEDDING_TIMEOUT
+                        Maximum waiting time in seconds when embedding features of media files
+  -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
+                        Maximum waiting time in seconds when processing media files
   -utd, --use_training_dump
                         Use training dump instead of files in the video or subtitle directory
   -d, --debug           Print out debugging information
@@ -131,6 +136,20 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         type=str,
         default=None,
         help='E.g., "embedded:page_num=888,file_extension=srt" or "embedded:stream_index=0,file_extension=srt" (supported file extensions: ssa, vtt, ass, srt and ttml).'
+    )
+    parser.add_argument(
+        "-fet",
+        "--feature_embedding_timeout",
+        type=int,
+        default=300,
+        help="Maximum waiting time in seconds when embedding features of media files"
+    )
+    parser.add_argument(
+        "-mpt",
+        "--media_process_timeout",
+        type=int,
+        default=180,
+        help="Maximum waiting time in seconds when processing media files"
     )
     hyperparameter_args = parser.add_argument_group("optional hyperparameters")
     hyperparameter_args.add_argument(
@@ -312,7 +331,7 @@ Each subtitle file and its companion audiovisual file need to share the same bas
         hyperparameters.validation_split = FLAGS.validation_split
         hyperparameters.optimizer = FLAGS.optimizer
 
-        trainer = Trainer(FeatureEmbedder())
+        trainer = Trainer(FeatureEmbedder(), feature_embedding_timeout=FLAGS.feature_embedding_timeout, media_process_timeout=FLAGS.media_process_timeout)
         trainer.train(video_file_paths,
                       subtitle_file_paths,
                       model_dir,

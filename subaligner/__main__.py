@@ -4,15 +4,15 @@ usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                   [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
                   [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}] [-tr {helsinki-nlp,whisper,facebook-mbart}]
-                  [-tf TRANSLATION_FLAVOUR] [-lgs] [-d] [-q] [-ver]
+                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}] [-tr {helsinki-nlp,whisper,facebook-mbart}] [-tf TRANSLATION_FLAVOUR]
+                  [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs] [-d] [-q] [-ver]
 
-Subaligner command line interface
+Subaligner command line interface (v0.3.7)
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .ttml, .ssa, .stl, .sbv, .dfxp, .srt, .txt, .ytt, .vtt, .sub, .sami, .xml, .scc, .ass, .smi, .tmp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .scc, .tmp, .sami, .stl, .ttml, .dfxp, .srt, .ssa, .ass, .sub, .sbv, .xml, .ytt, .smi, .txt, .vtt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -38,6 +38,10 @@ optional arguments:
                         LLM recipe used for translating subtitles
   -tf TRANSLATION_FLAVOUR, --translation_flavour TRANSLATION_FLAVOUR
                         Flavour variation for a specific LLM recipe supporting translation
+  -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
+                        Maximum waiting time in seconds when processing media files
+  -sat SEGMENT_ALIGNMENT_TIMEOUT, --segment_alignment_timeout SEGMENT_ALIGNMENT_TIMEOUT
+                        Maximum waiting time in seconds when aligning each segment
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
@@ -191,6 +195,20 @@ def main():
         default=None,
         help="Flavour variation for a specific LLM recipe supporting translation"
     )
+    parser.add_argument(
+        "-mpt",
+        "--media_process_timeout",
+        type=int,
+        default=180,
+        help="Maximum waiting time in seconds when processing media files"
+    )
+    parser.add_argument(
+        "-sat",
+        "--segment_alignment_timeout",
+        type=int,
+        default=60,
+        help="Maximum waiting time in seconds when aligning each segment"
+    )
     parser.add_argument("-lgs", "--languages", action="store_true",
                         help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
@@ -301,7 +319,7 @@ def main():
                         sys.exit(21)
 
                 voice_probabilities = None
-                predictor = Predictor()
+                predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
                 if FLAGS.mode == "single":
                     aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
                         video_file_path=local_video_path,

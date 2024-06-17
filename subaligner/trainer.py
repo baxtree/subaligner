@@ -19,24 +19,26 @@ from .logger import Logger
 
 class Trainer(object):
     """Network trainer.
+
+    Arguments:
+        feature_embedder {Embedder.FeatureEmbedder} -- The feature embedder object.
+        feature_embedding_timeout {Union[int, float]} -- The maximum waiting time in seconds when embedding features of media files.
+        media_process_timeout {int} -- The maximum waiting time in seconds when processing media files.
+
+    Raises:
+        NotImplementedError: Thrown when any Trainer attributes are modified.
     """
 
-    EMBEDDING_TIMEOUT = 300  # time out for feature embedding of media files
     __MAX_BYTES = 2 ** 31 - 1
 
-    def __init__(self, feature_embedder: FeatureEmbedder) -> None:
-        """Initialiser for the training process.
-
-        Arguments:
-            feature_embedder {Embedder.FeatureEmbedder} -- the feature embedder object.
-
-        Raises:
-            NotImplementedError -- Thrown when any Trainer attributes are modified.
-        """
-
+    def __init__(self,
+                 feature_embedder: FeatureEmbedder,
+                 feature_embedding_timeout: Union[int, float] = 300,
+                 media_process_timeout: int = 180) -> None:
         self.__feature_embedder = feature_embedder
+        self.__feature_embedding_timeout = feature_embedding_timeout
+        self.__media_helper = MediaHelper(media_process_timeout=media_process_timeout)
         self.__lock = threading.RLock()
-        self.__media_helper = MediaHelper()
         self.__LOGGER = Logger().get_logger(__name__)
 
     def train(
@@ -63,7 +65,7 @@ class Trainer(object):
             weights_dir {string} -- The directory of the weights file.
             config_dir {string} -- The directory of the hyperparameter file where hyperparameters will be saved.
             logs_dir {string} -- The directory of the log file.
-            training_dump_dir {string} --  The directory of the training data dump file.
+            training_dump_dir {string}:  The directory of the training data dump file.
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             training_log {string} -- The path to the log file of epoch results (default: {"training.log"}).
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
@@ -179,13 +181,13 @@ class Trainer(object):
         Arguments:
             av_file_paths {list} -- A list of paths to the input audio/video files.
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
-            training_dump_dir {string} --  The directory of the training data dump file.
+            training_dump_dir {string}:  The directory of the training data dump file.
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
             sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect (default: {"("}).
             sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect (default: {")"}).
 
         Returns:
-            tuple -- The valuation loss and accuracy.
+            tuple: The valuation loss and accuracy.
         """
 
         training_dump = os.path.join(os.path.abspath(training_dump_dir), "training_dump.hdf5")
@@ -239,7 +241,7 @@ class Trainer(object):
             training_log {string} -- The path to the training log file.
 
         Returns:
-            int -- The number of finished epochs.
+            int: The number of finished epochs.
         """
         if not os.path.isfile(training_log):
             return 0
@@ -261,11 +263,11 @@ class Trainer(object):
         Arguments:
             av_file_paths {list} -- A list of paths to the input audio/video files.
             subtitle_file_paths {list} -- A list of paths to the subtitle files.
-            sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect.
-            sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect.
+            sound_effect_start_marker {string} -- A string indicating the start of the ignored sound effect.
+            sound_effect_end_marker {string} -- A string indicating the end of the ignored sound effect.
 
         Returns:
-            tuple -- The training data and labels.
+            tuple: The training data and labels.
 
         Raises:
             TerminalException: If the extraction is interrupted by user hitting the interrupt key.
@@ -296,7 +298,7 @@ class Trainer(object):
                 for index in range(len(av_file_paths))
             ]
             try:
-                done, not_done = concurrent.futures.wait(futures, timeout=Trainer.EMBEDDING_TIMEOUT)
+                done, not_done = concurrent.futures.wait(futures, timeout=self.__feature_embedding_timeout)
             except KeyboardInterrupt:
                 for future in futures:
                     if not future.cancel():

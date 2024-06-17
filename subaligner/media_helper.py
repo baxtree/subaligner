@@ -1,6 +1,5 @@
 import subprocess
 import os
-import threading
 import traceback
 import tempfile
 import shutil
@@ -29,6 +28,9 @@ def clear_temp(*_):
 class MediaHelper(object):
     """ Utility for processing media assets including audio, video and
     subtitle files.
+
+    Arguments:
+        media_process_timeout {int} -- The timeout in seconds on processing media files.
     """
 
     FFMPEG_BIN = os.getenv("FFMPEG_PATH") or os.getenv("ffmpeg_path") or "ffmpeg"
@@ -39,13 +41,13 @@ class MediaHelper(object):
     __MIN_GAP_IN_SECS = (
         1  # minimum gap in seconds between consecutive subtitle during segmentation
     )
-    __CMD_TIME_OUT = 180  # time out for subprocess
 
     atexit.register(clear_temp)
     signal.signal(signal.SIGTERM, clear_temp)
 
-    def __init__(self):
+    def __init__(self, media_process_timeout: int = 180) -> None:
         self.__LOGGER = Logger().get_logger(__name__)
+        self.__media_process_timeout = media_process_timeout
 
     def extract_audio(self, video_file_path, decompress: bool = False, freq: int = 16000) -> str:
         """Extract audio track from the video file and save it to a WAV file.
@@ -58,7 +60,7 @@ class MediaHelper(object):
             freq {int} -- The audio sample frequency (default: {16000}).
 
         Returns:
-            string -- The file path of the extracted audio.
+            str: The file path of the extracted audio.
 
         Raises:
             TerminalException: If audio extraction is interrupted by user hitting the interrupt key or timed out.
@@ -88,7 +90,6 @@ class MediaHelper(object):
                 self.FFMPEG_BIN, Utils.double_quoted(video_file_path), Utils.double_quoted(audio_file_path)
             )
         )
-        print(command)
         with subprocess.Popen(
             shlex.split(command),
             shell=False,
@@ -100,7 +101,7 @@ class MediaHelper(object):
         ) as process:
             try:
                 self.__LOGGER.debug("[{}] Running: {}".format(process.pid, command))
-                _, std_err = process.communicate(timeout=self.__CMD_TIME_OUT)
+                _, std_err = process.communicate(timeout=self.__media_process_timeout)
                 self.__LOGGER.debug("[{}] {}".format(process.pid, std_err))
                 if process.returncode != 0:
                     self.__LOGGER.error("[{}] Cannot extract audio from video: {}\n{}"
@@ -151,7 +152,7 @@ class MediaHelper(object):
             end {string} -- The end time (e.g., 00:00:10,230).
 
         Returns:
-            float -- The duration in seconds.
+            Optional[float]: The duration in seconds.
         """
 
         if start is None:
@@ -178,7 +179,7 @@ class MediaHelper(object):
             end {string} -- The end time (e.g., 00:00:10,230) (default: {None}).
 
         Returns:
-            tuple -- The file path to the extracted audio and its duration.
+            tuple: The file path to the extracted audio and its duration.
 
         Raises:
             TerminalException: If audio extraction is interrupted by user hitting the interrupt key or timed out.
@@ -211,7 +212,7 @@ class MediaHelper(object):
         ) as process:
             self.__LOGGER.debug("[{}] Running: {}".format(process.pid, command))
             try:
-                _, std_err = process.communicate(timeout=self.__CMD_TIME_OUT)
+                _, std_err = process.communicate(timeout=self.__media_process_timeout)
                 self.__LOGGER.debug("[{}] {}".format(process.pid, std_err))
                 if process.returncode != 0:
                     self.__LOGGER.error("[{}] Cannot clip audio: {} Return Code: {}\n{}"
@@ -232,7 +233,7 @@ class MediaHelper(object):
                 if os.path.exists(segment_path):
                     os.remove(segment_path)
                 raise TerminalException(
-                    "Timeout on extracting audio from audio: {} after {} seconds".format(audio_file_path, self.__CMD_TIME_OUT)
+                    "Timeout on extracting audio from audio: {} after {} seconds".format(audio_file_path, self.__media_process_timeout)
                 ) from e
             except Exception as e:
                 self.__LOGGER.error(
@@ -270,7 +271,7 @@ class MediaHelper(object):
             subs {list} -- A list of SupRip cues.
 
         Returns:
-            tuple -- A list of start times, a list of end times and a list of grouped SubRip files.
+            tuple: A list of start times, a list of end times and a list of grouped SubRip files.
         """
 
         local_subs = self.__preprocess_subs(subs)
@@ -323,7 +324,7 @@ class MediaHelper(object):
             file_path {string} -- The input audiovisual file path.
 
         Returns:
-            float -- The frame rate
+            float: The frame rate
 
         Raises:
             TerminalException: If frame rate extraction is interrupted by user hitting the interrupt key or timed out.
@@ -352,7 +353,7 @@ class MediaHelper(object):
                     bufsize=1,
             ) as process:
                 try:
-                    std_out, std_err = process.communicate(timeout=self.__CMD_TIME_OUT)
+                    std_out, std_err = process.communicate(timeout=self.__media_process_timeout)
                     if process.returncode != 0:
                         self.__LOGGER.warning("[{}] Cannot extract the frame rate from video: {}\n{}".format(process.pid, file_path, std_err))
                         raise NoFrameRateException(
@@ -396,7 +397,7 @@ class MediaHelper(object):
             minimum_segment_duration {float} -- The minimum duration in seconds for each output subtitle cue.
 
         Returns:
-            list -- A list of new SupRip cues after fragmentation.
+            list: A list of new SupRip cues after fragmentation.
         """
         new_segment = []
         new_segment_index = 0

@@ -11,6 +11,13 @@ from .logger import Logger
 
 class FeatureEmbedder(object):
     """Audio and subtitle feature embedding.
+
+    Keyword Arguments:
+        n_mfcc {int} -- The number of MFCC components (default: {13}).
+        frequency {float} -- The sample rate  (default: {16000}).
+        hop_len {int} -- The number of samples per frame (default: {512}).
+        step_sample {float} -- The space (in seconds) between the beginning of each sample (default: 1s / 25 FPS = 0.04s).
+        len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
     """
 
     def __init__(
@@ -21,16 +28,6 @@ class FeatureEmbedder(object):
         step_sample: float = 0.04,
         len_sample: float = 0.075,
     ) -> None:
-        """Feature embedder initialiser.
-
-        Keyword Arguments:
-            n_mfcc {int} -- The number of MFCC components (default: {13}).
-            frequency {float} -- The sample rate  (default: {16000}).
-            hop_len {int} -- The number of samples per frame (default: {512}).
-            step_sample {float} -- The space (in seconds) between the beginning of each sample (default: 1s / 25 FPS = 0.04s).
-            len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
-        """
-
         self.__n_mfcc = n_mfcc  # number of MFCC components
         self.__frequency = frequency  # sample rate
         self.__hop_len = hop_len  # number of samples per frame
@@ -50,7 +47,7 @@ class FeatureEmbedder(object):
         """Get the number of MFCC components.
 
         Returns:
-            int -- The number of MFCC components.
+            int: The number of MFCC components.
         """
 
         return self.__n_mfcc
@@ -60,7 +57,7 @@ class FeatureEmbedder(object):
         """Get the sample rate.
 
         Returns:
-            int -- The sample rate.
+            int: The sample rate.
         """
 
         return self.__frequency
@@ -70,23 +67,23 @@ class FeatureEmbedder(object):
         """Get the number of samples per frame.
 
         Returns:
-            int -- The number of samples per frame.
+            int: The number of samples per frame.
         """
 
         return self.__hop_len
 
     @property
     def step_sample(self) -> float:
-        """The space (in seconds) between the begining of each sample.
+        """The space (in seconds) between the beginning of each sample.
 
         Returns:
-            float -- The space (in seconds) between the begining of each sample.
+            float: The space (in seconds) between the beginning of each sample.
         """
 
         return self.__step_sample
 
     @step_sample.setter
-    def step_sample(self, step_sample: int) -> None:
+    def step_sample(self, step_sample: float) -> None:
         """Configure the step sample
 
         Arguments:
@@ -100,7 +97,7 @@ class FeatureEmbedder(object):
         """Get the length in seconds for the input samples.
 
         Returns:
-            float -- The length in seconds for the input samples.
+            float: The length in seconds for the input samples.
         """
 
         return self.__item_time
@@ -113,7 +110,7 @@ class FeatureEmbedder(object):
             pysrt_time {pysrt.SubRipTime} -- SubRipTime or coercible.
 
         Returns:
-            float -- The number of seconds.
+            float: The number of seconds.
         """
         # There is a weird bug in pysrt triggered by a programatically generated
         # subtitle with start time "00:00:00,000". When it occurs, .millisecond
@@ -133,7 +130,7 @@ class FeatureEmbedder(object):
         """Get the number of samples to get LEN_SAMPLE: LEN_SAMPLE/(HOP_LEN/FREQUENCY).
 
         Returns:
-            float -- The number of samples.
+            float: The number of samples.
         """
 
         return self.__len_sample / (self.__hop_len / self.__frequency)
@@ -142,7 +139,7 @@ class FeatureEmbedder(object):
         """Get the number of samples to get STEP_SAMPLE: STEP_SAMPLE/(HOP_LEN/FREQUENCY).
 
         Returns:
-            float -- The number of samples.
+            float: The number of samples.
         """
 
         return self.__step_sample / (self.__hop_len / self.__frequency)
@@ -154,7 +151,7 @@ class FeatureEmbedder(object):
             pysrt_time {pysrt.SubRipTime} -- SubRipTime or coercible.
 
         Returns:
-            int -- The cell position.
+            int: The cell position.
         """
 
         return int(
@@ -170,7 +167,7 @@ class FeatureEmbedder(object):
             seconds {float} -- The duration in seconds.
 
         Returns:
-            int -- The cell position.
+            int: The cell position.
         """
 
         return int(
@@ -184,7 +181,7 @@ class FeatureEmbedder(object):
             position {int} -- The cell position.
 
         Returns:
-            float -- The number of seconds.
+            float: The number of seconds.
         """
 
         return (
@@ -198,7 +195,7 @@ class FeatureEmbedder(object):
             position {int} -- The cell position.
 
         Returns:
-            string -- The time string (e.g., 01:23:20,150).
+            str: The time string (e.g., 01:23:20,150).
         """
 
         td = timedelta(
@@ -247,11 +244,11 @@ class FeatureEmbedder(object):
 
         Keyword Arguments:
             subtitles {pysrt.SubRipFile} -- The SubRipFile object (default: {None}).
-            sound_effect_start_marker: {string} -- A string indicating the start of the ignored sound effect (default: {None}).
-            sound_effect_end_marker: {string} -- A string indicating the end of the ignored sound effect (default: {None}).
+            sound_effect_start_marker {string} -- A string indicating the start of the ignored sound effect (default: {None}).
+            sound_effect_end_marker {string} -- A string indicating the end of the ignored sound effect (default: {None}).
 
         Returns:
-            tuple -- The training data and the training lables.
+            tuple: The training data and the training lables.
 
         Raises:
             TerminalException: Thrown when the subtitles are missing.

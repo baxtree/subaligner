@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.optimizers as tf_optimizers
 
-from typing import Tuple, Optional, Any, List, Generator
+from typing import Tuple, Optional, List, Generator
 from tensorflow.keras.layers import (
     Dense,
     Input,
@@ -38,6 +38,17 @@ class Network(object):
     """ Network factory creates DNNs.
     Not thread safe since the session of keras_backend is global.
     Only factory methods are allowed when generating DNN objects.
+
+    Arguments:
+        secret {object} -- A hash only known by factory methods.
+        input_shape {tuple} -- A shape tuple (integers), not including the batch size.
+        hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
+        model_path {string} -- The path to the model file.
+        backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
+                            by TF 2 and this parameter is here only for a historical reason.
+
+    Raises:
+        ValueError: Thrown when the network type is not supported.
     """
 
     LSTM = "lstm"
@@ -56,19 +67,6 @@ class Network(object):
         model_path: Optional[str] = None,
         backend: str = "tensorflow"
     ) -> None:
-        """Network object initialiser used by factory methods.
-
-        Arguments:
-            secret {object} -- A hash only known by factory methods.
-            input_shape {tuple} -- A shape tuple (integers), not including the batch size.
-            hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
-            model_path {string} -- The path to the model file.
-            backend {string} -- The tensor manipulation backend (default: {tensorflow}). Only tensorflow is supported
-                                by TF 2 and this parameter is here only for a historical reason.
-
-        Raises:
-            ValueError: Thrown when the network type is not supported.
-        """
         assert (
             secret == Network.__secret
         ), "Only factory methods are supported when creating instances"
@@ -109,7 +107,7 @@ class Network(object):
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
-            Network -- A constructed network object.
+            Network: A constructed network object.
         """
 
         return cls(
@@ -164,18 +162,18 @@ class Network(object):
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
-            Network -- Reconstructed network object.
+            Network: Reconstructed network object.
         """
         network = Network.get_from_model(model_filepath, hyperparameters)
         network.__model.load_weights(weights_filepath)
         return network
 
     @property
-    def input_shape(self) -> Tuple:
+    def input_shape(self) -> tuple:
         """Get the input shape of the network.
 
         Returns:
-            tuple -- The input shape of the network.
+            tuple: The input shape of the network.
         """
 
         return self.__input_shape
@@ -185,7 +183,7 @@ class Network(object):
         """Get the type of the network.
 
         Returns:
-            string -- The type of the network.
+            str: The type of the network.
         """
 
         return self.__n_type
@@ -198,11 +196,11 @@ class Network(object):
         self.__model.summary()
 
     @property
-    def layers(self) -> List[Any]:
+    def layers(self) -> list:
         """Get the layers of the network.
 
         Returns:
-            list -- The statck of layers contained by the network
+            list: The stack of layers contained by the network
         """
 
         return self.__model.layers
@@ -215,7 +213,7 @@ class Network(object):
             weights_filepath {string} -- The weights file path.
 
         Returns:
-            numpy.ndarray -- The Numpy array of predictions.
+            numpy.ndarray: The Numpy array of predictions.
         """
         self.__model.load_weights(weights_filepath)
         return self.__model.predict_on_batch(input_data)
@@ -242,7 +240,7 @@ class Network(object):
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
 
         Returns:
-            tuple -- A tuple contains validation losses and validation accuracies.
+            tuple: A tuple contains validation losses and validation accuracies.
 
         Raises:
             TerminalException: If the predication is interrupted by user hitting the interrupt key
@@ -334,7 +332,7 @@ class Network(object):
             resume {bool} -- True to continue with previous training result or False to start a new one (default: {False}).
 
         Returns:
-            tuple -- A tuple contains validation losses and validation accuracies.
+            tuple: A tuple contains validation losses and validation accuracies.
 
         Raises:
             TerminalException: If the training is interrupted by user hitting the interrupt key
@@ -428,7 +426,7 @@ class Network(object):
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
-            tuple -- A tuple contains validation losses and validation accuracies.
+            tuple: A tuple contains validation losses and validation accuracies.
         """
 
         network = cls(cls.__secret, input_shape, hyperparameters)
@@ -469,7 +467,7 @@ class Network(object):
             hyperparameters {Hyperparameters} -- A configuration for hyperparameters used for training.
 
         Returns:
-            tuple -- A tuple contains validation losses and validation accuracies.
+            tuple: A tuple contains validation losses and validation accuracies.
         """
 
         network = cls(cls.__secret, input_shape, hyperparameters)

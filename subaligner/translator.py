@@ -24,6 +24,15 @@ from .exception import TranslationException
 
 class Translator(object):
     """Translate subtitles.
+
+    Arguments:
+        src_language {string} -- The source language code derived from ISO 639-3.
+        tgt_language {string} -- The target language code derived from ISO 639-3.
+        recipe {string} -- the LLM recipe used for transcribing video files (default: "helsinki-nlp").
+        flavour {string} -- the flavour variation for a specific LLM recipe (default: None).
+
+    Raises:
+        NotImplementedError: Thrown when the model of the specified language pair is not found.
     """
 
     __TENSOR_TYPE = "pt"
@@ -53,18 +62,6 @@ class Translator(object):
                  tgt_language: str,
                  recipe: str = TranslationRecipe.HELSINKI_NLP.value,
                  flavour: Optional[str] = None) -> None:
-        """Initialiser for the subtitle translation.
-
-        Arguments:
-            src_language {string} -- The source language code derived from ISO 639-3.
-            tgt_language {string} -- The target language code derived from ISO 639-3.
-            recipe {string} -- the LLM recipe used for transcribing video files (default: "helsinki-nlp").
-            flavour {string} -- the flavour variation for a specific LLM recipe (default: None).
-
-        Raises:
-            NotImplementedError: Thrown when the model of the specified language pair is not found.
-        """
-
         self.__LOGGER = Logger().get_logger(__name__)
         if recipe not in [r.value for r in TranslationRecipe]:
             raise NotImplementedError(f"Unknown recipe: {recipe}")
@@ -89,7 +86,7 @@ class Translator(object):
             language_pair {Tuple[str, str]} -- Used for overriding the default language pair (default: None).
 
         Returns:
-            list -- A list of new SubRipItems holding the translation results.
+            list: A list of new SubRipItems holding the translation results.
 
         Raises:
             NotImplementedError: Thrown when the input language pair is not supported.

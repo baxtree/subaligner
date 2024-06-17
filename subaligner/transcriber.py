@@ -15,18 +15,16 @@ from .exception import NoFrameRateException, TranscriptionException
 
 class Transcriber(object):
     """Transcribe audiovisual content for subtitle generation.
+
+    Arguments:
+        recipe {string} -- the LLM recipe used for transcribing video files (default: "whisper").
+        flavour {string} -- the flavour variation for a specific LLM recipe (default: "small").
+
+    Raises:
+        NotImplementedError: Thrown when the LLM recipe is unknown.
     """
 
     def __init__(self, recipe: str = TranscriptionRecipe.WHISPER.value, flavour: str = WhisperFlavour.SMALL.value) -> None:
-        """Initialiser for the transcribing process.
-
-        Arguments:
-            recipe {string} -- the LLM recipe used for transcribing video files (default: "whisper").
-            flavour {string} -- the flavour variation for a specific LLM recipe (default: "small").
-
-        Raises:
-            NotImplementedError: Thrown when the LLM recipe is unknown.
-        """
         if recipe not in [r.value for r in TranscriptionRecipe]:
             raise NotImplementedError(f"Unknown recipe: {recipe}")
         if recipe == TranscriptionRecipe.WHISPER.value:
@@ -46,7 +44,7 @@ class Transcriber(object):
             language_code {string} -- An alpha 3 language code derived from ISO 639-3.
 
         Returns:
-            {tuple} -- Generated subtitle after transcription and the detected frame rate
+            tuple: Generated subtitle after transcription and the detected frame rate
 
         Raises:
             TranscriptionException: Thrown when transcription is failed.

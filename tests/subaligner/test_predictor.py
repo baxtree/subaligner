@@ -349,17 +349,14 @@ class PredictorTests(unittest.TestCase):
             self.fail("Should have thrown exception")
 
     def test_throw_terminal_exception_on_timeout(self):
-        backup = Undertest._Predictor__SEGMENT_PREDICTION_TIMEOUT
-        Undertest._Predictor__SEGMENT_PREDICTION_TIMEOUT = 0.05
         try:
-            undertest_obj = Undertest(n_mfcc=20)
+            undertest_obj = Undertest(segment_alignment_timeout=0, n_mfcc=20)
             undertest_obj.predict_dual_pass(self.video_file_path, self.srt_file_path, self.weights_dir)
+            self.fail("Should not have reached here")
         except Exception as e:
             self.assertTrue(isinstance(e, TerminalException))
         else:
             self.fail("Should have thrown exception")
-        finally:
-            Undertest._Predictor__SEGMENT_PREDICTION_TIMEOUT = backup
 
 
 if __name__ == "__main__":

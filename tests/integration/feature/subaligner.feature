@@ -295,6 +295,19 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |
         |  subaligner       |  dual     |
 
+    @exception @timeout
+    Scenario Outline: Test timeout on processing media files
+        Given I have a video file "test.mp4"
+        And I have a subtitle file "test.srt"
+        When I run the alignment with <aligner> on them with <mode> stage and a short timeout
+        Then it exits with code "24"
+    Examples:
+        |  aligner          |  mode     |
+        |  subaligner_1pass |  <NULL>   |
+        |  subaligner_2pass |  <NULL>   |
+        |  subaligner       |  single   |
+        |  subaligner       |  dual     |
+
     @help
     Scenario Outline: Test help information display
         When I run the <aligner> command with help

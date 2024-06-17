@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """
-usage: subaligner_1pass [-h] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-lgs] [-d] [-q] [-ver]
+usage: subaligner_1pass [-h] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs]
+                        [-d] [-q] [-ver]
 
 Run single-stage alignment
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
@@ -14,6 +15,10 @@ optional arguments:
                         Path to the output subtitle file
   -t TRANSLATE, --translate TRANSLATE
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
+                        Maximum waiting time in seconds when processing media files
+  -sat SEGMENT_ALIGNMENT_TIMEOUT, --segment_alignment_timeout SEGMENT_ALIGNMENT_TIMEOUT
+                        Maximum waiting time in seconds when aligning each segment
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
@@ -23,7 +28,7 @@ required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .stl, .dfxp, .xml, .vtt, .sbv, .ytt, .scc, .ttml, .smi, .sami, .ssa, .tmp, .txt, .sub, .srt, .ass) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .dfxp, .txt, .vtt, .srt, .sbv, .ytt, .ssa, .scc, .tmp, .sami, .smi, .stl, .sub, .xml, .ass, .ttml) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -87,6 +92,20 @@ def main():
         "--translate",
         type=str,
         help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
+    parser.add_argument(
+        "-mpt",
+        "--media_process_timeout",
+        type=int,
+        default=180,
+        help="Maximum waiting time in seconds when processing media files"
+    )
+    parser.add_argument(
+        "-sat",
+        "--segment_alignment_timeout",
+        type=int,
+        default=60,
+        help="Maximum waiting time in seconds when aligning each segment"
     )
     parser.add_argument("-lgs", "--languages", action="store_true",
                         help="Print out language codes used for stretch and translation")
@@ -163,7 +182,7 @@ def main():
                 parser.print_usage()
                 sys.exit(21)
 
-        predictor = Predictor()
+        predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
         subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
             video_file_path=local_video_path,
             subtitle_file_path=local_subtitle_path,

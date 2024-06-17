@@ -567,7 +567,7 @@ class Utils(object):
             timeout_secs {int} -- The timeout in seconds on extraction {default: 30}.
 
         Returns:
-            bool -- True if the video contains embedded subtitles or False otherwise.
+            bool: True if the video contains embedded subtitles or False otherwise.
         """
 
         command = "{0} -y -i {1} -c copy -map 0:s -f null - -v 0 -hide_banner".format(Utils.FFMPEG_BIN, Utils.double_quoted(video_file_path))
@@ -586,7 +586,7 @@ class Utils(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            string -- The string represent the encoding
+            str: The string represent the encoding
         """
 
         with open(subtitle_file_path, "rb") as file:
@@ -600,31 +600,34 @@ class Utils(object):
         return detected["encoding"] if "encoding" in detected and detected["encoding"] is not None else "utf-8"
 
     @staticmethod
-    def get_file_root_and_extension(file_path: str) -> Tuple[str, str]:
+    def get_file_root_and_extension(file_path: str) -> tuple:
         """Get the root path and the extension of the input file path.
 
+        Arguments:
+            file_path {str} -- the path to the file
+
         Returns:
-            tuple -- the root path and the extension of the input file path.
+            tuple: the root path and the extension of the input file path.
         """
 
         parts = os.path.abspath(file_path).split(os.extsep, 1)
         return parts[0], parts[1]
 
     @staticmethod
-    def get_stretch_language_codes() -> List[str]:
+    def get_stretch_language_codes() -> list:
         """Get language codes used by stretch.
 
         Returns:
-            list -- A list of language codes derived from ISO 639-3.
+            list: A list of language codes derived from ISO 639-3.
         """
         return Language.ALLOWED_VALUES
 
     @staticmethod
-    def get_misc_language_codes() -> List[str]:
+    def get_misc_language_codes() -> list:
         """Get all known language codes.
 
         Returns:
-            list -- A list of all known language codes.
+            list: A list of all known language codes.
         """
         return Language.ALLOWED_VALUES + \
             ['CELTIC', 'NORTH_EU', 'NORWAY', 'ROMANCE', 'SAMI', 'SCANDINAVIA', 'aav', 'aed', 'afa', 'alv', 'art', 'ase',
@@ -637,11 +640,11 @@ class Utils(object):
              'tvl', 'tzo', 'umb', 'urj', 'vsl', 'wal', 'war', 'wls', 'yap', 'yua', 'zai', 'zle', 'zls', 'zlw', 'zne']
 
     @staticmethod
-    def get_language_table() -> List[str]:
+    def get_language_table() -> list:
         """Get all known language codes and their human-readable versions.
 
         Returns:
-            list -- A list of all known language codes and their human-readable versions.
+            list: A list of all known language codes and their human-readable versions.
         """
         return list(map(lambda line: line.replace("\t", "  "), Language.CODE_TO_HUMAN_LIST)) + \
             ['CELTIC', 'NORTH_EU', 'NORWAY', 'ROMANCE', 'SAMI', 'SCANDINAVIA', 'aav', 'aed', 'afa', 'alv', 'art', 'ase',
@@ -661,10 +664,7 @@ class Utils(object):
             language_code {string} -- An alpha 3 language code derived from ISO 639-3.
 
         Returns:
-            string -- The alpha 2 language code if exists otherwise the alpha 3 one.
-
-        Raises:
-            ValueError -- Thrown when the input language code cannot be recognised.
+            str: The alpha 2 language code if exists otherwise the alpha 3 one.
         """
 
         lang = pycountry.languages.get(alpha_3=language_code)

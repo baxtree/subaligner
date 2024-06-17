@@ -13,8 +13,15 @@ from .exception import UnsupportedFormatException
 
 class Subtitle(object):
     """Load a subtitle file into internal data structure
-    """
 
+    Arguments:
+        secret {object} -- A hash only known by factory methods.
+        subtitle_file_path {string} -- The path to the subtitle file.
+        format {string} -- Supported subtitle formats: subrip and ttml.
+
+    Raises:
+        UnsupportedFormatException: Thrown when the input subtitle format is not supported or no subtitle content is found.
+    """
     __secret = object()
 
     ElementTree.register_namespace("", "http://www.w3.org/ns/ttml")
@@ -40,17 +47,6 @@ class Subtitle(object):
     YT_TRANSCRIPT_EXTENSIONS = [".ytt"]
 
     def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str) -> None:
-        """Subtitle object initialiser.
-
-        Arguments:
-            secret {object} -- A hash only known by factory methods.
-            subtitle_file_path {string} -- The path to the subtitle file.
-            format {string} -- Supported subtitle formats: subrip and ttml.
-
-        Raises:
-            UnsupportedFormatException: Thrown when the input subtitle format is not supported or no subtitle content is found.
-        """
-
         assert (
             secret == Subtitle.__secret
         ), "Only factory methods are supported when creating instances"
@@ -102,7 +98,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "subrip")
@@ -115,7 +111,7 @@ class Subtitle(object):
             subrip_str {string} -- The string representation of the SubRip content.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subrip_raw, "subrip_raw")
@@ -128,7 +124,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "ttml")
@@ -141,7 +137,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "webvtt")
@@ -154,7 +150,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "ssa")
@@ -167,7 +163,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "ass")
@@ -180,7 +176,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "microdvd")
@@ -193,7 +189,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "mpl2")
@@ -206,7 +202,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "tmp")
@@ -219,7 +215,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "sami")
@@ -232,7 +228,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "stl")
@@ -245,7 +241,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "scc")
@@ -258,7 +254,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "sbv")
@@ -271,7 +267,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         return cls(cls.__secret, subtitle_file_path, "ytt")
@@ -284,7 +280,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            Subtitle -- Subtitle object.
+            Subtitle: Subtitle object.
         """
 
         _, file_extension = os.path.splitext(subtitle_file_path.lower())
@@ -336,7 +332,7 @@ class Subtitle(object):
             suffix {string} -- The suffix used as part of the aligned subtitle file name.
 
         Returns:
-            string -- The path to the shifted subtitle file.
+            string: The path to the shifted subtitle file.
 
         Raises:
             UnsupportedFormatException: Thrown when the input subtitle format is not supported.
@@ -433,7 +429,7 @@ class Subtitle(object):
             se_uppercase {bool} -- True when the sound effect is in uppercase or False when in lowercase (default: {True}).
 
         Returns:
-            {list} -- A list of SubRipItems.
+            list: A list of SubRipItems.
         """
         new_subs = deepcopy(subs)
         for sub in subs:
@@ -454,7 +450,7 @@ class Subtitle(object):
             se_suffix {string} -- A suffix indicating the end of the sound effect (default: {None}).
 
         Returns:
-            {list} -- A list of SubRipItems.
+            list: A list of SubRipItems.
         """
         new_subs = deepcopy(subs)
         for sub in subs:
@@ -479,7 +475,7 @@ class Subtitle(object):
             subtitle_file_path {string} -- The path to the subtitle file.
 
         Returns:
-            {string} -- The plain text of subtitle.
+            str: The plain text of subtitle.
         """
 
         subs = Subtitle.load(subtitle_file_path).subs
@@ -491,7 +487,7 @@ class Subtitle(object):
         """Get the file extensions of the supported subtitles.
 
         Returns:
-            {set} -- The subtitle extensions.
+            set: The subtitle extensions.
         """
         return set(Subtitle.SUBRIP_EXTENTIONS + Subtitle.TTML_EXTENSIONS + Subtitle.WEBVTT_EXTENSIONS
                    + Subtitle.SSA_EXTENTIONS + Subtitle.ADVANCED_SSA_EXTENTIONS + Subtitle.MICRODVD_EXTENSIONS
@@ -511,12 +507,12 @@ class Subtitle(object):
     def __load_subrip(subrip_file_path: str) -> SubRipFile:
         """Load a subtitle file in the SubRip format
 
-                Arguments:
-                    subrip_file_path {string} -- The path to the SubRip subtitle file.
+        Arguments:
+            subrip_file_path {string} -- The path to the SubRip subtitle file.
 
-                Returns:
-                    {list} -- A list of SubRipItems.
-                """
+        Returns:
+            SubRipFile: A list of SubRipItems.
+        """
         return Subtitle.__get_srt_subs(subrip_file_path)
 
     @staticmethod
@@ -527,7 +523,7 @@ class Subtitle(object):
             ttml_file_path {string} -- The path to the TTML subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -543,7 +539,7 @@ class Subtitle(object):
             vtt_file_path {string} -- The path to the WebVTT subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -559,7 +555,7 @@ class Subtitle(object):
             ass_file_path {string} -- The path to the SubStation Alpha v4.0 subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -576,7 +572,7 @@ class Subtitle(object):
             ass_file_path {string} -- The path to the Advanced SubStation Alpha v4.0+ subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -593,7 +589,7 @@ class Subtitle(object):
             microdvd_file_path {string} -- The path to the MicroDVD subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -610,7 +606,7 @@ class Subtitle(object):
             mpl2_file_path {string} -- The path to the MPL2 subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -627,7 +623,7 @@ class Subtitle(object):
             tmp_file_path {string} -- The path to the TMP subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -644,7 +640,7 @@ class Subtitle(object):
             sami_file_path {string} -- The path to the SAMI subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -660,7 +656,7 @@ class Subtitle(object):
             stl_file_path {string} -- The path to the STL subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -676,7 +672,7 @@ class Subtitle(object):
             scc_file_path {string} -- The path to the SCC subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -692,7 +688,7 @@ class Subtitle(object):
             sbv_file_path {string} -- The path to the SubViewer subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()
@@ -708,7 +704,7 @@ class Subtitle(object):
             ytt_file_path {string} -- The path to the YouTube transcript subtitle file.
 
         Returns:
-            {list} -- A list of SubRipItems.
+            SubRipFile: A list of SubRipItems.
         """
 
         _, path = tempfile.mkstemp()

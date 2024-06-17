@@ -15,7 +15,6 @@ from copy import deepcopy
 from .network import Network
 from .embedder import FeatureEmbedder
 from .media_helper import MediaHelper
-from .singleton import Singleton
 from .subtitle import Subtitle
 from .hyperparameters import Hyperparameters
 from .exception import TerminalException
@@ -23,8 +22,17 @@ from .exception import NoFrameRateException
 from .logger import Logger
 
 
-class Predictor(metaclass=Singleton):
+class Predictor(object):
     """ Predictor for working out the time to shift subtitles
+
+    Keyword Arguments:
+        media_process_timeout {int} -- The maximum waiting time in seconds when processing media files.
+        segment_alignment_timeout {int} -- The maximum waiting time in seconds when aligning each segment.
+        n_mfcc {int} -- The number of MFCC components (default: {13}).
+        frequency {float} -- The sample rate  (default: {16000}).
+        hop_len {int} -- The number of samples per frame (default: {512}).
+        step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
+        len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
     """
     __MAX_SHIFT_IN_SECS = (
         100
@@ -34,25 +42,14 @@ class Predictor(metaclass=Singleton):
     )  # Average 0.3 word per sec multiplies average 6 characters per word
     __MAX_HEAD_ROOM = 20000  # Maximum duration without subtitle (10 minutes)
 
-    __SEGMENT_PREDICTION_TIMEOUT = 60  # Maximum waiting time in seconds when predicting each segment
-
     __THREAD_QUEUE_SIZE = 8
     __THREAD_NUMBER = 1  # Do not change
 
-    def __init__(self, **kwargs) -> None:
-        """Feature predictor initialiser.
-
-            Keyword Arguments:
-                n_mfcc {int} -- The number of MFCC components (default: {13}).
-                frequency {float} -- The sample rate  (default: {16000}).
-                hop_len {int} -- The number of samples per frame (default: {512}).
-                step_sample {float} -- The space (in seconds) between the begining of each sample (default: 1s / 25 FPS = 0.04s).
-                len_sample {float} -- The length in seconds for the input samples (default: {0.075}).
-        """
-
+    def __init__(self, media_process_timeout: int = 180, segment_alignment_timeout: int = 60, **kwargs) -> None:
+        self.__media_helper = MediaHelper(media_process_timeout=media_process_timeout)
+        self.__segment_alignment_timeout = segment_alignment_timeout
         self.__feature_embedder = FeatureEmbedder(**kwargs)
         self.__LOGGER = Logger().get_logger(__name__)
-        self.__media_helper = MediaHelper()
 
     def predict_single_pass(
             self,
@@ -68,7 +65,7 @@ class Predictor(metaclass=Singleton):
                 weights_dir {string} -- The the model weights directory.
 
             Returns:
-                tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+                tuple: The shifted subtitles, the audio file path and the voice probabilities of the original audio.
         """
 
         weights_file_path = self.__get_weights_path(weights_dir)
@@ -109,7 +106,7 @@ class Predictor(metaclass=Singleton):
                 exit_segfail {bool} -- True to exit on any segment alignment failures (default: {False})
 
             Returns:
-                tuple -- The shifted subtitles, the globally shifted subtitles and the voice probabilities of the original audio.
+                tuple: The shifted subtitles, the globally shifted subtitles and the voice probabilities of the original audio.
         """
 
         weights_file_path = self.__get_weights_path(weights_dir)
@@ -139,7 +136,7 @@ class Predictor(metaclass=Singleton):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
 
-    def predict_plain_text(self, video_file_path: str, subtitle_file_path: str, stretch_in_lang: str = "eng") -> Tuple:
+    def predict_plain_text(self, video_file_path: str, subtitle_file_path: str, stretch_in_lang: str = "eng") -> tuple:
         """Predict time to shift with plain texts
 
             Arguments:
@@ -148,7 +145,7 @@ class Predictor(metaclass=Singleton):
                 stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
 
             Returns:
-                tuple -- The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
+                tuple: The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
 
             Raises:
                 TerminalException: If the predication is interrupted by user hitting the interrupt key.
@@ -227,7 +224,7 @@ class Predictor(metaclass=Singleton):
                 subs {list} -- A list of subtitle segments.
 
             Returns:
-                float -- The loss value.
+                float: The loss value.
 
             Raises:
                 TerminalException: If the subtitle mask is empty.
@@ -266,7 +263,7 @@ class Predictor(metaclass=Singleton):
                 subs {list} -- A list of subtitle segments.
 
             Returns:
-                tuple -- The minimum loss value and its position.
+                tuple: The minimum loss value and its position.
 
             Raises:
                 TerminalException: If subtitle is empty or suspicious audio/subtitle duration is detected.
@@ -367,14 +364,14 @@ class Predictor(metaclass=Singleton):
                 )
             for i, future in enumerate(futures):
                 try:
-                    new_subs = future.result(timeout=Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    new_subs = future.result(timeout=self.__segment_alignment_timeout)
                 except concurrent.futures.TimeoutError as e:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
-                    message = "Segment alignment timed out after {} seconds".format(Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], self.__segment_alignment_timeout)
+                    message = "Segment alignment timed out after {} seconds".format(self.__segment_alignment_timeout)
                     self.__LOGGER.error(message)
                     raise TerminalException(message) from e
                 except Exception as e:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], self.__segment_alignment_timeout)
                     message = "Exception on segment alignment: {}\n{}".format(str(e), "".join(traceback.format_stack()))
                     self.__LOGGER.error(e, exc_info=True, stack_info=True)
                     traceback.print_tb(e.__traceback__)
@@ -383,7 +380,7 @@ class Predictor(metaclass=Singleton):
                     else:
                         raise TerminalException(message) from e
                 except KeyboardInterrupt:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], self.__segment_alignment_timeout)
                     raise TerminalException("Segment alignment interrupted by the user")
                 else:
                     self.__LOGGER.debug("Segment aligned")
@@ -532,13 +529,13 @@ class Predictor(metaclass=Singleton):
         Arguments:
             audio_file_path {string} -- The file path of the original audio.
             subs {list} -- A list of SubRip files.
-            weights_file_path {string} --  The file path of the weights file.
+            weights_file_path {string}:  The file path of the weights file.
             stretch {bool} -- True to stretch the subtitle segments.
             stretch_in_lang {str} -- The language used for stretching subtitles.
             exit_segfail {bool} -- True to exit on any segment alignment failures.
 
         Returns:
-            list -- A list of aligned SubRip files
+            list: A list of aligned SubRip files
 
         Raises:
             TerminalException: If the alignment is interrupted by user hitting the interrupt key or times out
@@ -590,14 +587,14 @@ class Predictor(metaclass=Singleton):
             ]
             for i, future in enumerate(futures):
                 try:
-                    subs_list.extend(future.result(timeout=Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size))
+                    subs_list.extend(future.result(timeout=self.__segment_alignment_timeout * batch_size))
                 except concurrent.futures.TimeoutError as e:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
-                    message = "Batch alignment timed out after {} seconds".format(Predictor.__SEGMENT_PREDICTION_TIMEOUT)
+                    self.__cancel_futures(futures[i:], self.__segment_alignment_timeout * batch_size)
+                    message = "Batch alignment timed out after {} seconds".format(self.__segment_alignment_timeout)
                     self.__LOGGER.error(message)
                     raise TerminalException(message) from e
                 except Exception as e:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
+                    self.__cancel_futures(futures[i:], self.__segment_alignment_timeout * batch_size)
                     message = "Exception on batch alignment: {}\n{}".format(str(e), "".join(traceback.format_stack()))
                     self.__LOGGER.error(e, exc_info=True, stack_info=True)
                     traceback.print_tb(e.__traceback__)
@@ -606,7 +603,7 @@ class Predictor(metaclass=Singleton):
                     else:
                         raise TerminalException(message) from e
                 except KeyboardInterrupt:
-                    self.__cancel_futures(futures[i:], Predictor.__SEGMENT_PREDICTION_TIMEOUT * batch_size)
+                    self.__cancel_futures(futures[i:], self.__segment_alignment_timeout * batch_size)
                     raise TerminalException("Batch alignment interrupted by the user")
                 else:
                     self.__LOGGER.debug("Batch aligned")
@@ -742,7 +739,7 @@ class Predictor(metaclass=Singleton):
             previous_gap {float} -- The duration between the start time of the audio segment and the start time of the subtitle segment (default: {None}).
 
         Returns:
-            tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+            tuple: The shifted subtitles, the audio file path and the voice probabilities of the original audio.
 
         Raises:
             TerminalException: If the prediction failed on invalid input or on other exceptions.

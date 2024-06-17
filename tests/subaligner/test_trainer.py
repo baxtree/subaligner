@@ -213,9 +213,7 @@ class TrainerTests(unittest.TestCase):
         self.assertEqual(1, len(hyperparams_files))
 
     def test_no_exception_caused_by_timeout(self):
-        timeout = Undertest.EMBEDDING_TIMEOUT
-        Undertest.EMBEDDING_TIMEOUT = 0.01
-        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05)).train(
+        Undertest(FeatureEmbedder(n_mfcc=20, step_sample=0.05), feature_embedding_timeout=0.01).train(
             [self.video_file_path],
             [self.srt_file_path],
             model_dir=self.resource_tmp,
@@ -232,7 +230,6 @@ class TrainerTests(unittest.TestCase):
         )  # one model file, one weights file and one combined file and one training dump
         hyperparams_files = [file for file in output_files if file.endswith(".json")]
         self.assertEqual(1, len(hyperparams_files))
-        Undertest.EMBEDDING_TIMEOUT = timeout
 
     def test_get_done_epochs(self):
         assert Undertest.get_done_epochs(self.training_log_path) == 1
