@@ -26,6 +26,7 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.scc"       |  "test_aligned.srt"       |
         |  subaligner       |  single   |  "test.sbv"       |  "test_aligned.sbv"       |
         |  subaligner       |  single   |  "test.ytt"       |  "test_aligned.ytt"       |
+        |  subaligner       |  single   |  "accented.srt"   |  "accented_aligned.srt"   |
         |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
         |  subaligner       |  dual     |  "test.xml"       |  "test_aligned.xml"       |
@@ -42,6 +43,7 @@ Feature: Subaligner CLI
         |  subaligner       |  dual     |  "test.scc"       |  "test_aligned.scc"       |
         |  subaligner       |  dual     |  "test.sbv"       |  "test_aligned.sbv"       |
         |  subaligner       |  dual     |  "test.ytt"       |  "test_aligned.ytt"       |
+        |  subaligner       |  dual     |  "accented.srt"   |  "accented_aligned.srt"   |
 
     @video-input @without-mode
     Scenario Outline: Test alignments without modes
@@ -164,11 +166,11 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |
         |  subaligner       |  dual     |
 
-    @no-stretch
-    Scenario Outline: Test dual-stage alignment without stretch
+    @stretch
+    Scenario Outline: Test dual-stage alignment with stretch on
         Given I have a video file "test.mp4"
         And I have a subtitle file "test.srt"
-        When I run the alignment with <aligner> on them with <mode> stage and without stretch
+        When I run the alignment with <aligner> on them with <mode> stage and with stretch on
         Then a new subtitle file "test_aligned.srt" is generated
     Examples:
         |  aligner          |  mode     |

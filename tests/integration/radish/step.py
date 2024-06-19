@@ -179,8 +179,8 @@ def run_subaligner_with_exit_segfail(step, aligner, mode):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
-@when("I run the alignment with {aligner:S} on them with {mode:S} stage and without stretch")
-def run_subaligner_without_stretch(step, aligner, mode):
+@when("I run the alignment with {aligner:S} on them with {mode:S} stage and with stretch on")
+def run_subaligner_with_stretch(step, aligner, mode):
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
