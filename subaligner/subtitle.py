@@ -513,7 +513,7 @@ class Subtitle(object):
         Returns:
             SubRipFile: A list of SubRipItems.
         """
-        return Subtitle.__get_srt_subs(subrip_file_path)
+        return Subtitle._get_srt_subs(subrip_file_path)
 
     @staticmethod
     def __convert_ttml_to_subs(ttml_file_path: str) -> SubRipFile:
@@ -529,7 +529,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.ttml2srt(ttml_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_vtt_to_subs(vtt_file_path: str) -> SubRipFile:
@@ -545,7 +545,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.vtt2srt(vtt_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_ssa_to_subs(ssa_file_path: str) -> SubRipFile:
@@ -562,7 +562,7 @@ class Subtitle(object):
         path = "%s.srt" % path
         Utils.ssa2srt(ssa_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_ass_to_subs(ass_file_path: str) -> SubRipFile:
@@ -579,7 +579,7 @@ class Subtitle(object):
         path = "%s.srt" % path
         Utils.ass2srt(ass_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_microdvd_to_subs(microdvd_file_path: str) -> SubRipFile:
@@ -596,7 +596,7 @@ class Subtitle(object):
         path = "%s.srt" % path
         Utils.microdvd2srt(microdvd_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_mpl2_to_subs(mpl2_file_path: str) -> SubRipFile:
@@ -613,7 +613,7 @@ class Subtitle(object):
         path = "%s.srt" % path
         Utils.mpl22srt(mpl2_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_tmp_to_subs(tmp_file_path: str) -> SubRipFile:
@@ -630,7 +630,7 @@ class Subtitle(object):
         path = "%s.srt" % path
         Utils.tmp2srt(tmp_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_sami_to_subs(sami_file_path: str) -> SubRipFile:
@@ -646,7 +646,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.sami2srt(sami_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_stl_to_subs(stl_file_path: str) -> SubRipFile:
@@ -662,7 +662,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.stl2srt(stl_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_scc_to_subs(scc_file_path: str) -> SubRipFile:
@@ -678,7 +678,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.scc2srt(scc_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_sbv_to_subs(sbv_file_path: str) -> SubRipFile:
@@ -694,7 +694,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.sbv2srt(sbv_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __convert_ytt_to_subs(ytt_file_path: str) -> SubRipFile:
@@ -710,7 +710,7 @@ class Subtitle(object):
         _, path = tempfile.mkstemp()
         Utils.ytt2srt(ytt_file_path, path)
 
-        return Subtitle.__get_srt_subs(path, housekeep=True)
+        return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
     def __export_with_format(subs: List[SubRipItem], source_file_path: str, target_file_path: Optional[str], file_extension: str, suffix: str) -> None:
@@ -719,18 +719,6 @@ class Subtitle(object):
                 file_extension, "{}{}".format(suffix, file_extension)
             )
         Subtitle.export_subtitle(source_file_path, subs, target_file_path)
-
-    @staticmethod
-    def __get_srt_subs(subrip_file_path: str, housekeep: bool = False) -> SubRipFile:
-        encoding = Utils.detect_encoding(subrip_file_path)
-        try:
-            subs = pysrt.open(subrip_file_path, encoding=encoding)
-        except Exception as e:
-            raise UnsupportedFormatException("Error occurred when loading subtitle from %s" % subrip_file_path) from e
-        finally:
-            if housekeep:
-                os.remove(subrip_file_path)
-        return subs
 
     @staticmethod
     def __save_subtitle_by_extension(file_extension: str,
@@ -849,3 +837,15 @@ class Subtitle(object):
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(source_file_path)
             )
+
+    @staticmethod
+    def _get_srt_subs(subrip_file_path: str, housekeep: bool = False, encoding: Optional[str] = None) -> SubRipFile:
+        encoding = encoding or Utils.detect_encoding(subrip_file_path)
+        try:
+            subs = pysrt.open(subrip_file_path, encoding=encoding)
+        except Exception as e:
+            raise UnsupportedFormatException("Error occurred when loading subtitle from %s" % subrip_file_path) from e
+        finally:
+            if housekeep:
+                os.remove(subrip_file_path)
+        return subs

@@ -192,9 +192,10 @@ class Predictor(object):
             task.output_sync_map_file()
 
             # Load the above subtitle segment
-            adjusted_subs = Subtitle.load(
-                task.sync_map_file_path_absolute
-            ).subs
+            adjusted_subs = Subtitle._get_srt_subs(
+                subrip_file_path=task.sync_map_file_path_absolute,
+                encoding="utf-8"
+            )
 
             frame_rate = None
             try:
@@ -686,9 +687,10 @@ class Predictor(object):
                 task.output_sync_map_file()
 
             # Load the above subtitle segment
-            adjusted_subs = Subtitle.load(
-                task.sync_map_file_path_absolute
-            ).subs
+            adjusted_subs = Subtitle._get_srt_subs(
+                subrip_file_path=task.sync_map_file_path_absolute,
+                encoding="utf-8"
+            )
             for index, sub_new_loaded in enumerate(adjusted_subs):
                 sub_new_loaded.index = subs[index].index
 
