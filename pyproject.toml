@@ -1,2 +1,7 @@
 [build-system]
 requires = ["setuptools", "wheel", "Cython"]
+
+[tool.pydoclint]
+style = 'sphinx'
+exclude = '\.git|\.tox'
+require-return-section-when-returning-nothing = true

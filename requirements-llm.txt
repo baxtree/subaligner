@@ -1,4 +1,4 @@
 sentencepiece~=0.1.95
-torch<2.2.0
-transformers<4.27.0
+torch<2.3.0
+transformers<4.37.0
 openai-whisper==20231117
