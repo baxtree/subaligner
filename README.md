@@ -179,6 +179,13 @@ $ subaligner_train -vd VIDEO_DIRECTORY -sd SUBTITLE_DIRECTORY -tod TRAINING_OUTP
 ```
 Then you can apply it to your subtitle synchronisation with the aforementioned commands. For more details on how to train and tune your own model, please refer to [Subaligner Docs](https://subaligner.readthedocs.io/en/latest/advanced_usage.html).
 
+For larger media files taking longer to process, you can reconfigure various timeouts using the following options:
+```
+-mpt [Maximum waiting time in seconds when processing media files]
+-sat [Maximum waiting time in seconds when aligning each segment]
+-fet [Maximum waiting time in seconds when embedding features for training]
+```
+
 ## Anatomy
 Subtitles can be out of sync with their companion audiovisual media files for a variety of causes including latency introduced by Speech-To-Text on live streams or calibration and rectification involving human intervention during post-production.
 

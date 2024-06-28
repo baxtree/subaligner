@@ -103,6 +103,14 @@ or `--stretch_on` as shown below.
 
 The aforementioned commands can be run with `Docker Desktop <https://docs.docker.com/docker-for-windows/install/>`_ on Windows. Nonetheless, it is recommended to use Windows Subsystem for Linux (`WSL <https://learn.microsoft.com/en-us/windows/wsl/install>`_) to install Subaligner.
 
+For larger media files taking longer to process, you can reconfigure timeouts using the following options:
+**Re-configure timeouts**::
+
+    -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
+                        Maximum waiting time in seconds when processing media files
+    -sat SEGMENT_ALIGNMENT_TIMEOUT, --segment_alignment_timeout SEGMENT_ALIGNMENT_TIMEOUT
+                        Maximum waiting time in seconds when aligning each segment
+
 **Re-configure FFmpeg/Libav path**::
 
     (.venv) $ export FFMPEG_PATH=/path/to/ffmpeg

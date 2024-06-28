@@ -93,6 +93,7 @@ autodoc_mock_imports = [
     "transformers",
     "pycountry",
     "tqdm",
+    "whisper"
 ]
 
 def setup(app):

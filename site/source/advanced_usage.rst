@@ -68,6 +68,14 @@ is present, make sure the folder passed in is empty.
 To apply your trained model to subtitle alignment, pass in the training_output_directory containing training results as
 shown above with `-tod` or `--training_output_directory`.
 
+You can customise timeouts on media file processing and feature embedding to your needs using the following options:
+**Re-configure timeouts**::
+
+  -fet FEATURE_EMBEDDING_TIMEOUT, --feature_embedding_timeout FEATURE_EMBEDDING_TIMEOUT
+                        Maximum waiting time in seconds when embedding features of media files
+  -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
+                        Maximum waiting time in seconds when processing media files
+
 **Hyperparameters**::
 
     -bs BATCH_SIZE, --batch_size BATCH_SIZE
