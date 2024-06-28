@@ -29,6 +29,17 @@ jobs:
         run: |
           echo "SUBALIGNER_TAG=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Build and push the latest image
         id: docker_build_latest
         uses: docker/build-push-action@v4
