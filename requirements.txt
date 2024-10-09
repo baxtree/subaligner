@@ -48,6 +48,7 @@ PyYAML>=4.2b1
 rsa==4.7
 scipy<1.12.0
 scikit-learn<1.2.0
+setuptools<65.0.0
 six~=1.15.0
 tensorflow>=1.15.5,<2.13
 termcolor==1.1.0

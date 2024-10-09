@@ -23,6 +23,7 @@ class WhisperFlavour(Enum):
     LARGE_V2 = "large-v2"
     LARGE_V3 = "large-v3"
     LARGE = "large"
+    TURBO = "turbo"
 
 
 class HelsinkiNLPFlavour(Enum):
