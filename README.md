@@ -49,11 +49,13 @@ $ pip install 'subaligner[llm]'
 ```
 # Install dependencies for enabling forced alignment
 
+$ pip install 'setuptools<65.0.0'
 $ pip install 'subaligner[stretch]'
 ```
 ```
 # Install dependencies for setting up the development environment
 
+$ pip install 'setuptools<65.0.0'
 $ pip install 'subaligner[dev]'
 ```
 Note that both `subaligner[stretch]` and `subaligner[dev]` require additional dependencies to be pre-installed:
@@ -66,6 +68,7 @@ $ brew install espeak
 ```
 To install all supported features:
 ```
+$ pip install 'setuptools<65.0.0'
 $ pip install 'subaligner[harmony]'
 ```
 
