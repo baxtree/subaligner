@@ -49,7 +49,7 @@ PyYAML>=4.2b1
 rsa==4.7
 scipy<1.11.0
 scikit-learn<1.2.0
-setuptools>=41.0.0
+setuptools>=41.0.0,<65.0.0
 six~=1.15.0
 tensorflow-macos~=2.12.0
 termcolor==1.1.0
