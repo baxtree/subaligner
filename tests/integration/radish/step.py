@@ -125,12 +125,39 @@ def run_subaligner_with_translation(step, aligner, mode, language_pair):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when('I run the alignment with {aligner:S} on them with {mode:S} stage with {language:S} language, {recipe:S} recipe and {flavour:S} flavour and prompt {prompt:S}')
+def run_subaligner_with_transcription(step, aligner, mode, language, recipe, flavour, prompt):
+    if prompt == "<NULL>":
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-ml", language,
+            "-mr", recipe,
+            "-mf", flavour,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
+            "-q"], shell=False)
+    else:
+        process = subprocess.Popen([
+            os.path.join(PWD, "..", "..", "..", "bin", aligner),
+            "-m", mode,
+            "-v", step.context.video_file_path,
+            "-ml", language,
+            "-mr", recipe,
+            "-mf", flavour,
+            "-ip", prompt,
+            "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.srt"),
+            "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when('I run the alignment with {aligner:S} on them with {mode:S} stage with {language:S} language, {recipe:S} recipe and {flavour:S} flavour')
 def run_subaligner_with_transcription(step, aligner, mode, language, recipe, flavour):
     process = subprocess.Popen([
         os.path.join(PWD, "..", "..", "..", "bin", aligner),
         "-m", mode,
         "-v", step.context.video_file_path,
+        "-s", step.context.subtitle_path_or_selector,
         "-ml", language,
         "-mr", recipe,
         "-mf", flavour,

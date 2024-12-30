@@ -26,6 +26,8 @@ Make sure you have got the virtual environment activated upfront.
 
     (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
     (.venv) $ subaligner -m transcribe -v video.mp4 -ml zho -mr whisper -mf medium -o subtitle_aligned.srt
+    (.venv) $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf turbo -ip "your initial prompt" -o subtitle_aligned.srt
+    (.venv) $ subaligner -m transcribe -v video.mp4 -s subtitle.srt -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
 
 **Alignment on segmented plain texts (double newlines as the delimiter)**::
 

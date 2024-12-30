@@ -103,6 +103,8 @@ $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/sub
 # Generate subtitles by transcribing audiovisual files
 $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
 $ subaligner -m transcribe -v video.mp4 -ml zho -mr whisper -mf medium -o subtitle_aligned.srt
+$ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf turbo -ip "your initial prompt" -o subtitle_aligned.srt
+$ subaligner -m transcribe -v video.mp4 -s subtitle.srt -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
 ```
 ```
 # Alignment on segmented plain texts (double newlines as the delimiter)

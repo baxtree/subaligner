@@ -4,15 +4,15 @@ usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                   [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
                   [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}] [-tr {helsinki-nlp,whisper,facebook-mbart}] [-tf TRANSLATION_FLAVOUR]
-                  [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs] [-d] [-q] [-ver]
+                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}] [-ip INITIAL_PROMPT] [-tr {helsinki-nlp,whisper,facebook-mbart}]
+                  [-tf TRANSLATION_FLAVOUR] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs] [-d] [-q] [-ver]
 
-Subaligner command line interface (v0.3.7)
+Subaligner command line interface
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .scc, .tmp, .sami, .stl, .ttml, .dfxp, .srt, .ssa, .ass, .sub, .sbv, .xml, .ytt, .smi, .txt, .vtt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ass, .smi, .scc, .vtt, .stl, .txt, .sbv, .ssa, .sub, .ttml, .xml, .srt, .ytt, .dfxp, .sami, .tmp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -32,8 +32,10 @@ options:
                         Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
   -mr {whisper}, --transcription_recipe {whisper}
                         LLM recipe used for transcribing video files
-  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}
                         Flavour variation for a specific LLM recipe supporting transcription
+  -ip INITIAL_PROMPT, --initial_prompt INITIAL_PROMPT
+                        Optional text to provide the transcribing context or specific phrases
   -tr {helsinki-nlp,whisper,facebook-mbart}, --translation_recipe {helsinki-nlp,whisper,facebook-mbart}
                         LLM recipe used for translating subtitles
   -tf TRANSLATION_FLAVOUR, --translation_flavour TRANSLATION_FLAVOUR
@@ -178,6 +180,13 @@ def main():
         choices=[wf.value for wf in WhisperFlavour],
         help="Flavour variation for a specific LLM recipe supporting transcription"
     )
+    parser.add_argument(
+        "-ip",
+        "--initial_prompt",
+        type=str,
+        default=None,
+        help="Optional text to provide the transcribing context or specific phrases"
+    )
     from subaligner.llm import TranslationRecipe
     from subaligner.llm import HelsinkiNLPFlavour
     parser.add_argument(
@@ -233,7 +242,8 @@ def main():
         parser.print_usage()
         sys.exit(21)
     elif FLAGS.mode == "transcribe":
-        FLAGS.subtitle_path = ["{}.srt".format(tempfile.mkstemp()[1])]
+        if not FLAGS.subtitle_path:
+            FLAGS.subtitle_path = [tempfile.mkstemp(suffix="_transcribe_temp.srt")[1]]
     if FLAGS.mode in ["single", "dual", "script", "transcribe"]:
         for subtitle_path in FLAGS.subtitle_path:
             if FLAGS.video_path == "":
@@ -345,7 +355,10 @@ def main():
                 elif FLAGS.mode == "transcribe":
                     from subaligner.transcriber import Transcriber
                     transcriber = Transcriber(recipe=FLAGS.transcription_recipe, flavour=FLAGS.transcription_flavour)
-                    subtitle, frame_rate = transcriber.transcribe(local_video_path, stretch_in_lang)
+                    if "_transcribe_temp" in local_subtitle_path:
+                        subtitle, frame_rate = transcriber.transcribe(video_file_path=local_video_path, language_code=stretch_in_lang, initial_prompt=FLAGS.initial_prompt)
+                    else:
+                        subtitle, frame_rate = transcriber.transcribe_with_subtitle_as_prompts(video_file_path=local_video_path, subtitle_file_path=local_subtitle_path, language_code=stretch_in_lang)
                     aligned_subs = subtitle.subs
                 else:
                     print("ERROR: Unknown mode {}".format(FLAGS.mode))
@@ -422,7 +435,7 @@ def _remove_tmp_files(video_path, subtitle_path, local_video_path, local_subtitl
         os.remove(local_video_path)
     if subtitle_path.lower().startswith("http") and os.path.exists(local_subtitle_path):
         os.remove(local_subtitle_path)
-    if mode == "transcribe" and os.path.exists(local_subtitle_path):
+    if mode == "transcribe" and os.path.exists(local_subtitle_path) and "_transcribe_temp" in local_subtitle_path:
         os.remove(local_subtitle_path)
 
 

@@ -236,16 +236,25 @@ Feature: Subaligner CLI
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |   eng,fra         |   "test_aligned.srt"      |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |   eng,deu         |   "test_aligned.srt"      |
 
-    @transcription
+    @transcription @custom-prompt
     Scenario Outline: Test transcription on audiovisual input and subtitle generation
+        Given I have a video file <video-in>
+        When I run the alignment with <aligner> on them with <mode> stage with <language> language, <recipe> recipe and <flavour> flavour and prompt <prompt>
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |   video-in    |   aligner     |  mode         |   language    |   recipe      |   flavour     |   prompt      |   subtitle-out        |
+        |   "test.mp4"  |   subaligner  |  transcribe   |   eng         |   whisper     |   tiny        |   <NULL>      |   "test_aligned.srt"  |
+        |   "test.wav"  |   subaligner  |  transcribe   |   eng         |   whisper     |   tiny        |   test_prompt |   "test_aligned.srt"  |
+
+    @transcription @subtitle-prompt
+    Scenario Outline: Test transcription on audiovisual input with original subtitle as prompts and subtitle generation
         Given I have a video file <video-in>
         And I have a subtitle file <subtitle-in>
         When I run the alignment with <aligner> on them with <mode> stage with <language> language, <recipe> recipe and <flavour> flavour
         Then a new subtitle file <subtitle-out> is generated
     Examples:
-        |   video-in    |   aligner     |  mode         |  subtitle-in      |   language    |   recipe      |   flavour     |   subtitle-out        |
-        |   "test.mp4"  |   subaligner  |  transcribe   |  "test.srt"       |   eng         |   whisper     |   tiny        |   "test_aligned.srt"  |
-        |   "test.wav"  |   subaligner  |  transcribe   |  "test.srt"       |   eng         |   whisper     |   tiny        |   "test_aligned.srt"  |
+        |   video-in    |   aligner     |  mode         |  subtitle-in      |   language    |   recipe      |   flavour |   subtitle-out        |
+        |   "test.mp4"  |   subaligner  |  transcribe   |  "test.srt"       |   eng         |   whisper     |   tiny    |   "test_aligned.srt"  |
 
     @batch
     Scenario Outline: Test batch alignment
