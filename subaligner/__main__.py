@@ -187,6 +187,13 @@ def main():
         default=None,
         help="Optional text to provide the transcribing context or specific phrases"
     )
+    parser.add_argument(
+        "-mcl",
+        "--max_char_length",
+        type=int,
+        default=None,
+        help="Maximum number of characters for each generated subtitle segment"
+    )
     from subaligner.llm import TranslationRecipe
     from subaligner.llm import HelsinkiNLPFlavour
     parser.add_argument(
@@ -356,9 +363,15 @@ def main():
                     from subaligner.transcriber import Transcriber
                     transcriber = Transcriber(recipe=FLAGS.transcription_recipe, flavour=FLAGS.transcription_flavour)
                     if "_transcribe_temp" in local_subtitle_path:
-                        subtitle, frame_rate = transcriber.transcribe(video_file_path=local_video_path, language_code=stretch_in_lang, initial_prompt=FLAGS.initial_prompt)
+                        subtitle, frame_rate = transcriber.transcribe(video_file_path=local_video_path,
+                                                                      language_code=stretch_in_lang,
+                                                                      initial_prompt=FLAGS.initial_prompt,
+                                                                      max_char_length=FLAGS.max_char_length)
                     else:
-                        subtitle, frame_rate = transcriber.transcribe_with_subtitle_as_prompts(video_file_path=local_video_path, subtitle_file_path=local_subtitle_path, language_code=stretch_in_lang)
+                        subtitle, frame_rate = transcriber.transcribe_with_subtitle_as_prompts(video_file_path=local_video_path,
+                                                                                               subtitle_file_path=local_subtitle_path,
+                                                                                               language_code=stretch_in_lang,
+                                                                                               max_char_length=FLAGS.max_char_length)
                     aligned_subs = subtitle.subs
                 else:
                     print("ERROR: Unknown mode {}".format(FLAGS.mode))
