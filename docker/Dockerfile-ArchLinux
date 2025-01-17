@@ -16,7 +16,7 @@ RUN ["/bin/bash", "-c", "pacman --noconfirm -Syu &&\
     /usr/sbin/pyenv local 3.8.12 &&\
     ln -s /root/.pyenv/versions/3.8.12/bin/python /usr/bin/python &&\
     python -m pip install --upgrade pip &&\
-    python -m pip install wheel &&\
+    python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
     python -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
     python -m pip install \"subaligner[llm]==${RELEASE_VERSION}\""]
 

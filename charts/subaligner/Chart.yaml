@@ -3,5 +3,5 @@ name: subaligner
 description: A Helm chart for subaligner CLIs
 icon: https://raw.githubusercontent.com/baxtree/subaligner/master/figures/subaligner.png
 type: application
-version: 0.1.1
-appVersion: "0.3.7"
+version: 0.1.2
+appVersion: "0.3.8"

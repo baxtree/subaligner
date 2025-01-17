@@ -25,6 +25,6 @@ RUN ["/bin/bash", "-c", "dnf install -y epel-release dnf-utils &&\
     dnf makecache &&\
     dnf upgrade python3-pip &&\
     python3 -m pip install --upgrade pip &&\
-    python3 -m pip install --upgrade setuptools wheel &&\
+    python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
     python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
     python3 -m pip install \"subaligner[llm]==${RELEASE_VERSION}\""]
