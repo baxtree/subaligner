@@ -51,9 +51,10 @@ Make sure you have got the virtual environment activated upfront.
     (.venv) $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
     (.venv) $ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
-    (.venv) $ subaligner -m dual -v video.mp4 -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
-    (.venv) $ subaligner -m dual -v video.mp4 -tr facebook-mbart -tf large -o subtitle_aligned.srt -t src,tgt
-    (.venv) $ subaligner -m dual -v video.mp4 -tr whisper -tf small -o subtitle_aligned.srt -t src,eng
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr facebook-mbart -tf large -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr facebook-m2m100 -tf small -o subtitle_aligned.srt -t src,tgt
+    (.venv) $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr whisper -tf small -o subtitle_aligned.srt -t src,eng
 
 **Transcribe audiovisual files and generate translated subtitles**::
 

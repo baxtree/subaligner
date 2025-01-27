@@ -1,2 +1,3 @@
-"""The semver for the current release."""
-__version__ = "0.3.8"
+import importlib.metadata
+
+__version__ = importlib.metadata.version("subaligner")

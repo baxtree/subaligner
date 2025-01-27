@@ -9,6 +9,7 @@ class TranslationRecipe(Enum):
     HELSINKI_NLP = "helsinki-nlp"
     WHISPER = "whisper"
     FACEBOOK_MBART = "facebook-mbart"
+    FACEBOOK_M2M100 = "facebook-m2m100"
 
 
 class WhisperFlavour(Enum):
@@ -34,3 +35,7 @@ class HelsinkiNLPFlavour(Enum):
 
 class FacebookMbartFlavour(Enum):
     LARGE = "large"
+
+
+class FacebookM2m100Flavour(Enum):
+    SMALL = "small"
