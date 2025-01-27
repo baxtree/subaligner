@@ -26,7 +26,7 @@ dependencies = [
     "bleach==3.3.0",
     "cachetools==3.1.1",
     "captionstransformer~=1.2.1",
-    "certifi==2023.7.22",
+    "certifi==2024.7.4",
     "chardet~=3.0.4",
     "cloudpickle~=1.6.0",
     "cycler==0.10.0",
