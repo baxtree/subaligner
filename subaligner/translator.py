@@ -12,10 +12,12 @@ from transformers import (
     MarianTokenizer,
     MBart50TokenizerFast,
     MBartForConditionalGeneration,
+    M2M100ForConditionalGeneration,
+    M2M100Tokenizer,
 )
 from whisper.tokenizer import LANGUAGES
 from .singleton import Singleton
-from .llm import TranslationRecipe, HelsinkiNLPFlavour, WhisperFlavour, FacebookMbartFlavour
+from .llm import TranslationRecipe, HelsinkiNLPFlavour, WhisperFlavour, FacebookMbartFlavour, FacebookM2m100Flavour
 from .utils import Utils
 from .subtitle import Subtitle
 from .logger import Logger
@@ -147,6 +149,27 @@ class Translator(object):
                 new_subs[index].text = translated_texts[index]
             self.__LOGGER.info("Subtitle translated")
             return new_subs
+        elif self.__recipe == TranslationRecipe.FACEBOOK_M2M100.value:
+            src_lang, tgt_lang = language_pair if language_pair is not None else (self.__src_language, self.__tgt_language)
+            self.__tokenizer.src_lang = Utils.get_iso_639_alpha_2(src_lang)
+            lang_code = Utils.get_iso_639_alpha_2(tgt_lang)
+            if src_lang is None or tgt_lang is None:
+                raise NotImplementedError(
+                    f"Language pair of {src_lang} and {src_lang} is not supported by {self.__recipe}")
+            translated_texts = []
+            self.__lang_model.eval()
+            new_subs = deepcopy(subs)
+            src_texts = [sub.text for sub in new_subs]
+            num_of_batches = math.ceil(len(src_texts) / Translator.__TRANSLATING_BATCH_SIZE)
+            self.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
+            for batch in tqdm(Translator.__batch(src_texts, Translator.__TRANSLATING_BATCH_SIZE), total=num_of_batches):
+                input_ids = self.__tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
+                translated = self.__lang_model.generate(**input_ids, forced_bos_token_id=self.__tokenizer.get_lang_id(lang_code))
+                translated_texts.extend([self.__tokenizer.decode(t, skip_special_tokens=True) for t in translated])
+            for index in range(len(new_subs)):
+                new_subs[index].text = translated_texts[index]
+            self.__LOGGER.info("Subtitle translated")
+            return new_subs
         else:
             return []
 
@@ -178,6 +201,13 @@ class Translator(object):
                 self.__download_mbart_model(flavour)
             else:
                 raise NotImplementedError(f"Unknown {recipe} flavour: {flavour}")
+        elif recipe == TranslationRecipe.FACEBOOK_M2M100.value:
+            if flavour in [f.value for f in FacebookM2m100Flavour]:
+                self.__download_m2m100_model(flavour)
+            else:
+                raise NotImplementedError(f"Unknown {recipe} flavour: {flavour}")
+        else:
+            raise NotImplementedError(f"Unknown recipe: {recipe}")
 
     def __download_mt_model(self, src_lang: str, tgt_lang: str, flavour: str) -> bool:
         try:
@@ -215,6 +245,13 @@ class Translator(object):
         self.__tokenizer = MBart50TokenizerFast.from_pretrained(mbart_model_name)
         self.__lang_model = MBartForConditionalGeneration.from_pretrained(mbart_model_name)
         self.__LOGGER.debug("mBART model %s downloaded" % mbart_model_name)
+
+    def __download_m2m100_model(self, flavour: str) -> None:
+        m2m100_model_name = "facebook/m2m100_418M" if flavour == "small" else "facebook/m2m100_418M"
+        self.__LOGGER.debug("Trying to download the M2M100 model %s" % m2m100_model_name)
+        self.__tokenizer = M2M100Tokenizer.from_pretrained(m2m100_model_name)
+        self.__lang_model = M2M100ForConditionalGeneration.from_pretrained(m2m100_model_name)
+        self.__LOGGER.debug("M2M100 model %s downloaded" % m2m100_model_name)
 
     def __download_by_mt_name(self, mt_model_name: str) -> None:
         self.__LOGGER.debug("Trying to download the MT model %s" % mt_model_name)
