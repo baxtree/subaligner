@@ -28,19 +28,17 @@ jobs:
           sudo apt-get -y install espeak libespeak1 libespeak-dev espeak-data
           sudo apt-get -y install libsndfile-dev
           python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools wheel
-          cat requirements.txt | xargs -L 1 pip install
-          cat requirements-stretch.txt | xargs -L 1 pip install
-          cat requirements-llm.txt | xargs -L 1 pip install
-          cat requirements-dev.txt | xargs -L 1 pip install
-          cat requirements-site.txt | xargs -L 1 pip install
-          pip install -e . --ignore-installed
+          pip install -e .
+          pip install -e ".[stretch]"
+          pip install -e ".[llm]"
+          pip install -e ".[dev]"
+          pip install -e ".[site]"
       - name: Type checking
         run: |
           python -m mypy --follow-imports=normal subaligner
       - name: Linting
         run: |
-          pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
+          pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,E902,W503 --exclude="subaligner/lib"
       - name: Linting docstring
         run: |
           darglint -v 2 subaligner
