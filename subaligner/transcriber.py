@@ -111,7 +111,8 @@ class Transcriber(object):
                                             video_file_path: str,
                                             subtitle_file_path: str,
                                             language_code: str,
-                                            max_char_length: Optional[int] = None) -> Tuple[Subtitle, Optional[float]]:
+                                            max_char_length: Optional[int] = None,
+                                            use_prior_prompting: bool = False) -> Tuple[Subtitle, Optional[float]]:
         """Transcribe an audiovisual file and generate subtitles using the original subtitle (with accurate time codes) as prompts.
 
 
@@ -120,6 +121,7 @@ class Transcriber(object):
             subtitle_file_path {string} -- The input subtitle file path to provide prompts.
             language_code {string} -- An alpha 3 language code derived from ISO 639-3.
             max_char_length {int} -- Optional Maximum number of characters for each generated subtitle segment.
+            use_prior_prompting {bool} -- Whether to use the previous subtitle cue as the current prompt.
 
         Returns:
             tuple: Generated subtitle after transcription and the detected frame rate
@@ -143,10 +145,15 @@ class Transcriber(object):
                 segment_paths = []
                 args = []
                 longest_segment_char_length = 0
+                prev_sub_text = ""
                 for sub in tqdm(subtitle.subs, desc="Extracting audio segments"):
                     segment_path, _ = self.__media_helper.extract_audio_from_start_to_end(audio_file_path, str(sub.start), str(sub.end))
                     segment_paths.append(segment_path)
-                    args.append((segment_path, sub.text, self.__lock, self.__LOGGER))
+                    if use_prior_prompting:
+                        args.append((segment_path, sub.text if prev_sub_text == "" else prev_sub_text, self.__lock, self.__LOGGER))
+                        prev_sub_text = sub.text
+                    else:
+                        args.append((segment_path, sub.text, self.__lock, self.__LOGGER))
                     if len(sub.text) > longest_segment_char_length:
                         longest_segment_char_length = len(sub.text)
                 max_subtitle_char_length = max_char_length or longest_segment_char_length

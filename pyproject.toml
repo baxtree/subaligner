@@ -54,6 +54,7 @@ dependencies = [
     "pbr==4.0.2",
     "pkgconfig~=1.5.5",
     "pluggy==0.13.1",
+    "psutil~=7.0.0",
     "pyasn1==0.4.8",
     "pyasn1-modules==0.2.7",
     "pybind11~=2.11.1",

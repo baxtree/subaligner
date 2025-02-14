@@ -4,10 +4,10 @@ import importlib
 import psutil
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.optimizers as tf_optimizers
+import keras.optimizers as tf_optimizers
 
 from typing import Tuple, Optional, List, Generator
-from tensorflow.keras.layers import (
+from keras.layers import (
     Dense,
     Input,
     LSTM,
@@ -19,14 +19,14 @@ from tensorflow.keras.layers import (
     Bidirectional,
 )
 
-from tensorflow.keras.callbacks import (
+from keras.callbacks import (
     EarlyStopping,
     ModelCheckpoint,
     TensorBoard,
     CSVLogger,
 )
-from tensorflow.keras.models import Model, load_model, save_model
-from tensorflow.keras import backend as K
+from keras.models import Model, load_model, save_model
+from keras import backend as K
 from .utils import Utils
 from .logger import Logger
 from .exception import TerminalException

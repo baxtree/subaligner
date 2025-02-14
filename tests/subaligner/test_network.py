@@ -7,7 +7,7 @@ import numpy as np
 
 from mock import patch
 from parameterized import parameterized
-from tensorflow.keras.models import Model
+from keras.models import Model
 from subaligner.hyperparameters import Hyperparameters
 from subaligner.exception import TerminalException
 from subaligner.network import Network as Undertest
@@ -307,7 +307,7 @@ class NetworkTests(unittest.TestCase):
             self.assertTrue(len(val_loss) == self.hyperparameters.epochs)
             self.assertTrue(len(val_acc) == self.hyperparameters.epochs)
 
-    @patch("tensorflow.keras.models.Model.fit", side_effect=KeyboardInterrupt)
+    @patch("keras.models.Model.fit", side_effect=KeyboardInterrupt)
     def test_throw_exception_on_fit_and_get_history(self, mock_fit):
         try:
             network = Undertest.get_network((2, 20), self.hyperparameters)
@@ -333,7 +333,7 @@ class NetworkTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("tensorflow.keras.models.Model.fit", side_effect=KeyboardInterrupt)
+    @patch("keras.models.Model.fit", side_effect=KeyboardInterrupt)
     def test_throw_exception_on_fit_with_generator(self, mock_fit):
         self.hyperparameters.epochs = 3
         network = Undertest.get_network((2, 20), self.hyperparameters)

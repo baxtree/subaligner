@@ -105,18 +105,19 @@ $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitl
 $ subaligner -m transcribe -v video.mp4 -ml zho -mr whisper -mf medium -o subtitle_aligned.srt
 $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf turbo -ip "your initial prompt" -o subtitle_aligned.srt
 $ subaligner -m transcribe -v video.mp4 -s subtitle.srt -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
+$ subaligner -m transcribe -v video.mp4 -s subtitle.srt -upp -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
 ```
 ```
 # Alignment on segmented plain texts (double newlines as the delimiter)
 
-$ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt
+$ subaligner -m script -v video.mp4 -s subtitle.txt -o subtitle_aligned.srt
 $ subaligner -m script -v https://example.com/video.mp4 -s https://example.com/subtitle.txt -o subtitle_aligned.srt
 ```
 ```
 # Alignment on multiple subtitles against the single media file
 
-$ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt -s subtitle_lang_2.txt
-$ subaligner -m script -v test.mp4 -s subtitle_lang_1.txt subtitle_lang_2.txt
+$ subaligner -m script -v video.mp4 -s subtitle_lang_1.txt -s subtitle_lang_2.txt
+$ subaligner -m script -v video.mp4 -s subtitle_lang_1.txt subtitle_lang_2.txt
 ```
 ```
 # Alignment on embedded subtitles
@@ -130,7 +131,7 @@ $ subaligner -m dual -v video.mkv -s embedded:stream_index=0 -o subtitle_aligned
 $ subaligner --languages
 $ subaligner -m single -v video.mp4 -s subtitle.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -t src,tgt
-$ subaligner -m script -v test.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
+$ subaligner -m script -v video.mp4 -s subtitle.txt -o subtitle_aligned.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr facebook-mbart -tf large -o subtitle_aligned.srt -t src,tgt
 $ subaligner -m dual -v video.mp4 -s subtitle.srt -tr facebook-m2m100 -tf small -o subtitle_aligned.srt -t src,tgt

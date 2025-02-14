@@ -28,28 +28,11 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 install:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
 	.$(PYTHON)/bin/pip install -e . --ignore-installed
-	cp ./bin/subaligner_1pass .$(PYTHON)/bin/subaligner_1pass
-	cp ./bin/subaligner_2pass .$(PYTHON)/bin/subaligner_2pass
-	cp ./bin/subaligner_batch .$(PYTHON)/bin/subaligner_batch
-	cp ./bin/subaligner_convert .$(PYTHON)/bin/subaligner_convert
-	cp ./bin/subaligner_train .$(PYTHON)/bin/subaligner_train
-	cp ./bin/subaligner_tune .$(PYTHON)/bin/subaligner_tune
-	cp ./bin/subaligner .$(PYTHON)/bin/subaligner
+	.$(PYTHON)/bin/pip install -e ".[harmony]"
 
 uninstall:
-	rm -f .$(PYTHON)/bin/subaligner
-	rm -f .$(PYTHON)/bin/subaligner_1pass
-	rm -f .$(PYTHON)/bin/subaligner_2pass
-	rm -f .$(PYTHON)/bin/subaligner_batch
-	rm -f .$(PYTHON)/bin/subaligner_convert
-	rm -f .$(PYTHON)/bin/subaligner_train
-	rm -f .$(PYTHON)/bin/subaligner_tune
+	.$(PYTHON)/bin/pip uninstall subaligner
 
 install-basic:
 	.$(PYTHON)/bin/pip install -e '.' --no-cache-dir
@@ -71,44 +54,33 @@ install-harmony:
 
 build-gzip:
 	mkdir -p dist
-	tar -czf dist/subligner.tar.gz subaligner bin requirements.txt setup.py README.md LICENCE
+	tar -czf dist/subligner.tar.gz subaligner bin pyproject.toml README.md LICENCE
 
 build-rpm:
 	mkdir -p BUILD RPMS SRPMS SOURCES BUILDROOT
-	tar -czf SOURCES/subligner.tar.gz subaligner bin requirements.txt setup.py README.md LICENCE
+	tar -czf SOURCES/subligner.tar.gz subaligner bin pyproject.toml README.md LICENCE
 
 test:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	.$(PYTHON)/bin/pip install -e ".[dev]"
 	PYTHONPATH=. .$(PYTHON)/bin/python -m unittest discover
-	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,W503 --exclude="subaligner/lib"
+	-.$(PYTHON)/bin/pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train bin/subaligner_tune setup.py --ignore=E203,E501,E902,W503 --exclude="subaligner/lib"
 
 test-all: ## run tests on every Python version with tox
 	.$(PYTHON)/bin/tox
 
 test-int: ## integration test
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
 	.$(PYTHON)/bin/pip install -e . --ignore-installed
-	( \
-		source .$(PYTHON)/bin/activate; \
-		radish -b tests/integration/radish tests/integration/feature; \
-	)
+	.$(PYTHON)/bin/pip install -e ".[dev]"
+	source .$(PYTHON)/bin/activate
+	radish -b tests/integration/radish tests/integration/feature;
 
 pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	.$(PYTHON)/bin/pip install -e ".[dev]"
 	.$(PYTHON)/bin/python -m pydoc -w subaligner; mv subaligner.html docs/index.html
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.embedder; mv subaligner.embedder.html docs
 	.$(PYTHON)/bin/python -m pydoc -w subaligner.exception; mv subaligner.exception.html docs
@@ -128,11 +100,8 @@ pydoc: clean-doc ## generate pydoc HTML documentation based on docstrings
 
 coverage: ## check code coverage quickly with the default Python
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	.$(PYTHON)/bin/pip install -e ".[dev]"
 	.$(PYTHON)/bin/coverage run --source subaligner -m unittest discover
 	.$(PYTHON)/bin/coverage report
 	.$(PYTHON)/bin/coverage html
@@ -140,20 +109,21 @@ coverage: ## check code coverage quickly with the default Python
 
 manual: clean-manual ## generate manual pages
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements-site.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-    SPHINXAPIDOC=../.$(PYTHON)/bin/sphinx-apidoc SPHINXBUILD=../.$(PYTHON)/bin/sphinx-build make -C ./site html; \
-	.$(PYTHON)/bin/python -m sphinx -T -b html -d ./site/build/doctrees -D language=en ./site/source ./site/build/html; \
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	.$(PYTHON)/bin/pip install -e ".[dev]"
+	SPHINXAPIDOC=../.$(PYTHON)/bin/sphinx-apidoc SPHINXBUILD=../.$(PYTHON)/bin/sphinx-build make -C ./site html
+	.$(PYTHON)/bin/python -m sphinx -T -b html -d ./site/build/doctrees -D language=en ./site/source ./site/build/html
 	$(BROWSER) ./site/build/html/index.html
 
 test-dist:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
 	.$(PYTHON)/bin/pip install -e .
 
 dist: clean-dist test-dist
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	.$(PYTHON)/bin/python setup.py sdist bdist_wheel
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	.$(PYTHON)/bin/pip install -e ".[dev]"
+	.$(PYTHON)/bin/pip install build
+	.$(PYTHON)/bin/python -m build --sdist --wheel
 
 release:
 	.$(PYTHON)/bin/twine upload dist/*
@@ -164,21 +134,10 @@ pipenv-install:
 
 profile:
 	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-stretch.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-llm.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
+	.$(PYTHON)/bin/pip install -e . --ignore-installed
+	.$(PYTHON)/bin/pip install -e ".[dev]"
 	.$(PYTHON)/bin/python -c "import misc.profiler; misc.profiler.generate_profiles()"
 	.$(PYTHON)/bin/kernprof -v -l ./misc/profiler.py
-
-app: clean-wheels
-	if [ ! -e ".$(PYTHON)" ]; then ~/.pyenv/versions/$(PYTHON)/bin/python3 -m venv .$(PYTHON); fi
-	.$(PYTHON)/bin/pip install --upgrade pip setuptools wheel; \
-	cat requirements-dev.txt | xargs -L 1 .$(PYTHON)/bin/pip install; \
-	.$(PYTHON)/bin/pip wheel --no-cache-dir --wheel-dir=./wheels -r requirements.txt -r requirements-stretch.txt -r requirements-llm.txt; \
-	STRETCH_OFF=True .$(PYTHON)/bin/python setup.py bdist_wheel -d ./wheels; \
-	.$(PYTHON)/bin/pex subaligner==$(SUBALIGNER_VERSION) --repo=./wheels --platform $(PLATFORM) --no-pypi --no-build --python-shebang="/usr/bin/env python3" -e subaligner -o subaligner-$(PLATFORM).app; \
 
 docker-build:
 	docker build --build-arg RELEASE_VERSION=$(SUBALIGNER_VERSION) -f docker/Dockerfile-Ubuntu20 .
