@@ -1,4 +1,5 @@
 import os
+import json
 import subprocess
 import pysubs2
 import requests
@@ -24,6 +25,7 @@ from captionstransformer.core import Reader
 from captionstransformer.sbv import Reader as SbvReader, Writer as SbvWriter
 from captionstransformer.srt import Reader as SrtReader, Writer as SrtWriter
 from captionstransformer.transcript import Reader as TranscriptReader, Writer as TranscriptWriter
+from pysrt import SubRipFile, SubRipTime, SubRipItem
 from bs4 import BeautifulSoup
 from datetime import datetime
 from typing import Optional, TextIO, BinaryIO, Union, Callable, Any, Tuple, List, Dict
@@ -480,6 +482,64 @@ class Utils(object):
             srt_writer.close()
 
         Utils.remove_trailing_newlines(srt_file_path, encoding)
+
+    @staticmethod
+    def srt2json(srt_file_path: str, json_raw_file_path: Optional[str] = None) -> None:
+        """Convert SubRip subtitles to JSON raw subtitles.
+
+        Arguments:
+            srt_file_path {string} -- The path to the SubRip file.
+            json_raw_file_path {string} -- The path to the JSON raw subtitle file.
+        """
+        Caption.text = property(lambda self: self._text, Utils._set_text_patch)
+        Reader.read = Utils._read_patch
+
+        file: Union[TextIO, BinaryIO]
+        encoding = Utils.detect_encoding(srt_file_path)
+
+        with open(srt_file_path, "r", encoding=encoding) as file:
+            srt_reader = SrtReader(file)
+            srt_reader.encoding = encoding
+            captions = srt_reader.read()
+            for caption in captions:
+                caption.encoding = encoding
+
+        if json_raw_file_path is None:
+            json_raw_file_path = srt_file_path.replace(".srt", ".json")
+
+        with open(json_raw_file_path, "w") as file:
+            timed_texts = []
+            for caption in captions:
+                timed_texts.append({
+                    "start": (caption.start - datetime(1900, 1, 1)).total_seconds(),
+                    "end": (caption.end - datetime(1900, 1, 1)).total_seconds(),
+                    "text": caption.text.rstrip("\r\n")
+                })
+            json.dump(timed_texts, file)
+
+    @staticmethod
+    def json2srt(json_raw_file_path: str, srt_file_path: Optional[str] = None) -> None:
+        """Convert JSON raw subtitles to SubRip subtitles.
+
+        Arguments:
+            json_raw_file_path {string} -- The path to the JSON raw subtitle file.
+            srt_file_path {string} -- The path to the SubRip file.
+        """
+
+        file: Union[TextIO, BinaryIO]
+        encoding = Utils.detect_encoding(json_raw_file_path)
+        subs = SubRipFile()
+        with open(json_raw_file_path, "r", encoding=encoding) as file:
+            for index, timed_text in enumerate(json.load(file), start=1):
+                start = SubRipTime(milliseconds=(timed_text["start"] * 1000))
+                end = SubRipTime(milliseconds=(timed_text["end"] * 1000))
+                subrip_item = SubRipItem(index, start=start, end=end, text=timed_text["text"])
+                subs.append(subrip_item)
+
+        if srt_file_path is None:
+            srt_file_path = json_raw_file_path.replace(".json", ".srt")
+
+        subs.save(srt_file_path, encoding=encoding)
 
     @staticmethod
     def extract_teletext_as_subtitle(ts_file_path: str, page_num: int, output_file_path: str, timeout_secs: int = 30) -> None:

@@ -53,7 +53,8 @@ class Transcriber(object):
                    video_file_path: str,
                    language_code: str,
                    initial_prompt: Optional[str] = None,
-                   max_char_length: Optional[int] = None) -> Tuple[Subtitle, Optional[float]]:
+                   max_char_length: Optional[int] = None,
+                   with_word_time_codes: bool = False) -> Tuple[Subtitle, Optional[float]]:
         """Transcribe an audiovisual file and generate subtitles.
 
         Arguments:
@@ -61,6 +62,7 @@ class Transcriber(object):
             language_code {string} -- An alpha 3 language code derived from ISO 639-3.
             initial_prompt {string} -- Optional Text to provide the transcribing context or specific phrases.
             max_char_length {int} -- Optional Maximum number of characters for each generated subtitle segment.
+            with_word_time_codes {bool} -- True to output time codes for each word (default: {False})
 
         Returns:
             tuple: Generated subtitle after transcription and the detected frame rate
@@ -92,11 +94,19 @@ class Transcriber(object):
                     if max_char_length is not None and len(segment["text"]) > max_char_length:
                         srt_str, srt_idx = self._chunk_segment(segment, srt_str, srt_idx, max_char_length)
                     else:
-                        srt_str += f"{srt_idx}\n" \
-                                   f"{Utils.format_timestamp(segment['words'][0]['start'])} --> {Utils.format_timestamp(segment['words'][-1]['end'])}\n" \
-                                   f"{segment['text'].strip().replace('-->', '->')}\n" \
-                                   "\n"
-                        srt_idx += 1
+                        if with_word_time_codes:
+                            for word in segment["words"]:
+                                srt_str += f"{srt_idx}\n" \
+                                           f"{Utils.format_timestamp(word['start'])} --> {Utils.format_timestamp(word['end'])}\n" \
+                                           f"{word['word'].strip().replace('-->', '->')}\n" \
+                                           "\n"
+                                srt_idx += 1
+                        else:
+                            srt_str += f"{srt_idx}\n" \
+                                       f"{Utils.format_timestamp(segment['words'][0]['start'])} --> {Utils.format_timestamp(segment['words'][-1]['end'])}\n" \
+                                       f"{segment['text'].strip().replace('-->', '->')}\n" \
+                                       "\n"
+                            srt_idx += 1
                 subtitle = Subtitle.load_subrip_str(srt_str)
                 subtitle, frame_rate = self.__on_frame_timecodes(subtitle, video_file_path)
                 self.__LOGGER.debug("Generated the raw subtitle")
@@ -112,7 +122,8 @@ class Transcriber(object):
                                             subtitle_file_path: str,
                                             language_code: str,
                                             max_char_length: Optional[int] = None,
-                                            use_prior_prompting: bool = False) -> Tuple[Subtitle, Optional[float]]:
+                                            use_prior_prompting: bool = False,
+                                            with_word_time_codes: bool = False) -> Tuple[Subtitle, Optional[float]]:
         """Transcribe an audiovisual file and generate subtitles using the original subtitle (with accurate time codes) as prompts.
 
 
@@ -122,6 +133,7 @@ class Transcriber(object):
             language_code {string} -- An alpha 3 language code derived from ISO 639-3.
             max_char_length {int} -- Optional Maximum number of characters for each generated subtitle segment.
             use_prior_prompting {bool} -- Whether to use the previous subtitle cue as the current prompt.
+            with_word_time_codes {bool} -- True to output time codes for each word (default: {False})
 
         Returns:
             tuple: Generated subtitle after transcription and the detected frame rate
@@ -161,6 +173,7 @@ class Transcriber(object):
                 max_workers = math.ceil(float(os.getenv("MAX_WORKERS", mp.cpu_count() / 2)))
                 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     results = list(executor.map(partial(self._whisper_transcribe, model=self.__model, lang=lang), args))
+
                 for sub, result in zip(subtitle.subs, results):
                     original_start_in_secs = sub.start.hours * 3600 + sub.start.minutes * 60 + sub.start.seconds + sub.start.milliseconds / 1000.0
                     original_end_in_secs = sub.end.hours * 3600 + sub.end.minutes * 60 + sub.end.seconds + sub.end.milliseconds / 1000.0
@@ -175,19 +188,30 @@ class Transcriber(object):
                             if segment["end"] <= segment["start"]:
                                 continue
                             segment_end = min(original_start_in_secs + segment["end"], original_end_in_secs)
-                            if len(segment["text"]) > max_subtitle_char_length:
-                                srt_str, srt_idx = self._chunk_segment(segment,
-                                                                       srt_str,
-                                                                       srt_idx,
-                                                                       max_subtitle_char_length,
-                                                                       original_start_in_secs,
-                                                                       original_end_in_secs)
+                            if with_word_time_codes:
+                                for word in segment["words"]:
+                                    word_end = original_start_in_secs + word["end"]
+                                    if word_end > segment_end:
+                                        break
+                                    srt_str += f"{srt_idx}\n" \
+                                               f"{Utils.format_timestamp(original_start_in_secs + word['start'])} --> {Utils.format_timestamp(word_end)}\n" \
+                                               f"{word['word'].strip().replace('-->', '->')}\n" \
+                                               "\n"
+                                    srt_idx += 1
                             else:
-                                srt_str += f"{srt_idx}\n" \
-                                           f"{Utils.format_timestamp(original_start_in_secs + segment['start'])} --> {Utils.format_timestamp(segment_end)}\n" \
-                                           f"{segment['text'].strip().replace('-->', '->')}\n" \
-                                           "\n"
-                                srt_idx += 1
+                                if len(segment["text"]) > max_subtitle_char_length:
+                                    srt_str, srt_idx = self._chunk_segment(segment,
+                                                                           srt_str,
+                                                                           srt_idx,
+                                                                           max_subtitle_char_length,
+                                                                           original_start_in_secs,
+                                                                           original_end_in_secs)
+                                else:
+                                    srt_str += f"{srt_idx}\n" \
+                                               f"{Utils.format_timestamp(original_start_in_secs + segment['start'])} --> {Utils.format_timestamp(segment_end)}\n" \
+                                               f"{segment['text'].strip().replace('-->', '->')}\n" \
+                                               "\n"
+                                    srt_idx += 1
                             if segment_end == original_end_in_secs:
                                 break
                 self.__LOGGER.info("Finished transcribing the audio")

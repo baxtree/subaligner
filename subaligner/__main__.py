@@ -5,14 +5,14 @@ usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH
                   [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
                   [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                   [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}] [-ip INITIAL_PROMPT] [-mcl MAX_CHAR_LENGTH]
-                  [-tr {helsinki-nlp,whisper,facebook-mbart,facebook-m2m100}] [-tf TRANSLATION_FLAVOUR] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-wt] [-upp] [-lgs] [-d] [-q] [-ver]
+                  [-tr {helsinki-nlp,whisper,facebook-mbart,facebook-m2m100}] [-tf TRANSLATION_FLAVOUR] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-upp] [-wtc] [-lgs] [-d] [-q] [-ver]
 
 Subaligner command line interface
 
 optional arguments:
   -h, --help            show this help message and exit
   -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .srt, .ass, .sbv, .sub, .txt, .ttml, .ssa, .dfxp, .ytt, .stl, .tmp, .smi, .scc, .sami, .xml) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ssa, .tmp, .srt, .sbv, .stl, .json, .sami, .ttml, .smi, .txt, .scc, .sub, .ass, .vtt, .xml, .ytt, .dfxp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -48,6 +48,8 @@ optional arguments:
                         Maximum waiting time in seconds when aligning each segment
   -upp, --use_prior_prompting
                         Whether to use the previous subtitle cue as the current prompt.
+  -wtc, --word_time_codes
+                        Whether to output time codes for each word in the subtitle file.
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
   -q, --quiet           Switch off logging information
@@ -231,6 +233,8 @@ def main():
     )
     parser.add_argument("-upp", "--use_prior_prompting", action="store_true",
                         help="Whether to use the previous subtitle cue as the current prompt.")
+    parser.add_argument("-wtc", "--word_time_codes", action="store_true",
+                        help="Whether to output time codes for each word in the subtitle file.")
     parser.add_argument("-lgs", "--languages", action="store_true",
                         help="Print out language codes used for stretch and translation")
     parser.add_argument("-d", "--debug", action="store_true",
@@ -364,6 +368,7 @@ def main():
                         video_file_path=local_video_path,
                         subtitle_file_path=local_subtitle_path,
                         stretch_in_lang=stretch_in_lang,
+                        with_word_time_codes=FLAGS.word_time_codes,
                     )
                 elif FLAGS.mode == "transcribe":
                     from subaligner.transcriber import Transcriber
@@ -372,13 +377,15 @@ def main():
                         subtitle, frame_rate = transcriber.transcribe(video_file_path=local_video_path,
                                                                       language_code=stretch_in_lang,
                                                                       initial_prompt=FLAGS.initial_prompt,
-                                                                      max_char_length=FLAGS.max_char_length)
+                                                                      max_char_length=FLAGS.max_char_length,
+                                                                      with_word_time_codes=FLAGS.word_time_codes)
                     else:
                         subtitle, frame_rate = transcriber.transcribe_with_subtitle_as_prompts(video_file_path=local_video_path,
                                                                                                subtitle_file_path=local_subtitle_path,
                                                                                                language_code=stretch_in_lang,
                                                                                                max_char_length=FLAGS.max_char_length,
-                                                                                               use_prior_prompting=FLAGS.use_prior_prompting)
+                                                                                               use_prior_prompting=FLAGS.use_prior_prompting,
+                                                                                               with_word_time_codes=FLAGS.word_time_codes,)
                     aligned_subs = subtitle.subs
                 else:
                     print("ERROR: Unknown mode {}".format(FLAGS.mode))

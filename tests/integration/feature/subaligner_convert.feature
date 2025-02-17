@@ -23,6 +23,7 @@ Feature: Subaligner CLI
       |  "test.srt"       |  "test_srt.scc"       |
       |  "test.srt"       |  "test_srt.sbv"       |
       |  "test.srt"       |  "test_srt.ytt"       |
+      |  "test.srt"       |  "test_srt.json"      |
       |  "test.ttml"      |  "test_ttml.srt"      |
       |  "test.xml"       |  "test_xml.srt"       |
       |  "test.dfxp"      |  "test_dfxp.srt"      |
@@ -38,6 +39,7 @@ Feature: Subaligner CLI
       |  "test.scc"       |  "test_scc.xml"       |
       |  "test.sbv"       |  "test_sbv.srt"       |
       |  "test.ytt"       |  "test_ytt.srt"       |
+      |  "test.json"      |  "test_ytt.srt"       |
       |  "test.ttml"      |  "test_ttml.vtt"      |
       |  "test.xml"       |  "test_xml.vtt"       |
       |  "test.dfxp"      |  "test_dfxp.vtt"      |

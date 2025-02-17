@@ -45,6 +45,7 @@ class Subtitle(object):
     SCC_EXTENSIONS = [".scc"]
     SBV_EXTENSIONS = [".sbv"]
     YT_TRANSCRIPT_EXTENSIONS = [".ytt"]
+    JSON_RAW_EXTENSIONS = [".json"]
 
     def __init__(self, secret: object, subtitle_file_path: str, subtitle_format: str) -> None:
         assert (
@@ -81,6 +82,8 @@ class Subtitle(object):
             self.__subs = self.__convert_sbv_to_subs(subtitle_file_path)
         elif subtitle_format == "ytt":
             self.__subs = self.__convert_ytt_to_subs(subtitle_file_path)
+        elif subtitle_format == "json":
+            self.__subs = self.__convert_json_raw_to_subs(subtitle_file_path)
         else:
             raise UnsupportedFormatException(
                 "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -273,6 +276,19 @@ class Subtitle(object):
         return cls(cls.__secret, subtitle_file_path, "ytt")
 
     @classmethod
+    def load_json(cls, subtitle_file_path: str) -> "Subtitle":
+        """Load a JSON raw subtitle file.
+
+        Arguments:
+            subtitle_file_path {string} -- The path to the subtitle file.
+
+        Returns:
+            Subtitle: Subtitle object.
+        """
+
+        return cls(cls.__secret, subtitle_file_path, "json")
+
+    @classmethod
     def load(cls, subtitle_file_path: str) -> "Subtitle":
         """Load a SubRip or TTML subtitle file based on the file extension.
 
@@ -310,6 +326,8 @@ class Subtitle(object):
             return cls(cls.__secret, subtitle_file_path, "sbv")
         elif file_extension in cls.YT_TRANSCRIPT_EXTENSIONS:
             return cls(cls.__secret, subtitle_file_path, "ytt")
+        elif file_extension in cls.JSON_RAW_EXTENSIONS:
+            return cls(cls.__secret, subtitle_file_path, "json")
         else:
             return cls(cls.__secret, subtitle_file_path, "unknown")
 
@@ -380,6 +398,8 @@ class Subtitle(object):
                 subs = cls(cls.__secret, subtitle_file_path, "sbv").subs
             elif file_extension.lower() in cls.YT_TRANSCRIPT_EXTENSIONS:
                 subs = cls(cls.__secret, subtitle_file_path, "ytt").subs
+            elif file_extension.lower() in cls.JSON_RAW_EXTENSIONS:
+                subs = cls(cls.__secret, subtitle_file_path, "json").subs
             else:
                 raise UnsupportedFormatException(
                     "Unknown subtitle format for file: {}".format(subtitle_file_path)
@@ -493,7 +513,7 @@ class Subtitle(object):
                    + Subtitle.SSA_EXTENTIONS + Subtitle.ADVANCED_SSA_EXTENTIONS + Subtitle.MICRODVD_EXTENSIONS
                    + Subtitle.MPL2_EXTENSIONS + Subtitle.TMP_EXTENSIONS + Subtitle.SAMI_EXTENSIONS
                    + Subtitle.STL_EXTENSIONS + Subtitle.SCC_EXTENSIONS + Subtitle.SBV_EXTENSIONS
-                   + Subtitle.YT_TRANSCRIPT_EXTENSIONS)
+                   + Subtitle.YT_TRANSCRIPT_EXTENSIONS + Subtitle.JSON_RAW_EXTENSIONS)
 
     @property
     def subtitle_file_path(self) -> str:
@@ -713,6 +733,21 @@ class Subtitle(object):
         return Subtitle._get_srt_subs(path, housekeep=True)
 
     @staticmethod
+    def __convert_json_raw_to_subs(json_file_path: str) -> SubRipFile:
+        """Convert a subtitle file from the JSON raw format to the SubRip format
+
+        Arguments:
+            json_file_path {string} -- The path to the JSON subtitle file.
+
+        Returns:
+            SubRipFile: A list of SubRipItems.
+        """
+        _, path = tempfile.mkstemp()
+        Utils.json2srt(json_file_path, path)
+
+        return Subtitle._get_srt_subs(path, housekeep=True)
+
+    @staticmethod
     def __export_with_format(subs: List[SubRipItem], source_file_path: str, target_file_path: Optional[str], file_extension: str, suffix: str) -> None:
         if target_file_path is None:
             target_file_path = source_file_path.replace(
@@ -831,6 +866,13 @@ class Subtitle(object):
                 _, path = tempfile.mkstemp()
                 SubRipFile(subs).save(path, encoding=encoding)
                 Utils.srt2ytt(path, target_file_path)
+            finally:
+                os.remove(path)
+        elif file_extension in Subtitle.JSON_RAW_EXTENSIONS:
+            try:
+                _, path = tempfile.mkstemp()
+                SubRipFile(subs).save(path, encoding=encoding)
+                Utils.srt2json(path, target_file_path)
             finally:
                 os.remove(path)
         else:

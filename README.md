@@ -104,13 +104,16 @@ $ subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/sub
 $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf small -o subtitle_aligned.srt
 $ subaligner -m transcribe -v video.mp4 -ml zho -mr whisper -mf medium -o subtitle_aligned.srt
 $ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf turbo -ip "your initial prompt" -o subtitle_aligned.srt
+$ subaligner -m transcribe -v video.mp4 -ml eng -mr whisper -mf turbo -ip "your initial prompt" --word_time_codes -o raw_subtitle.json
 $ subaligner -m transcribe -v video.mp4 -s subtitle.srt -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
-$ subaligner -m transcribe -v video.mp4 -s subtitle.srt -upp -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
+$ subaligner -m transcribe -v video.mp4 -s subtitle.srt --use_prior_prompting -ml eng -mr whisper -mf turbo -o subtitle_aligned.srt
+
 ```
 ```
 # Alignment on segmented plain texts (double newlines as the delimiter)
 
 $ subaligner -m script -v video.mp4 -s subtitle.txt -o subtitle_aligned.srt
+$ subaligner -m script -v video.mp4 -s subtitle.txt --word_time_codes -o raw_subtitle.json
 $ subaligner -m script -v https://example.com/video.mp4 -s https://example.com/subtitle.txt -o subtitle_aligned.srt
 ```
 ```
@@ -175,7 +178,9 @@ $ docker run -v `pwd`:`pwd` -w `pwd` -it baxtree/subaligner subaligner -m dual -
 $ docker run -it baxtree/subaligner subaligner -m single -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 $ docker run -it baxtree/subaligner subaligner -m dual -v https://example.com/video.mp4 -s https://example.com/subtitle.srt -o subtitle_aligned.srt
 ```
-The aligned subtitle will be saved at `subtitle_aligned.srt`. For details on CLIs, run `subaligner -h` or `subaligner_batch -h`, `subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h` for additional utilities. `subaligner_1pass` and `subaligner_2pass` are shortcuts for running `subaligner` with `-m single` and `-m dual` options, respectively.
+The aligned subtitle will be saved at `subtitle_aligned.srt`. To obtain the subtitle in raw JSON format for downstream
+processing, replace the output file extension with `.json`. For details on CLIs, run `subaligner -h` or `subaligner_batch -h`,
+`subaligner_convert -h`, `subaligner_train -h` and `subaligner_tune -h` for additional utilities. `subaligner_1pass` and `subaligner_2pass` are shortcuts for running `subaligner` with `-m single` and `-m dual` options, respectively.
 
 ![](figures/screencast.gif)
 

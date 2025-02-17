@@ -166,6 +166,22 @@ def run_subaligner_with_transcription(step, aligner, mode, language, recipe, fla
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@when('I run the alignment with subaligner on them with transcribe stage and timed words')
+def run_subaligner_with_transcription(step):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner"),
+        "-m", "transcribe",
+        "-v", step.context.video_file_path,
+        "-s", step.context.subtitle_path_or_selector,
+        "-wtc",
+        "-ml", "eng",
+        "-mr", "whisper",
+        "-mf", "tiny",
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", "test_aligned.json"),
+        "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
 @when('I run the alignment with {aligner:S} on them with {mode:S} stage and output "{file_name:S}"')
 def run_subaligner_with_output(step, aligner, mode, file_name):
     if mode == "<NULL>":
@@ -183,6 +199,19 @@ def run_subaligner_with_output(step, aligner, mode, file_name):
             "-s", step.context.subtitle_path_or_selector,
             "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
             "-q"], shell=False)
+    step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
+
+
+@when('I run the alignment with subaligner on them with timed words and output "{file_name:S}"')
+def run_subaligner_with_timed_words(step, file_name):
+    process = subprocess.Popen([
+        os.path.join(PWD, "..", "..", "..", "bin", "subaligner"),
+        "-m", "script",
+        "-v", step.context.video_file_path,
+        "-s", step.context.subtitle_path_or_selector,
+        "-wtc",
+        "-o", os.path.join(PWD, "..", "..", "subaligner", "resource", file_name),
+        "-q"], shell=False)
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 

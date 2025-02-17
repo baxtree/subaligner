@@ -140,13 +140,18 @@ class Predictor(object):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
 
-    def predict_plain_text(self, video_file_path: str, subtitle_file_path: str, stretch_in_lang: str = "eng") -> tuple:
+    def predict_plain_text(self,
+                           video_file_path: str,
+                           subtitle_file_path: str,
+                           stretch_in_lang: str = "eng",
+                           with_word_time_codes: bool = False) -> tuple:
         """Predict time to shift with plain texts
 
             Arguments:
                 video_file_path {string} -- The input video file path.
                 subtitle_file_path {string} -- The path to the subtitle file.
                 stretch_in_lang {str} -- The language used for stretching subtitles (default: {"eng"}).
+                with_word_time_codes {bool} -- True to output time codes for each word (default: {False}).
 
             Returns:
                 tuple: The shifted subtitles, the audio file path (None) and the voice probabilities of the original audio (None).
@@ -178,9 +183,22 @@ class Predictor(object):
         runtime_config_string = "dtw_algorithm=stripe"  # stripe or exact
         task = Task(config_string=task_config_string)
 
+        path = None
+        if with_word_time_codes:
+            _, path = tempfile.mkstemp()
+            processed = []
+            with open(subtitle_file_path, "r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    # TODO: Use tokenizers to process languages that do not use spaces as word delimiters
+                    processed.append((os.linesep * 2).join(line.strip().split()) if line.strip() else os.linesep)
+
+            with open(path, "w", encoding="utf-8") as f:
+                f.write((os.linesep * 2).join(processed))
+                f.flush()
+
         try:
             task.audio_file_path_absolute = audio_file_path
-            task.text_file_path_absolute = subtitle_file_path
+            task.text_file_path_absolute = subtitle_file_path if not with_word_time_codes else path
             task.sync_map_file_path_absolute = "{}.srt".format(root)
 
             tee = False if self.__LOGGER.level == getattr(logging, 'DEBUG') else True
@@ -205,7 +223,8 @@ class Predictor(object):
             try:
                 frame_rate = self.__media_helper.get_frame_rate(video_file_path)
                 self.__feature_embedder.step_sample = 1 / frame_rate
-                self.__on_frame_timecodes(adjusted_subs)
+                if not with_word_time_codes:
+                    self.__on_frame_timecodes(adjusted_subs)
             except NoFrameRateException:
                 self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
 
@@ -220,6 +239,8 @@ class Predictor(object):
                 os.remove(task.audio_file_path_absolute)
             if task.sync_map_file_path_absolute is not None and os.path.exists(task.sync_map_file_path_absolute):
                 os.remove(task.sync_map_file_path_absolute)
+            if path is not None and os.path.exists(path):
+                os.remove(path)
 
     def get_log_loss(self, voice_probabilities: np.ndarray, subs: List[SubRipItem]) -> float:
         """Returns a single loss value on voice prediction

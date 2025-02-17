@@ -26,6 +26,7 @@ Feature: Subaligner CLI
         |  subaligner       |  single   |  "test.scc"       |  "test_aligned.srt"       |
         |  subaligner       |  single   |  "test.sbv"       |  "test_aligned.sbv"       |
         |  subaligner       |  single   |  "test.ytt"       |  "test_aligned.ytt"       |
+        |  subaligner       |  single   |  "test.json"      |  "test_aligned.json"      |
         |  subaligner       |  single   |  "accented.srt"   |  "accented_aligned.srt"   |
         |  subaligner       |  dual     |  "test.srt"       |  "test_aligned.srt"       |
         |  subaligner       |  dual     |  "test.ttml"      |  "test_aligned.ttml"      |
@@ -43,6 +44,7 @@ Feature: Subaligner CLI
         |  subaligner       |  dual     |  "test.scc"       |  "test_aligned.scc"       |
         |  subaligner       |  dual     |  "test.sbv"       |  "test_aligned.sbv"       |
         |  subaligner       |  dual     |  "test.ytt"       |  "test_aligned.ytt"       |
+        |  subaligner       |  dual     |  "test.json"      |  "test_aligned.json"       |
         |  subaligner       |  dual     |  "accented.srt"   |  "accented_aligned.srt"   |
 
     @video-input @without-mode
@@ -54,37 +56,7 @@ Feature: Subaligner CLI
     Examples:
         |  aligner          |  mode     |  subtitle-in      |  subtitle-out             |
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
-        |  subaligner_1pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
-        |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
-        |  subaligner_1pass |  <NULL>   |  "test.dfxp"      |  "test_aligned.dfxp"      |
-        |  subaligner_1pass |  <NULL>   |  "test.vtt"       |  "test_aligned.vtt"       |
-        |  subaligner_1pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
-        |  subaligner_1pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
-        |  subaligner_1pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
-        |  subaligner_1pass |  <NULL>   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
-        |  subaligner_1pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
-        |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
-        |  subaligner_1pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
-        |  subaligner_1pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
-        |  subaligner_1pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
-        |  subaligner_1pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
-        |  subaligner_1pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
-        |  subaligner_2pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
-        |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
-        |  subaligner_1pass |  <NULL>   |  "test.dfxp"      |  "test_aligned.dfxp"      |
-        |  subaligner_2pass |  <NULL>   |  "test.vtt"       |  "test_aligned.vtt"       |
-        |  subaligner_2pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
-        |  subaligner_2pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
-        |  subaligner_2pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
-        |  subaligner_2pass |  <NULL>   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
-        |  subaligner_2pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
-        |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
-        |  subaligner_2pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
-        |  subaligner_2pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
-        |  subaligner_2pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
-        |  subaligner_2pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
-        |  subaligner_2pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
 
     @with-mode @script
     Scenario Outline: Test alignments with plain texts as input
@@ -109,6 +81,18 @@ Feature: Subaligner CLI
         |   "test.wav"  |  "test_aligned.scc"       |
         |   "test.wav"  |  "test_aligned.sbv"       |
         |   "test.wav"  |  "test_aligned.ytt"       |
+        |   "test.wav"  |  "test_aligned.json"      |
+
+    @with-mode @script @timed-words
+    Scenario Outline: Test alignments with plain texts as input and timed words as output
+        Given I have a video file <video-in>
+        And I have a subtitle file "test_plain.txt"
+        When I run the alignment with subaligner on them with timed words and output <subtitle-out>
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |   video-in    |  subtitle-out             |
+        |   "test.mp4"  |  "test_aligned.json"      |
+        # todo: also add a scenario for transcribe
 
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs
@@ -256,6 +240,16 @@ Feature: Subaligner CLI
         |   video-in    |   aligner     |  mode         |  subtitle-in      |   language    |   recipe      |   flavour |   subtitle-out        |
         |   "test.mp4"  |   subaligner  |  transcribe   |  "test.srt"       |   eng         |   whisper     |   tiny    |   "test_aligned.srt"  |
 
+    @transcription @timed-words
+    Scenario Outline: Test transcription on audiovisual input and subtitle generation with timed words
+        Given I have a video file <video-in>
+        And I have a subtitle file <subtitle-in>
+        When I run the alignment with subaligner on them with transcribe stage and timed words
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |   video-in    |   subtitle-in |   subtitle-out        |
+        |   "test.mp4"  |   "test.srt"  |   "test_aligned.json" |
+
     @batch
     Scenario Outline: Test batch alignment
         Given I have an audiovisual file directory "av"
@@ -360,3 +354,4 @@ Feature: Subaligner CLI
         |   "test.scc"  |   "test_shifted.scc"       |  1.1     |
         |   "test.sbv"  |   "test_shifted.sbv"       |  2.2     |
         |   "test.ytt"  |   "test_shifted.ytt"       |  3       |
+        |   "test.json" |   "test_shifted.json"      |  3       |

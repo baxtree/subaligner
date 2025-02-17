@@ -55,6 +55,9 @@ class UtilsTests(unittest.TestCase):
         self.real_ytt_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.ytt"
         )
+        self.real_json_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.json"
+        )
         self.mp4_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mp4"
         )
@@ -238,6 +241,20 @@ class UtilsTests(unittest.TestCase):
         output_file_path = os.path.join(self.resource_tmp, "converted.srt")
 
         Undertest.ytt2srt(self.real_ytt_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_srt2json(self):
+        output_file_path = os.path.join(self.resource_tmp, "converted.json")
+
+        Undertest.srt2json(self.real_srt_path, output_file_path)
+
+        self.assertTrue(os.path.isfile(output_file_path))
+
+    def test_json2srt(self):
+        output_file_path = os.path.join(self.resource_tmp, "converted.srt")
+
+        Undertest.json2srt(self.real_json_path, output_file_path)
 
         self.assertTrue(os.path.isfile(output_file_path))
 
