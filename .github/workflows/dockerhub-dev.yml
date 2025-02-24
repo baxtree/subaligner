@@ -1,9 +1,10 @@
-name: Docker Hub Release
+name: Docker Hub Dev
 
 on:
-  release:
-    types: [ published ]
-  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
@@ -24,11 +25,6 @@ jobs:
           username: ${{ secrets.DOCKER_USER_NAME }}
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-      - name: Extract the tag
-        id: tag
-        run: |
-          echo "SUBALIGNER_TAG=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
-
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -40,19 +36,14 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      - name: Build and push the latest image
-        id: docker_build_latest
+      - name: Build and push the dev image
+        id: docker_build_dev
         uses: docker/build-push-action@v4
         with:
-          context: ./docker
-          file: "./docker/Dockerfile-Ubuntu22"
-          build-args: |
-            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
+          context: .
+          file: "./docker/Dockerfile-Dev"
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
-          tags: |
-            baxtree/subaligner:latest
-            baxtree/subaligner:${{ env.SUBALIGNER_TAG }}
-            baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u22
+          tags: baxtree/subaligner:dev
           push: true

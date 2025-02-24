@@ -56,7 +56,37 @@ Feature: Subaligner CLI
     Examples:
         |  aligner          |  mode     |  subtitle-in      |  subtitle-out             |
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
+        |  subaligner_1pass |  <NULL>   |  "test.dfxp"      |  "test_aligned.dfxp"      |
+        |  subaligner_1pass |  <NULL>   |  "test.vtt"       |  "test_aligned.vtt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
+        |  subaligner_1pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
+        |  subaligner_1pass |  <NULL>   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
+        |  subaligner_1pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
+        |  subaligner_1pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
+        |  subaligner_1pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
+        |  subaligner_1pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner_1pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
+        |  subaligner_1pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
+        |  subaligner_1pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |  "test_aligned.srt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ttml"      |  "test_aligned.ttml"      |
+        |  subaligner_1pass |  <NULL>   |  "test.xml"       |  "test_aligned.xml"       |
+        |  subaligner_1pass |  <NULL>   |  "test.dfxp"      |  "test_aligned.dfxp"      |
+        |  subaligner_2pass |  <NULL>   |  "test.vtt"       |  "test_aligned.vtt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ssa"       |  "test_aligned.ssa"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ass"       |  "test_aligned.ass"       |
+        |  subaligner_2pass |  <NULL>   |  "test.sub"       |  "test_aligned.sub"       |
+        |  subaligner_2pass |  <NULL>   |  "test_mpl2.txt"  |  "test_mpl2_aligned.txt"  |
+        |  subaligner_2pass |  <NULL>   |  "test.tmp"       |  "test_aligned.tmp"       |
+        |  subaligner_2pass |  <NULL>   |  "test.smi"       |  "test_aligned.smi"       |
+        |  subaligner_2pass |  <NULL>   |  "test.sami"      |  "test_aligned.sami"      |
+        |  subaligner_2pass |  <NULL>   |  "test.stl"       |  "test_aligned.srt"       |
+        |  subaligner_2pass |  <NULL>   |  "test.scc"       |  "test_aligned.scc"       |
+        |  subaligner_2pass |  <NULL>   |  "test.sbv"       |  "test_aligned.sbv"       |
+        |  subaligner_2pass |  <NULL>   |  "test.ytt"       |  "test_aligned.ytt"       |
 
     @with-mode @script
     Scenario Outline: Test alignments with plain texts as input
@@ -92,7 +122,6 @@ Feature: Subaligner CLI
     Examples:
         |   video-in    |  subtitle-out             |
         |   "test.mp4"  |  "test_aligned.json"      |
-        # todo: also add a scenario for transcribe
 
     @remote-inputs
     Scenario Outline: Test alignments with remote inputs

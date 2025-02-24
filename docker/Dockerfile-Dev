@@ -1,0 +1,24 @@
+# Subaligner Dev Docker Image
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
+
+RUN mkdir -p /subaligner && chmod 755 /subaligner
+COPY subaligner /subaligner/subaligner
+COPY pyproject.toml /subaligner
+
+WORKDIR /subaligner
+
+RUN ["/bin/bash", "-c", "apt-get -y update &&\
+    apt-get -y install ffmpeg &&\
+    apt-get -y install espeak libespeak1 libespeak-dev espeak-data &&\
+    apt-get -y install libsndfile-dev &&\
+    apt-get -y install libhdf5-dev &&\
+    apt-get -y install python3-dev &&\
+    apt-get -y install python3-tk &&\
+    apt-get -y install python3-pip &&\
+    python3 -m pip install --upgrade pip &&\
+    python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
+    python3 -m pip install -e . &&\
+    python3 -m pip install -e \".[harmony]\""]
