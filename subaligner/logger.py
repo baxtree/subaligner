@@ -3,7 +3,7 @@ import multiprocessing
 from typing import Dict
 from absl import logging as absl_logging
 from .singleton import Singleton
-absl_logging._warn_preinit_stderr = 0
+absl_logging._warn_preinit_stderr = 0   # type: ignore
 
 
 class Logger(metaclass=Singleton):
