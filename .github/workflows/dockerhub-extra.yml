@@ -44,8 +44,10 @@ jobs:
         id: docker_build_latest
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./docker
           file: "./docker/Dockerfile-Ubuntu20"
+          build-args: |
+            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
