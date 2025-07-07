@@ -91,7 +91,7 @@ harmony = [
     "torch<2.3.0",
     "torchaudio<2.3.0",
     "transformers<4.37.0",
-    "openai-whisper==20240930"
+    "openai-whisper==20250625"
 ]
 dev = [
     "aeneas~=1.7.3.0",
@@ -100,7 +100,7 @@ dev = [
     "torch<2.3.0",
     "torchaudio<2.3.0",
     "transformers<4.37.0",
-    "openai-whisper==20240930",
+    "openai-whisper==20250625",
     "mock==4.0.3",
     "coverage==5.5",
     "tox~=3.23.0",
@@ -133,7 +133,7 @@ llm = [
     "torch<2.3.0",
     "torchaudio<2.3.0",
     "transformers<4.37.0",
-    "openai-whisper==20240930"
+    "openai-whisper==20250625"
 ]
 
 [project.scripts]
@@ -169,3 +169,6 @@ include = [
 style = "sphinx"
 exclude = "\\.git|\\.tox"
 require-return-section-when-returning-nothing = true
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
