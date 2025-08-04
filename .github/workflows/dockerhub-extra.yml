@@ -51,13 +51,31 @@ jobs:
           platforms: linux/amd64,linux/arm64
           allow: network.host
           github-token: ${{ github.token }}
-          tags: |
-            baxtree/subaligner:dev
+          tags: baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u20
           push: true
 
-      - name: Remove the local Ubuntu 20 image
+      - name: Remove the local Ubuntu 24 image
         run: |
-          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u20
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u24
+      
+      - name: Build and push the Ubuntu 24 image
+        id: docker_build_latest
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docker
+          file: "./docker/Dockerfile-Ubuntu24"
+          build-args: |
+            "RELEASE_VERSION=${{ env.SUBALIGNER_TAG }}"
+          platforms: linux/amd64,linux/arm64
+          allow: network.host
+          github-token: ${{ github.token }}
+          tags: baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u24
+          push: true
+
+      - name: Remove the local Ubuntu 24 image
+        run: |
+          docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u24
+          
 
       - name: Build and push the Fedora 34 image
         id: docker_build_fed34

@@ -1,0 +1,27 @@
+# Subaligner Ubuntu 24 Docker Image
+FROM ubuntu:24.04
+
+ARG RELEASE_VERSION
+
+ENV RELEASE_VERSION=${RELEASE_VERSION}
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
+
+RUN ["/bin/bash", "-c", "apt-get -y update &&\
+    apt-get install -y build-essential &&\
+    apt-get -y install wget &&\
+    apt-get -y install ffmpeg &&\
+    apt-get -y install espeak libespeak1 libespeak-dev espeak-data &&\
+    apt-get -y install libsndfile-dev &&\
+    apt-get -y install libhdf5-dev &&\
+    apt-get -y install libxml2-dev libxslt-dev &&\
+    apt-get install -y liblzma-dev libbz2-dev libffi-dev zlib1g-dev libreadline-dev libsqlite3-dev &&\
+    wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz &&\
+    tar -xf Python-3.11.9.tgz &&\
+    cd Python-3.11.9 && \
+    ./configure --enable-optimizations && \
+    make -j$(nproc) && \
+    make altinstall && \
+    cd .. && rm -rf Python-3.11.9 Python-3.11.9.tgz &&\
+    /usr/local/bin/python3.11 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
+    /usr/local/bin/python3.11 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
