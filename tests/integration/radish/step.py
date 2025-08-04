@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import subprocess
+import sys
 import os
 import tempfile
 import shutil
@@ -105,6 +106,10 @@ def run_subaligner_manual_shift(step, offset_seconds):
 
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and {language_pair:S} for translation")
 def run_subaligner_with_translation(step, aligner, mode, language_pair):
+    if hasattr(step.context, "skip_scenario") and step.context.skip_scenario and mode == "script":
+        step.skip()
+        return
+
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -184,6 +189,10 @@ def run_subaligner_with_transcription(step):
 
 @when('I run the alignment with {aligner:S} on them with {mode:S} stage and output "{file_name:S}"')
 def run_subaligner_with_output(step, aligner, mode, file_name):
+    if hasattr(step.context, "skip_scenario") and step.context.skip_scenario and mode == "script":
+        step.skip()
+        return
+
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -235,8 +244,19 @@ def run_subaligner_with_exit_segfail(step, aligner, mode):
     step.context.exit_code = process.wait(timeout=WAIT_TIMEOUT_IN_SECONDS)
 
 
+@given("I skip the scenario if Python version is above {version:S}")
+def run_skip_scenario_if_python_version_above(step, version):
+    if sys.version_info > tuple([int(v) for v in version.split(".")]):
+        step.context.skip_scenario = True
+        step.skip()
+
+
 @when("I run the alignment with {aligner:S} on them with {mode:S} stage and with stretch on")
 def run_subaligner_with_stretch(step, aligner, mode):
+    if hasattr(step.context, "skip_scenario") and step.context.skip_scenario:
+        step.skip()
+        return
+
     if mode == "<NULL>":
         process = subprocess.Popen([
             os.path.join(PWD, "..", "..", "..", "bin", aligner),
@@ -279,6 +299,10 @@ def run_subaligner_with_custom_model(step, aligner, mode):
 
 @then('a new subtitle file "{file_name:S}" is generated')
 def expect_result(step, file_name):
+    if hasattr(step.context, "skip_scenario") and step.context.skip_scenario:
+        step.skip()
+        return
+
     output_file_path = os.path.join(PWD, "..", "..", "subaligner", "resource", file_name.replace("[]", " "))
     assert step.context.exit_code == 0
     assert os.path.isfile(output_file_path) is True

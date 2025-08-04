@@ -8,6 +8,7 @@ from subaligner.exception import TerminalException
 from subaligner.logger import Logger
 from subaligner.media_helper import MediaHelper
 from subaligner.predictor import Predictor as Undertest
+from tests.subaligner import aeneas_is_available
 
 
 class PredictorTests(unittest.TestCase):
@@ -249,6 +250,7 @@ class PredictorTests(unittest.TestCase):
         self.assertGreater(len(voice_probabilities), 0)
         self.assertEqual(24.0, frame_rate)
 
+    @unittest.skipIf(not aeneas_is_available, "The aeneas package is not available")
     def test_predict_plain_text(self):
         subs, audio_file_path, voice_probabilities, frame_rate = Undertest(n_mfcc=20, step_sample=0.02).predict_plain_text(
             self.video_file_path, self.plain_text_file_path

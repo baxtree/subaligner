@@ -4,29 +4,52 @@ import importlib
 import psutil
 import numpy as np
 import tensorflow as tf
-import keras.optimizers as tf_optimizers
 
 from typing import Tuple, Optional, List, Generator
-from keras.layers import (
-    Dense,
-    Input,
-    LSTM,
-    Conv1D,
-    MaxPooling1D,
-    Dropout,
-    Activation,
-    BatchNormalization,
-    Bidirectional,
-)
+if tf.__version__ >= "2.16.0":
+    import tf_keras.optimizers as tf_optimizers
+    from tf_keras.layers import (
+        Dense,
+        Input,
+        LSTM,
+        Conv1D,
+        MaxPooling1D,
+        Dropout,
+        Activation,
+        BatchNormalization,
+        Bidirectional,
+    )
 
-from keras.callbacks import (
-    EarlyStopping,
-    ModelCheckpoint,
-    TensorBoard,
-    CSVLogger,
-)
-from keras.models import Model, load_model, save_model
-from keras import backend as K
+    from tf_keras.callbacks import (
+        EarlyStopping,
+        ModelCheckpoint,
+        TensorBoard,
+        CSVLogger,
+    )
+    from tf_keras.models import Model, load_model, save_model
+    from tf_keras import backend as K
+else:
+    import keras.optimizers as tf_optimizers
+    from keras.layers import (
+        Dense,
+        Input,
+        LSTM,
+        Conv1D,
+        MaxPooling1D,
+        Dropout,
+        Activation,
+        BatchNormalization,
+        Bidirectional,
+    )
+
+    from keras.callbacks import (
+        EarlyStopping,
+        ModelCheckpoint,
+        TensorBoard,
+        CSVLogger,
+    )
+    from keras.models import Model, load_model, save_model
+    from keras import backend as K
 from .utils import Utils
 from .logger import Logger
 from .exception import TerminalException

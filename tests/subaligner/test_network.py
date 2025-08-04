@@ -3,11 +3,11 @@ import os
 import pickle
 import shutil
 import h5py
+import tensorflow
 import numpy as np
 
 from mock import patch
 from parameterized import parameterized
-from keras.models import Model
 from subaligner.hyperparameters import Hyperparameters
 from subaligner.exception import TerminalException
 from subaligner.network import Network as Undertest
@@ -307,6 +307,7 @@ class NetworkTests(unittest.TestCase):
             self.assertTrue(len(val_loss) == self.hyperparameters.epochs)
             self.assertTrue(len(val_acc) == self.hyperparameters.epochs)
 
+    @unittest.skipIf(tensorflow.__version__ >= "2.16.0", "requires tensorflow < 2.16.0")
     @patch("keras.models.Model.fit", side_effect=KeyboardInterrupt)
     def test_throw_exception_on_fit_and_get_history(self, mock_fit):
         try:
@@ -333,8 +334,61 @@ class NetworkTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
+    @unittest.skipIf(tensorflow.__version__ >= "2.16.0", "requires tensorflow < 2.16.0")
     @patch("keras.models.Model.fit", side_effect=KeyboardInterrupt)
     def test_throw_exception_on_fit_with_generator(self, mock_fit):
+        self.hyperparameters.epochs = 3
+        network = Undertest.get_network((2, 20), self.hyperparameters)
+        model_filepath = "{}/model.hdf5".format(self.resource_tmp)
+        weights_filepath = "{}/weights.hdf5".format(self.resource_tmp)
+        with h5py.File(self.training_dump, "r") as hf:
+            try:
+                network.fit_with_generator(
+                    hf["train_data"],
+                    hf["labels"],
+                    model_filepath,
+                    weights_filepath,
+                    self.resource_tmp,
+                    "training.log",
+                    False,
+                )
+            except Exception as e:
+                self.assertTrue(mock_fit.called)
+                self.assertTrue(isinstance(e, TerminalException))
+                self.assertTrue("interrupted" in str(e))
+            else:
+                self.fail("Should have thrown exception")
+
+    @unittest.skipIf(tensorflow.__version__ < "2.16.0", "requires tensorflow >= 2.16.0")
+    @patch("tf_keras.models.Model.fit", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_fit_and_get_history_tf_keras(self, mock_fit):
+        try:
+            network = Undertest.get_network((2, 20), self.hyperparameters)
+            model_filepath = "{}/model.hdf5".format(self.resource_tmp)
+            weights_filepath = "{}/weights.hdf5".format(self.resource_tmp)
+            with open(self.train_data, "rb") as file:
+                train_data = pickle.load(file)
+            with open(self.labels, "rb") as file:
+                labels = pickle.load(file)
+            network.fit_and_get_history(
+                train_data,
+                labels,
+                model_filepath,
+                weights_filepath,
+                self.resource_tmp,
+                "training.log",
+                False,
+            )
+        except Exception as e:
+            self.assertTrue(mock_fit.called)
+            self.assertTrue(isinstance(e, TerminalException))
+            self.assertTrue("interrupted" in str(e))
+        else:
+            self.fail("Should have thrown exception")
+
+    @unittest.skipIf(tensorflow.__version__ < "2.16.0", "requires tensorflow >= 2.16.0")
+    @patch("tf_keras.models.Model.fit", side_effect=KeyboardInterrupt)
+    def test_throw_exception_on_fit_with_generator_tf_keras(self, mock_fit):
         self.hyperparameters.epochs = 3
         network = Undertest.get_network((2, 20), self.hyperparameters)
         model_filepath = "{}/model.hdf5".format(self.resource_tmp)

@@ -90,7 +90,8 @@ Feature: Subaligner CLI
 
     @with-mode @script
     Scenario Outline: Test alignments with plain texts as input
-        Given I have a video file <video-in>
+        Given I skip the scenario if Python version is above 3.11
+        And I have a video file <video-in>
         And I have a subtitle file "test_plain.txt"
         When I run the alignment with subaligner on them with script stage and output <subtitle-out>
         Then a new subtitle file <subtitle-out> is generated
@@ -181,7 +182,8 @@ Feature: Subaligner CLI
 
     @stretch
     Scenario Outline: Test dual-stage alignment with stretch on
-        Given I have a video file "test.mp4"
+        Given I skip the scenario if Python version is above 3.11
+        And I have a video file "test.mp4"
         And I have a subtitle file "test.srt"
         When I run the alignment with <aligner> on them with <mode> stage and with stretch on
         Then a new subtitle file "test_aligned.srt" is generated
@@ -244,10 +246,20 @@ Feature: Subaligner CLI
         |  aligner          |  mode     |  subtitle-in      |   language-pair   |   subtitle-out            |
         |  subaligner       |  single   |  "test.srt"       |   eng,zho         |   "test_aligned.srt"      |
         |  subaligner       |  dual     |  "test.srt"       |   eng,spa         |   "test_aligned.srt"      |
-        |  subaligner       |  script   |  "test_plain.txt" |   eng,ita         |   "test_aligned.srt"      |
-        |  subaligner       |  script   |  "test_plain.txt" |   eng,por         |   "test_aligned.srt"      |
         |  subaligner_1pass |  <NULL>   |  "test.srt"       |   eng,fra         |   "test_aligned.srt"      |
         |  subaligner_2pass |  <NULL>   |  "test.srt"       |   eng,deu         |   "test_aligned.srt"      |
+
+    @translation @script
+    Scenario Outline: Test translation on aligned scripts
+        Given I skip the scenario if Python version is above 3.11
+        And I have a video file "test.mp4"
+        And I have a subtitle file <subtitle-in>
+        When I run the alignment with <aligner> on them with <mode> stage and <language-pair> for translation
+        Then a new subtitle file <subtitle-out> is generated
+    Examples:
+        |  aligner          |  mode     |  subtitle-in      |   language-pair   |   subtitle-out            |
+        |  subaligner       |  script   |  "test_plain.txt" |   eng,ita         |   "test_aligned.srt"      |
+        |  subaligner       |  script   |  "test_plain.txt" |   eng,por         |   "test_aligned.srt"      |
 
     @transcription @custom-prompt
     Scenario Outline: Test transcription on audiovisual input and subtitle generation

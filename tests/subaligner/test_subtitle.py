@@ -65,7 +65,11 @@ class SubtitleTests(unittest.TestCase):
         os.mkdir(self.resource_tmp)
 
     def tearDown(self):
-        shutil.rmtree(self.resource_tmp)
+        if os.path.exists(self.resource_tmp):
+            if os.path.islink(self.resource_tmp) or os.path.isfile(self.resource_tmp):
+                os.unlink(self.resource_tmp)
+            elif os.path.isdir(self.resource_tmp):
+                shutil.rmtree(self.resource_tmp)
 
     def test_get_srt_file_path(self):
         subtitle = Undertest.load_subrip(self.srt_file_path)

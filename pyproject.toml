@@ -1,5 +1,10 @@
 [build-system]
-requires = ["setuptools<65.0.0", "setuptools-scm", "wheel"]
+requires = [
+    "setuptools<65.0.0; python_version < '3.12'",
+    "setuptools>=65.0.0; python_version >= '3.12'",
+    "setuptools-scm",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,13 +16,14 @@ authors = [
 description = "Automatically synchronize and translate subtitles, or create new ones by transcribing, using pre-trained DNNs, Forced Alignments and Transformers."
 readme = { file = "README.md", content-type = "text/markdown" }
 urls = { "Homepage" = "https://github.com/baxtree/subaligner", "Documentation" = "https://subaligner.readthedocs.io/en/latest/", "Source" = "https://github.com/baxtree/subaligner" }
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8,<3.13"
 classifiers = [
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.8",
     "Intended Audience :: Developers",
     "Topic :: Utilities"
 ]
@@ -71,9 +77,13 @@ dependencies = [
     "PyYAML>=4.2b1",
     "rsa==4.7",
     "scipy<1.12.0",
-    "scikit-learn<1.2.0",
-    "six~=1.15.0",
-    "tensorflow>=1.15.5,<2.16.0",
+    "scikit-learn<1.2.0; python_version < '3.12'",
+    "scikit-learn>=1.2.0; python_version >= '3.12'",
+    "six~=1.15.0; python_version < '3.12'",
+    "six~=1.17.0; python_version >= '3.12'",
+    "tf-keras~=2.19.0; python_version >= '3.12'",
+    "tensorflow>=1.15.5,<2.16.0; python_version < '3.12'",
+    "tensorflow~=2.19.0; python_version >= '3.12'",
     "termcolor==1.1.0",
     "toml==0.10.0",
     "toolz==0.9.0",
@@ -85,7 +95,7 @@ dependencies = [
 
 [project.optional-dependencies]
 harmony = [
-    "aeneas~=1.7.3.0",
+    "aeneas~=1.7.3.0; python_version < '3.12'",
     "dtw-python~=1.5.3",
     "sentencepiece~=0.1.95",
     "torch<2.3.0",
@@ -94,7 +104,7 @@ harmony = [
     "openai-whisper==20250625"
 ]
 dev = [
-    "aeneas~=1.7.3.0",
+    "aeneas~=1.7.3.0; python_version < '3.12'",
     "dtw-python~=1.5.3",
     "sentencepiece~=0.1.95",
     "torch<2.3.0",
@@ -105,7 +115,7 @@ dev = [
     "coverage==5.5",
     "tox~=3.23.0",
     "pycodestyle==2.12.1",
-    "twine<4.0.0",
+    "twine<3.8.0",
     "snakeviz==2.1.0",
     "line-profiler~=4.1.2",
     "scikit-build==0.11.1",
@@ -114,7 +124,7 @@ dev = [
     "mypy==1.3.0",
     "types-requests==2.27.9",
     "types-setuptools==64.0.1",
-    "typing-extensions==4.5.0",
+    "typing-extensions==4.8.0",
     "parameterized==0.8.1",
     "pylint~=2.17.2",
     "pygments<3.0.0",
@@ -122,14 +132,16 @@ dev = [
 ]
 docs = [
     "sphinx==6.2.1",
-    "sphinx-rtd-theme==2.0.0"
+    "sphinx-rtd-theme==2.0.0",
+    "docutils<0.21",
 ]
 stretch = [
-    "aeneas~=1.7.3.0",
+    "aeneas~=1.7.3.0; python_version < '3.12'",
     "dtw-python~=1.5.3"
 ]
 llm = [
-    "sentencepiece~=0.1.95",
+    "sentencepiece~=0.1.95; python_version < '3.12'",
+    "sentencepiece~=0.2.0; python_version >= '3.12'",
     "torch<2.3.0",
     "torchaudio<2.3.0",
     "transformers<4.37.0",
@@ -171,4 +183,4 @@ exclude = "\\.git|\\.tox"
 require-return-section-when-returning-nothing = true
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.8,<3.13"
