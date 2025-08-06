@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "subaligner"
-version = "0.3.9"
+version = "0.3.10"
 authors = [
     { name = "Xi Bai", email = "xi.bai.ed@gmail.com" }
 ]
@@ -96,9 +96,11 @@ dependencies = [
 [project.optional-dependencies]
 harmony = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
-    "aeneas @ git+https://github.com/baxtree/aeneas.git@master#egg=aeneas ; python_version >= '3.12'",
+#    "aeneas @ git+https://github.com/baxtree/aeneas.git@v1.7.3.1#egg=aeneas ; python_version >= '3.12'",
     "dtw-python~=1.5.3",
-    "sentencepiece~=0.1.95",
+    "safetensors~=0.5.3",
+    "sentencepiece~=0.1.95; python_version < '3.12'",
+    "sentencepiece~=0.2.0; python_version >= '3.12'",
     "torch<2.3.0",
     "torchaudio<2.3.0",
     "transformers<4.37.0",
@@ -106,9 +108,11 @@ harmony = [
 ]
 dev = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
-    "aeneas @ git+https://github.com/baxtree/aeneas.git@master#egg=aeneas ; python_version >= '3.12'",
+#    "aeneas @ git+https://github.com/baxtree/aeneas.git@v1.7.3.1#egg=aeneas ; python_version >= '3.12'",
     "dtw-python~=1.5.3",
-    "sentencepiece~=0.1.95",
+    "safetensors~=0.5.3",
+    "sentencepiece~=0.1.95; python_version < '3.12'",
+    "sentencepiece~=0.2.0; python_version >= '3.12'",
     "torch<2.3.0",
     "torchaudio<2.3.0",
     "transformers<4.37.0",
@@ -139,10 +143,11 @@ docs = [
 ]
 stretch = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
-    "aeneas @ git+https://github.com/baxtree/aeneas.git@master#egg=aeneas ; python_version >= '3.12'",
+#    "aeneas @ git+https://github.com/baxtree/aeneas.git@v1.7.3.1#egg=aeneas ; python_version >= '3.12'",
     "dtw-python~=1.5.3"
 ]
 llm = [
+    "safetensors~=0.5.3",
     "sentencepiece~=0.1.95; python_version < '3.12'",
     "sentencepiece~=0.2.0; python_version >= '3.12'",
     "torch<2.3.0",
