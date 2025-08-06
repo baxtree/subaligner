@@ -96,6 +96,7 @@ dependencies = [
 [project.optional-dependencies]
 harmony = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
+    "aeneas @ git+https://github.com/baxtree/aeneas.git@master#egg=aeneas ; python_version >= '3.12'",
     "dtw-python~=1.5.3",
     "sentencepiece~=0.1.95",
     "torch<2.3.0",
@@ -105,6 +106,7 @@ harmony = [
 ]
 dev = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
+    "aeneas @ git+https://github.com/baxtree/aeneas.git@master#egg=aeneas ; python_version >= '3.12'",
     "dtw-python~=1.5.3",
     "sentencepiece~=0.1.95",
     "torch<2.3.0",
@@ -137,6 +139,7 @@ docs = [
 ]
 stretch = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
+    "aeneas @ git+https://github.com/baxtree/aeneas.git@master#egg=aeneas ; python_version >= '3.12'",
     "dtw-python~=1.5.3"
 ]
 llm = [

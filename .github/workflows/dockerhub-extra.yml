@@ -59,7 +59,7 @@ jobs:
           docker rmi -f baxtree/subaligner:${{ env.SUBALIGNER_TAG }}.u24
       
       - name: Build and push the Ubuntu 24 image
-        id: docker_build_latest
+        id: docker_build_u24
         uses: docker/build-push-action@v4
         with:
           context: ./docker
