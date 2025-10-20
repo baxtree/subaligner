@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10]
+        python-version: ["3.10"]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +27,7 @@ jobs:
           sudo apt-get -y install ffmpeg
           sudo apt-get -y install espeak libespeak1 libespeak-dev espeak-data
           sudo apt-get -y install libsndfile-dev
+          sudo apt-get -y install build-essential python3-dev
           python -m pip install --upgrade pip
           pip install -e .
           pip install -e ".[stretch]"
