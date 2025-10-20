@@ -139,7 +139,7 @@ dev = [
 docs = [
     "sphinx==6.2.1",
     "sphinx-rtd-theme==2.0.0",
-    "docutils<0.21",
+    "docutils<0.22",
 ]
 stretch = [
     "aeneas~=1.7.3.0; python_version < '3.12'",

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9]
+        python-version: [3.10]
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
           python -m mypy --follow-imports=normal subaligner
       - name: Linting
         run: |
-          pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune setup.py --ignore=E203,E501,E902,W503 --exclude="subaligner/lib"
+          pycodestyle subaligner tests examples misc bin/subaligner bin/subaligner_1pass bin/subaligner_2pass bin/subaligner_batch bin/subaligner_convert bin/subaligner_train  bin/subaligner_tune --ignore=E203,E501,E902,W503 --exclude="subaligner/lib"
       - name: Linting docstring
         run: |
           darglint -v 2 subaligner

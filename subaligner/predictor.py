@@ -470,7 +470,7 @@ class Predictor(object):
             gc.collect()
 
             if stretch:
-                subs_new = self.__compress_and_stretch(subs_new, audio_file_path, stretch_in_lang, lock)
+                subs_new = self.__adjust_durations(subs_new, audio_file_path, stretch_in_lang, lock)
                 self.__LOGGER.info("[{}] Segment {} stretched".format(os.getpid(), segment_index))
             return subs_new
         except Exception as e:
