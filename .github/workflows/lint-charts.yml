@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  HELM_VERSION: 3.11.2
+  HELM_VERSION: 3.17.0
 
 jobs:
   lint-helm-charts:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Helm
-        uses: mamezou-tech/setup-helmfile@v1.2.0
+        uses: mamezou-tech/setup-helmfile@v2.1.0
         with:
           helm-version: "v${{ env.HELM_VERSION }}"
 
