@@ -70,6 +70,11 @@ Note that `subaligner[stretch]`, `subaligner[dev]` and `subaligner[harmony]` req
 <pre><code>apt-get install espeak libespeak1 libespeak-dev espeak-data</code></pre>
 <pre><code>brew install espeak</code></pre>
 </details>
+Also, if Python 3.12+ is used, you will need to install the following patch for those extras to fully function:
+<details>
+<summary>Install patched aeneas</summary>
+<pre><code>pip install git+https://github.com/baxtree/aeneas.git@v1.7.3.1#egg=aeneas</code></pre>
+</details>
 
 ## Container Support
 If you prefer using a containerised environment over installing everything locally:
