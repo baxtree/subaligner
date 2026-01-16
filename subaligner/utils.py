@@ -7,6 +7,9 @@ import shutil
 import chardet
 import shlex
 import pycountry
+import torch
+import webrtcvad
+import numpy as np
 
 from pycaption import (
     CaptionConverter,
@@ -650,9 +653,6 @@ class Utils(object):
         """
 
         with open(subtitle_file_path, "rb") as file:
-            # raw = b"".join([file.readline() for _ in range(10)])
-            # Sampling with 10 lines did not work well enough for large subtitle files
-            # and hence this less memory-efficient solution:
             raw = b"".join(file.readlines())
 
         detected = chardet.detect(raw)
@@ -737,6 +737,15 @@ class Utils(object):
 
     @staticmethod
     def format_timestamp(seconds: float) -> str:
+        """Format time in seconds to SubRip timestamp format.
+
+        Arguments:
+            seconds {float} -- The time in seconds.
+
+        Returns:
+            str: The formatted timestamp.
+        """
+
         assert seconds >= 0, "non-negative timestamp expected"
         milliseconds = round(seconds * 1000.0)
         hours = milliseconds // 3_600_000
@@ -747,6 +756,97 @@ class Utils(object):
         milliseconds -= seconds * 1_000
         hours_marker = f"{hours:02d}:"
         return f"{hours_marker}{minutes:02d}:{seconds:02d},{milliseconds:03d}"
+
+    @staticmethod
+    def get_device() -> str:
+        """Get the available device for PyTorch.
+
+        Returns:
+            str: The available device for PyTorch.
+        """
+
+        if torch.cuda.is_available():
+            return "cuda"
+        elif torch.backends.mps.is_available():
+            return "mps"
+        else:
+            return "cpu"
+
+    @staticmethod
+    def vad_segment(audio: np.ndarray,
+                    sample_rate: int = 16000,
+                    frame_ms: int = 30,
+                    aggressiveness: int = 3,
+                    min_speech_ms: int = 200,
+                    recipe: str = "webrtcvad") -> List[Tuple[int, int]]:
+        """Segment audio into speech and non-speech segments using WebRTC VAD.
+
+        Arguments:
+            audio {np.ndarray} -- The input audio signal.
+            sample_rate {int} -- The sample rate of the audio signal.
+            frame_ms {int} -- The frame size in milliseconds.
+            aggressiveness {int} -- The aggressiveness of the VAD (0-3).
+            min_speech_ms {int} -- The minimum duration of a speech segment in milliseconds.
+            recipe {str} -- The VAD recipe to use ("webrtcvad" or "silero").
+
+        Returns:
+            List[Tuple[int, int]]: A list of tuples representing the start and end samples of speech segments.
+
+        Raises:
+            ValueError: If an unsupported VAD recipe is provided.
+        """
+
+        if recipe == "webrtcvad":
+            vad = webrtcvad.Vad(aggressiveness)
+            frame_length = int(sample_rate * (frame_ms / 1000))
+            pcm16 = (audio * 32768).astype(np.int16).tobytes()
+            bytes_per_sample = 2
+            num_frames = len(pcm16) // (frame_length * bytes_per_sample)
+
+            segments = []
+            cur_start: Optional[int] = None
+            cur_end: Optional[int] = None
+
+            for i in range(num_frames):
+                start_byte = i * frame_length * bytes_per_sample
+                frame = pcm16[start_byte:start_byte + frame_length * bytes_per_sample]
+                if len(frame) < frame_length * bytes_per_sample:
+                    break
+                is_speech = vad.is_speech(frame, sample_rate=sample_rate)
+                start_sample = i * frame_length
+                end_sample = start_sample + frame_length
+
+                if is_speech:
+                    if cur_start is None:
+                        cur_start = start_sample
+                    cur_end = end_sample
+                else:
+                    if cur_start is not None:
+                        assert cur_end is not None
+                        if (cur_end - cur_start) >= int(min_speech_ms * sample_rate / 1000):
+                            segments.append((cur_start, cur_end))
+                        cur_start = None
+                        cur_end = None
+
+            if cur_start is not None and cur_end is not None:
+                if (cur_end - cur_start) >= int(min_speech_ms * sample_rate / 1000):
+                    segments.append((cur_start, cur_end))
+            return segments
+        elif recipe == "silero":
+            from silero_vad import load_silero_vad, get_speech_timestamps
+            model = load_silero_vad()
+            speech_timestamps = get_speech_timestamps(
+                torch.tensor(audio, dtype=torch.float32),
+                model,
+                sampling_rate=sample_rate,
+                return_seconds=True,
+            )
+            segments = []
+            for ts in speech_timestamps:
+                segments.append((int(ts['start'] * sample_rate), int(ts['end'] * sample_rate)))
+            return segments
+        else:
+            raise ValueError("Unsupported VAD recipe: {}".format(recipe))
 
     @staticmethod
     def double_quoted(s: str) -> str:

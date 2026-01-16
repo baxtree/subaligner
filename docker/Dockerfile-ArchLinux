@@ -17,8 +17,8 @@ RUN ["/bin/bash", "-c", "pacman --noconfirm -Syu &&\
     ln -s /root/.pyenv/versions/3.8.12/bin/python /usr/bin/python &&\
     python -m pip install --upgrade pip &&\
     python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
-    python -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
-    python -m pip install \"subaligner[llm]==${RELEASE_VERSION}\""]
+    python -m pip install --no-build-isolation \"subaligner==${RELEASE_VERSION}\" &&\
+    python -m pip install --no-build-isolation \"subaligner[llm]==${RELEASE_VERSION}\""]
 
 COPY ./scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

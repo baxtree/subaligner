@@ -171,7 +171,6 @@ def main():
     if FLAGS.stretch_on:
         try:
             import aeneas
-            import dtw
         except ModuleNotFoundError:
             print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
             sys.exit(21)

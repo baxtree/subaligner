@@ -162,7 +162,7 @@ Assuming your media assets are stored under `d:\media`, open built-in command pr
 <pre><code>subaligner -m dual -v video.mp4 -s subtitle.srt -tr helsinki-nlp -o subtitle_aligned.srt -t src,tgt</code></pre>
 <pre><code>subaligner -m dual -v video.mp4 -s subtitle.srt -tr facebook-mbart -tf large -o subtitle_aligned.srt -t src,tgt</code></pre>
 <pre><code>subaligner -m dual -v video.mp4 -s subtitle.srt -tr facebook-m2m100 -tf small -o subtitle_aligned.srt -t src,tgt</code></pre>
-<pre><code>subaligner -m dual -v video.mp4 -s subtitle.srt -tr whisper -tf small -o subtitle_aligned.srt -t src,eng</code></pre>
+<pre><code>subaligner -m dual -v video.mp4 -s subtitle.srt -tr whisper -tf small -o subtitle_aligned.srt -t src,tgt</code></pre>
 </details>
 
 <details>
@@ -251,6 +251,6 @@ This tool wouldn't be possible without the following packages:
 [pysubs2](https://github.com/tkarabela/pysubs2)
 [aeneas](https://www.readbeyond.it/aeneas/)
 [transformers](https://huggingface.co/transformers/)
-[openai-whisper](https://github.com/openai/whisper).
+[whisper](https://openai.com/index/whisper/).
 
 Thanks to Alan Robinson and Nigel Megitt for their invaluable feedback.

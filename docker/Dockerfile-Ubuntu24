@@ -23,5 +23,5 @@ RUN ["/bin/bash", "-c", "apt-get -y update &&\
     make -j$(nproc) && \
     make altinstall && \
     cd .. && rm -rf Python-3.11.9 Python-3.11.9.tgz &&\
-    /usr/local/bin/python3.11 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
-    /usr/local/bin/python3.11 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
+    /usr/local/bin/python3.11 -m pip install --no-build-isolation  \"subaligner==${RELEASE_VERSION}\" &&\
+    /usr/local/bin/python3.11 -m pip install --no-build-isolation \"subaligner[harmony]==${RELEASE_VERSION}\""]

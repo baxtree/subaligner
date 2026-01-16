@@ -32,7 +32,7 @@ optional arguments:
                         Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
   -mr {whisper}, --transcription_recipe {whisper}
                         LLM recipe used for transcribing video files
-  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v2,large-v3,large,large-v3-turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}
                         Flavour variation for a specific LLM recipe supporting transcription
   -ip INITIAL_PROMPT, --initial_prompt INITIAL_PROMPT
                         Optional text to provide the transcribing context or specific phrases
@@ -197,7 +197,7 @@ def main():
         "-mcl",
         "--max_char_length",
         type=int,
-        default=None,
+        default=37,
         help="Maximum number of characters for each generated subtitle segment"
     )
     from subaligner.llm import TranslationRecipe
@@ -297,7 +297,6 @@ def main():
             if FLAGS.stretch_on or FLAGS.mode == "script":
                 try:
                     import aeneas
-                    import dtw
                 except ModuleNotFoundError:
                     print('ERROR: Alignment has been configured to use extra features. Please install "subaligner[stretch]" and run your command again.')
                     sys.exit(21)

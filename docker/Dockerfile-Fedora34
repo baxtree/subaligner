@@ -25,5 +25,5 @@ RUN ["/bin/bash", "-c", "dnf install -y dnf-utils &&\
     dnf install -y hdf5 hdf5-devel &&\
     pip3 install --upgrade pip &&\
     python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
-    python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
-    python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
+    python3 -m pip install --no-build-isolation \"subaligner==${RELEASE_VERSION}\" &&\
+    python3 -m pip install --no-build-isolation \"subaligner[harmony]==${RELEASE_VERSION}\""]

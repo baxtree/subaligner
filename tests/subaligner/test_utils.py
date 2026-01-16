@@ -3,8 +3,11 @@ import unittest
 import shutil
 import filecmp
 import subprocess
-import requests
 import shutil
+import torch
+import numpy as np
+import soundfile as sf
+import librosa
 from subaligner.utils import Utils as Undertest
 from subaligner.exception import TerminalException
 from mock import patch
@@ -60,6 +63,9 @@ class UtilsTests(unittest.TestCase):
         )
         self.mp4_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mp4"
+        )
+        self.wav_file_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "resource/test.wav"
         )
         self.mkv_file_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "resource/test.mkv"
@@ -405,6 +411,51 @@ class UtilsTests(unittest.TestCase):
     def test_throw_exception_on_detecting_embedded_subtitles_exception(self, mock_communicate):
         self._assert_exception_on_subproces(
             lambda: self.assertTrue(Undertest.contains_embedded_subtitles(self.mkv_file_path)), mock_communicate)
+
+    def test_get_device(self):
+        self.assertIn(Undertest.get_device(), ["cpu", "cuda", "mps"])
+
+    def test_vad_segment_webrtcvad(self):
+        audio, sr = sf.read(self.wav_file_path)
+        if audio.ndim > 1:
+            audio = np.mean(audio, axis=1)
+        if sr != 16000:
+            audio = librosa.resample(audio, orig_sr=sr, target_sr=16000)
+            sr = 16000
+        if np.issubdtype(audio.dtype, np.integer):
+            maxv = np.iinfo(audio.dtype).max
+            audio = audio.astype("float32") / maxv
+        audio = audio.astype("float32")
+
+        segments = Undertest.vad_segment(
+            audio, sample_rate=sr, frame_ms=30, aggressiveness=2, min_speech_ms=300, recipe="webrtcvad"
+        )
+
+        self.assertGreater(len(segments), 0)
+        for start, end in segments:
+            self.assertGreaterEqual(start, 0)
+            self.assertLessEqual(end, len(audio))
+            self.assertLessEqual(start, end)
+
+    def test_vad_segment_silero(self):
+        audio, sr = sf.read(self.wav_file_path)
+        if audio.ndim > 1:
+            audio = np.mean(audio, axis=1)
+        if sr != 16000:
+            audio = librosa.resample(audio, orig_sr=sr, target_sr=16000)
+            sr = 16000
+        if np.issubdtype(audio.dtype, np.integer):
+            maxv = np.iinfo(audio.dtype).max
+            audio = audio.astype("float32") / maxv
+        audio = audio.astype("float32")
+
+        segments = Undertest.vad_segment(audio, sample_rate=sr, recipe="silero")
+
+        self.assertGreater(len(segments), 0)
+        for start, end in segments:
+            self.assertGreaterEqual(start, 0)
+            self.assertLessEqual(end, len(audio))
+            self.assertLessEqual(start, end)
 
     def _assert_exception_on_subproces(self, trigger, mock_communicate):
         try:

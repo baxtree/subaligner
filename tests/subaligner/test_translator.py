@@ -1,9 +1,10 @@
 import os
+import torch
 import unittest
+import numpy as np
 from mock import Mock, patch
-from parameterized import parameterized
 from subaligner.subtitle import Subtitle
-from subaligner.llm import TranslationRecipe, HelsinkiNLPFlavour, WhisperFlavour, FacebookMbartFlavour
+from subaligner.llm import TranslationRecipe, WhisperFlavour, FacebookMbartFlavour
 from subaligner.exception import TranslationException
 from subaligner.translator import Translator as Undertest
 
@@ -32,13 +33,34 @@ class TranslatorTests(unittest.TestCase):
 
         self.assertEqual(["translated"] * len(subs), [*map(lambda x: x.text, translated_subs)])
 
-    @patch("whisper.load_audio")
-    @patch("whisper.load_model")
-    def test_translate_whisper(self, load_model, load_audio):
+    @patch("librosa.load")
+    @patch("transformers.WhisperProcessor.from_pretrained")
+    @patch("transformers.WhisperForConditionalGeneration.from_pretrained")
+    @patch("subaligner.utils.Utils.vad_segment")
+    @patch("torch.ones")
+    @patch("torch.no_grad")
+    def test_translate_whisper(self, mock_no_grad, mock_ones, mock_vad_segment, model_from_pretrained, processor_from_pretrained, mock_librosa_load):
         subs = Subtitle.load(self.srt_file_path).subs
-        model = Mock()
-        load_model.return_value = model
-        model.transcribe.return_value = {"segments": [{"start": 0, "end": 1, "text": "translated"}]}
+        mock_processor = Mock()
+        mock_model = Mock()
+        mock_audio = np.array([0.5, 0.3, 0.8, 0.2], dtype=np.float32)
+        processor_from_pretrained.return_value = mock_processor
+        model_from_pretrained.return_value = mock_model
+        mock_librosa_load.return_value = (mock_audio, 16000)
+        mock_vad_segment.return_value = [(0, 4)]
+        mock_input_features = Mock()
+        mock_input_features.shape = (1, 80, 3000)
+        mock_input_features.to.return_value = mock_input_features  # Mock the .to() method
+        mock_processor.return_value = Mock(input_features=mock_input_features)
+        mock_output = Mock()
+        mock_output.sequences = Mock()
+        mock_output.sequences.cpu.return_value = Mock(return_value=[[1, 2, 3]])
+        mock_model.generate.return_value = mock_output
+        mock_processor.batch_decode.return_value = ["translated"]
+        mock_no_grad.return_value.__enter__ = Mock(return_value=None)
+        mock_no_grad.return_value.__exit__ = Mock(return_value=None)
+        mock_attention_mask = Mock()
+        mock_ones.return_value = mock_attention_mask
 
         undertest = Undertest("eng", "eng", recipe=TranslationRecipe.WHISPER.value, flavour=WhisperFlavour.TINY.value)
         translated_subs = undertest.translate(subs, "video_path")
@@ -74,12 +96,14 @@ class TranslatorTests(unittest.TestCase):
         else:
             self.fail("Should have thrown exception")
 
-    @patch("whisper.load_model")
-    def test_throw_exception_on_unsupported_whisper_translation_target(self, load_model):
+    @patch("transformers.WhisperProcessor.from_pretrained")
+    @patch("transformers.WhisperForConditionalGeneration.from_pretrained")
+    def test_throw_exception_on_unsupported_whisper_translation_target(self, model_from_pretrained, processor_from_pretrained):
         subs = Subtitle.load(self.srt_file_path).subs
-        model = Mock()
-        load_model.return_value = model
-        model.transcribe.return_value = {"segments": [{"start": 0, "end": 1, "text": "translated"}]}
+        mock_processor = Mock()
+        mock_model = Mock()
+        processor_from_pretrained.return_value = mock_processor
+        model_from_pretrained.return_value = mock_model
 
         try:
             Undertest("eng", "unk", recipe=TranslationRecipe.WHISPER.value, flavour=WhisperFlavour.TINY.value).translate(subs, "video_path")

@@ -19,5 +19,5 @@ RUN ["/bin/bash", "-c", "apt -y update &&\
     apt -y install python3-venv &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
-    python3 -m pip install \"subaligner==${RELEASE_VERSION}\" &&\
-    python3 -m pip install \"subaligner[harmony]==${RELEASE_VERSION}\""]
+    python3 -m pip install --no-build-isolation \"subaligner==${RELEASE_VERSION}\" &&\
+    python3 -m pip install --no-build-isolation \"subaligner[harmony]==${RELEASE_VERSION}\""]

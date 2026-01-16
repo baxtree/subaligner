@@ -22,5 +22,5 @@ RUN ["/bin/bash", "-c", "apt-get -y update &&\
     apt-get -y install python3-pip &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install --upgrade \"setuptools<65.0.0\" wheel &&\
-    python3 -m pip install -e . &&\
-    python3 -m pip install -e \".[harmony]\""]
+    python3 -m pip install --no-build-isolation -e . &&\
+    python3 -m pip install --no-build-isolation -e \".[harmony]\""]

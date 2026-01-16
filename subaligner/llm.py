@@ -20,11 +20,10 @@ class WhisperFlavour(Enum):
     MEDIUM_EN = "medium.en"
     BASE = "base"
     BASE_EN = "base.en"
-    LARGE_V1 = "large-v1"
+    LARGE = "large"
     LARGE_V2 = "large-v2"
     LARGE_V3 = "large-v3"
-    LARGE = "large"
-    TURBO = "turbo"
+    TURBO = "large-v3-turbo"
 
 
 class HelsinkiNLPFlavour(Enum):

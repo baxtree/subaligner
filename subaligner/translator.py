@@ -1,8 +1,9 @@
 import math
 import time
-import whisper
+import torch
+import librosa
 from copy import deepcopy
-from typing import List, Generator, Optional, Tuple
+from typing import List, Generator, Optional, Tuple, Any
 from pysrt import SubRipItem
 from tqdm import tqdm
 from transformers import (
@@ -14,8 +15,10 @@ from transformers import (
     MBartForConditionalGeneration,
     M2M100ForConditionalGeneration,
     M2M100Tokenizer,
+    WhisperProcessor,
+    WhisperForConditionalGeneration,
 )
-from whisper.tokenizer import LANGUAGES
+from transformers.models.whisper.tokenization_whisper import LANGUAGES
 from .singleton import Singleton
 from .llm import TranslationRecipe, HelsinkiNLPFlavour, WhisperFlavour, FacebookMbartFlavour, FacebookM2m100Flavour
 from .utils import Utils
@@ -70,8 +73,10 @@ class Translator(object):
         self.__recipe = recipe
         self.__src_language = src_language
         self.__tgt_language = tgt_language
-        self.__tokenizer: PreTrainedTokenizer = None
-        self.__lang_model: PreTrainedModel = None
+        self.__tokenizer: Optional[PreTrainedTokenizer] = None
+        self.__lang_model: Optional[PreTrainedModel] = None
+        self.__whisper_processor: Optional[WhisperProcessor] = None
+        self.__whisper_model: Optional[WhisperForConditionalGeneration] = None
         self.__initialise_model(src_language, tgt_language, recipe, flavour)
 
     def translate(self,
@@ -99,14 +104,17 @@ class Translator(object):
             if language_pair is not None:
                 self.__LOGGER.debug(f"Language pair ignored: {language_pair}")
             translated_texts = []
+            assert self.__lang_model is not None
             self.__lang_model.eval()
             new_subs = deepcopy(subs)
             src_texts = [sub.text for sub in new_subs]
             num_of_batches = math.ceil(len(src_texts) / Translator.__TRANSLATING_BATCH_SIZE)
             self.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
             for batch in tqdm(Translator.__batch(src_texts, Translator.__TRANSLATING_BATCH_SIZE), total=num_of_batches):
+                assert self.__tokenizer is not None
+                assert self.__lang_model is not None
                 input_ids = self.__tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
-                translated = self.__lang_model.generate(**input_ids)
+                translated = self.__lang_model.generate(**input_ids)    # type: ignore
                 translated_texts.extend([self.__tokenizer.decode(t, skip_special_tokens=True) for t in translated])
             for index in range(len(new_subs)):
                 new_subs[index].text = translated_texts[index]
@@ -117,33 +125,76 @@ class Translator(object):
             lang = Utils.get_iso_639_alpha_2(self.__tgt_language)
             if lang not in LANGUAGES or lang != "en":
                 raise TranslationException(f'"{self.__tgt_language}" is not supported by {self.__recipe} as a translation target by {self.__recipe}')
-            audio = whisper.load_audio(video_file_path)
+
+            audio, sr = librosa.load(video_file_path, sr=16000)
+            if audio.ndim > 1:
+                audio = librosa.to_mono(audio)
+
             self.__LOGGER.debug("Start translating the audio...")
-            result = self.__lang_model.transcribe(audio, task="translate")
+
+            segments = Utils.vad_segment(audio, sample_rate=sr, aggressiveness=2)
+            translated_segments = []
+
+            for (start, end) in segments:
+                seg_audio = audio[start:end]
+                assert self.__whisper_processor is not None
+                inputs = self.__whisper_processor(seg_audio, sampling_rate=sr, return_tensors="pt")
+                input_features = inputs.input_features.to(self.__get_device())
+                attention_mask = torch.ones(input_features.shape[:2], dtype=torch.long, device=self.__get_device())
+
+                assert self.__whisper_model is not None
+                with torch.no_grad():
+                    generated_ids = self.__whisper_model.generate(
+                        input_features=input_features,
+                        attention_mask=attention_mask,
+                        language=lang,
+                        task="translate",
+                        max_length=512,
+                        num_beams=5,
+                        return_dict_in_generate=True,
+                        output_scores=False
+                    )
+
+                assert self.__whisper_processor is not None
+                translated_text = self.__whisper_processor.batch_decode(
+                    generated_ids.sequences, skip_special_tokens=True
+                )[0]
+
+                translated_segments.append({
+                    "text": translated_text.strip(),
+                    "start": start / sr,
+                    "end": end / sr
+                })
             self.__LOGGER.info("Finished translating the audio")
+
             srt_str = ""
-            for i, segment in enumerate(result["segments"], start=1):
+            for i, segment in enumerate(translated_segments, start=1):
                 srt_str += f"{i}\n" \
                            f"{Utils.format_timestamp(segment['start'])} --> {Utils.format_timestamp(segment['end'])}\n" \
-                           f"{segment['text'].strip().replace('-->', '->')}\n" \
+                           f"{segment['text'].replace('-->', '->')}\n" \
                            "\n"
+
             subtitle = Subtitle.load_subrip_str(srt_str)
             return subtitle.subs
         elif self.__recipe == TranslationRecipe.FACEBOOK_MBART.value:
             src_lang, tgt_lang = language_pair if language_pair is not None else (self.__src_language, self.__tgt_language)
+            assert self.__tokenizer is not None
             self.__tokenizer.src_lang = Translator.__MBART_LANGUAGE_CODE_MAPPER.get(src_lang, None)
             lang_code = Translator.__MBART_LANGUAGE_CODE_MAPPER.get(tgt_lang, None)
             if src_lang is None or tgt_lang is None:
                 raise NotImplementedError(f"Language pair of {src_lang} and {src_lang} is not supported by {self.__recipe}")
             translated_texts = []
+            assert self.__lang_model is not None
             self.__lang_model.eval()
             new_subs = deepcopy(subs)
             src_texts = [sub.text for sub in new_subs]
             num_of_batches = math.ceil(len(src_texts) / Translator.__TRANSLATING_BATCH_SIZE)
             self.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
             for batch in tqdm(Translator.__batch(src_texts, Translator.__TRANSLATING_BATCH_SIZE), total=num_of_batches):
+                assert self.__tokenizer is not None
+                assert self.__lang_model is not None
                 input_ids = self.__tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
-                translated = self.__lang_model.generate(**input_ids, forced_bos_token_id=self.__tokenizer.lang_code_to_id[lang_code])
+                translated = self.__lang_model.generate(**input_ids, forced_bos_token_id=self.__tokenizer.lang_code_to_id[lang_code])   # type: ignore
                 translated_texts.extend([self.__tokenizer.decode(t, skip_special_tokens=True) for t in translated])
             for index in range(len(new_subs)):
                 new_subs[index].text = translated_texts[index]
@@ -151,20 +202,24 @@ class Translator(object):
             return new_subs
         elif self.__recipe == TranslationRecipe.FACEBOOK_M2M100.value:
             src_lang, tgt_lang = language_pair if language_pair is not None else (self.__src_language, self.__tgt_language)
+            assert self.__tokenizer is not None
             self.__tokenizer.src_lang = Utils.get_iso_639_alpha_2(src_lang)
             lang_code = Utils.get_iso_639_alpha_2(tgt_lang)
             if src_lang is None or tgt_lang is None:
                 raise NotImplementedError(
                     f"Language pair of {src_lang} and {src_lang} is not supported by {self.__recipe}")
             translated_texts = []
+            assert self.__lang_model is not None
             self.__lang_model.eval()
             new_subs = deepcopy(subs)
             src_texts = [sub.text for sub in new_subs]
             num_of_batches = math.ceil(len(src_texts) / Translator.__TRANSLATING_BATCH_SIZE)
             self.__LOGGER.info("Translating %s subtitle cue(s)..." % len(src_texts))
             for batch in tqdm(Translator.__batch(src_texts, Translator.__TRANSLATING_BATCH_SIZE), total=num_of_batches):
+                assert self.__tokenizer is not None
+                assert self.__lang_model is not None
                 input_ids = self.__tokenizer(batch, return_tensors=Translator.__TENSOR_TYPE, padding=True)
-                translated = self.__lang_model.generate(**input_ids, forced_bos_token_id=self.__tokenizer.get_lang_id(lang_code))
+                translated = self.__lang_model.generate(**input_ids, forced_bos_token_id=self.__tokenizer.get_lang_id(lang_code))   # type: ignore
                 translated_texts.extend([self.__tokenizer.decode(t, skip_special_tokens=True) for t in translated])
             for index in range(len(new_subs)):
                 new_subs[index].text = translated_texts[index]
@@ -191,8 +246,7 @@ class Translator(object):
                 self.__LOGGER.error(message)
                 raise NotImplementedError(message)
         elif recipe == TranslationRecipe.WHISPER.value:
-            if flavour in [f.value for f in WhisperFlavour]:
-                # self.__download_whisper_model(flavour)
+            if flavour in [f.value for f in WhisperFlavour] or flavour == "medium":
                 self.__download_whisper_model("medium")  # works for translation target other than English
             else:
                 raise NotImplementedError(f"Unknown {recipe} flavour: {flavour}")
@@ -237,7 +291,11 @@ class Translator(object):
         return False
 
     def __download_whisper_model(self, flavour: str) -> None:
-        self.__lang_model = whisper.load_model(flavour)
+        model_id = f"openai/whisper-{flavour}"
+        self.__LOGGER.debug("Trying to download the Whisper model %s" % model_id)
+        self.__whisper_processor = WhisperProcessor.from_pretrained(model_id)
+        self.__whisper_model = WhisperForConditionalGeneration.from_pretrained(model_id).to(self.__get_device())
+        self.__LOGGER.debug("Whisper model %s downloaded" % model_id)
 
     def __download_mbart_model(self, flavour: str) -> None:
         mbart_model_name = f"facebook/mbart-{flavour}-50-many-to-many-mmt"
@@ -268,3 +326,12 @@ class Translator(object):
         total = len(data)
         for ndx in range(0, total, size):
             yield data[ndx:min(ndx + size, total)]
+
+    @staticmethod
+    def __get_device() -> str:
+        if torch.cuda.is_available():
+            return "cuda"
+        elif torch.backends.mps.is_available():
+            return "mps"
+        else:
+            return "cpu"
