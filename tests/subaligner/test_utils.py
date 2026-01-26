@@ -427,7 +427,7 @@ class UtilsTests(unittest.TestCase):
             audio = audio.astype("float32") / maxv
         audio = audio.astype("float32")
 
-        segments = Undertest.vad_segment(
+        segments, _ = Undertest.vad_segment(
             audio, sample_rate=sr, frame_ms=30, aggressiveness=2, min_speech_ms=300, recipe="webrtcvad"
         )
 
@@ -449,7 +449,7 @@ class UtilsTests(unittest.TestCase):
             audio = audio.astype("float32") / maxv
         audio = audio.astype("float32")
 
-        segments = Undertest.vad_segment(audio, sample_rate=sr, recipe="silero")
+        segments, _ = Undertest.vad_segment(audio, sample_rate=sr, recipe="silero")
 
         self.assertGreater(len(segments), 0)
         for start, end in segments:

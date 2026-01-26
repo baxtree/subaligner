@@ -84,6 +84,7 @@ dependencies = [
     "tf-keras~=2.19.0; python_version >= '3.12'",
     "tensorflow>=1.15.5,<2.16.0; python_version < '3.12'",
     "tensorflow~=2.19.0; python_version >= '3.12'",
+    "tensorflow-metal~=1.2.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "termcolor==1.1.0",
     "toml==0.10.0",
     "toolz==0.9.0",
@@ -106,7 +107,6 @@ harmony = [
     "accelerate~=1.12.0",
     "soxr==1.0.0",
     "webrtcvad~=2.0.10",
-    "silero-vad~=6.2.0",
 ]
 dev = [
     "aeneas~=1.7.3.0; python_version < '3.12'",
@@ -120,7 +120,6 @@ dev = [
     "soxr==1.0.0",
     "accelerate~=1.12.0",
     "webrtcvad~=2.0.10",
-    "silero-vad~=6.2.0",
     "mock==4.0.3",
     "coverage==5.5",
     "tox~=3.23.0",
@@ -159,7 +158,6 @@ llm = [
     "accelerate~=1.12.0",
     "soxr==1.0.0",
     "webrtcvad~=2.0.10",
-    "silero-vad~=6.2.0",
 ]
 
 [project.scripts]

@@ -73,6 +73,7 @@ class Transcriber(object):
         self.__flavour = flavour
         self.__media_helper = MediaHelper()
         self.__lock = Lock()
+        self.vad_model: Optional[Any] = None
 
         if recipe == TranscriptionRecipe.WHISPER.value:
             if flavour not in [f.value for f in WhisperFlavour]:
@@ -143,7 +144,9 @@ class Transcriber(object):
                 self.__LOGGER.debug("Prompting with: '%s'" % initial_prompt)
 
                 audio, sr = self.__load_audio(audio_file_path, target_sample_rate=sample_rate)
-                segments = Utils.vad_segment(audio, sample_rate=sr, recipe="silero")
+                segments, self.vad_model = Utils.vad_segment(
+                    audio, sample_rate=sr, recipe="silero", model_local=self.vad_model
+                )
                 self.__LOGGER.info("Segments detected with voice activities")
 
                 final_segments = []

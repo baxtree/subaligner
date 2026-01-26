@@ -778,7 +778,8 @@ class Utils(object):
                     frame_ms: int = 30,
                     aggressiveness: int = 3,
                     min_speech_ms: int = 200,
-                    recipe: str = "webrtcvad") -> List[Tuple[int, int]]:
+                    recipe: str = "webrtcvad",
+                    model_local: Optional[Any] = None) -> Tuple[List[Tuple[int, int]], Any]:
         """Segment audio into speech and non-speech segments using WebRTC VAD.
 
         Arguments:
@@ -788,9 +789,10 @@ class Utils(object):
             aggressiveness {int} -- The aggressiveness of the VAD (0-3).
             min_speech_ms {int} -- The minimum duration of a speech segment in milliseconds.
             recipe {str} -- The VAD recipe to use ("webrtcvad" or "silero").
+            model_local {Optional[Any]} -- The loaded VAD model.
 
         Returns:
-            List[Tuple[int, int]]: A list of tuples representing the start and end samples of speech segments.
+            Tuple[List[Tuple[int, int]], Any]: A list of tuples representing the start and end samples of speech segments, and the loaded VAD model.
 
         Raises:
             ValueError: If an unsupported VAD recipe is provided.
@@ -831,20 +833,25 @@ class Utils(object):
             if cur_start is not None and cur_end is not None:
                 if (cur_end - cur_start) >= int(min_speech_ms * sample_rate / 1000):
                     segments.append((cur_start, cur_end))
-            return segments
+            return segments, model_local
         elif recipe == "silero":
-            from silero_vad import load_silero_vad, get_speech_timestamps
-            model = load_silero_vad()
+            if model_local is None:
+                model_local, utils = torch.hub.load(
+                    repo_or_dir="snakers4/silero-vad:be95df9152c0d7618fa1edfeb296fc3dae32376f",  # v6.2
+                    model="silero_vad",
+                    force_reload=False,
+                )
+            (get_speech_timestamps, _, read_audio, *_) = utils
             speech_timestamps = get_speech_timestamps(
                 torch.tensor(audio, dtype=torch.float32),
-                model,
+                model_local,
                 sampling_rate=sample_rate,
                 return_seconds=True,
             )
             segments = []
             for ts in speech_timestamps:
                 segments.append((int(ts['start'] * sample_rate), int(ts['end'] * sample_rate)))
-            return segments
+            return segments, model_local
         else:
             raise ValueError("Unsupported VAD recipe: {}".format(recipe))
 
