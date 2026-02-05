@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "subaligner"
-version = "0.3.11"
+version = "0.3.12"
 authors = [
     { name = "Xi Bai", email = "xi.bai.ed@gmail.com" }
 ]
