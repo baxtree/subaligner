@@ -4,7 +4,6 @@ import shutil
 import filecmp
 import subprocess
 import shutil
-import torch
 import numpy as np
 import soundfile as sf
 import librosa
@@ -456,6 +455,56 @@ class UtilsTests(unittest.TestCase):
             self.assertGreaterEqual(start, 0)
             self.assertLessEqual(end, len(audio))
             self.assertLessEqual(start, end)
+
+    def test_ensure_model_model_exists(self):
+        test_output_dir = os.path.join(self.resource_tmp, "existing_model")
+
+        os.makedirs(os.path.join(test_output_dir, "config"))
+        os.makedirs(os.path.join(test_output_dir, "model"))
+        os.makedirs(os.path.join(test_output_dir, "weights"))
+        os.makedirs(os.path.join(test_output_dir, ".complete"))
+
+        with patch("subaligner.utils.kagglehub.model_download") as mock_download:
+            result = Undertest.ensure_model(output_dir=test_output_dir)
+
+            mock_download.assert_not_called()
+            self.assertEqual(test_output_dir, result)
+
+        shutil.rmtree(test_output_dir)
+
+    def test_ensure_model_refresh_download(self):
+        test_output_dir = os.path.join(self.resource_tmp, "refresh_model")
+
+        os.makedirs(os.path.join(test_output_dir, "config"))
+        os.makedirs(os.path.join(test_output_dir, "model"))
+        os.makedirs(os.path.join(test_output_dir, "weights"))
+        os.makedirs(os.path.join(test_output_dir, ".complete"))
+
+        with patch("subaligner.utils.kagglehub.model_download") as mock_download:
+            mock_download.return_value = test_output_dir
+            result = Undertest.ensure_model(output_dir=test_output_dir, refresh=True)
+
+            mock_download.assert_called_once_with(
+                "baxtree/subaligner/keras/default", output_dir=test_output_dir, force_download=True
+            )
+            self.assertEqual(test_output_dir, result)
+
+        shutil.rmtree(test_output_dir)
+
+    def test_ensure_model_downloads_when_missing(self):
+        test_output_dir = os.path.join(self.resource_tmp, "new_model")
+        os.makedirs(os.path.join(test_output_dir, ".complete"))
+
+        with patch("subaligner.utils.kagglehub.model_download") as mock_download:
+            mock_download.return_value = test_output_dir
+            result = Undertest.ensure_model(output_dir=test_output_dir)
+
+            mock_download.assert_called_once_with(
+                "baxtree/subaligner/keras/default", output_dir=test_output_dir, force_download=True
+            )
+            self.assertEqual(test_output_dir, result)
+
+        shutil.rmtree(test_output_dir)
 
     def _assert_exception_on_subproces(self, trigger, mock_communicate):
         try:

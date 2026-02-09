@@ -1,3 +1,4 @@
+import kagglehub
 import os
 import json
 import subprocess
@@ -771,6 +772,29 @@ class Utils(object):
             return "mps"
         else:
             return "cpu"
+
+    @staticmethod
+    def ensure_model(output_dir: str = os.path.join(os.path.dirname(__file__), "models", "training"),
+                     refresh: bool = False) -> str:
+        """Download the Kaggle Subaligner model if it doesn't exist.
+
+        Arguments:
+            output_dir {str} -- The directory to download the model to {default: "./models/training"}.
+            refresh {bool} -- If True, always download the model {default: False}.
+
+        Returns:
+            str: The path to the downloaded model.
+        """
+        if not refresh and all([
+            os.path.isdir(output_dir),
+            os.path.isdir(os.path.join(output_dir, "config")),
+            os.path.isdir(os.path.join(output_dir, "model")),
+            os.path.isdir(os.path.join(output_dir, "weights")),
+            os.path.isdir(os.path.join(output_dir, ".complete")),
+        ]):
+            return output_dir
+
+        return kagglehub.model_download("baxtree/subaligner/keras/default", output_dir=output_dir, force_download=True)
 
     @staticmethod
     def vad_segment(audio: np.ndarray,

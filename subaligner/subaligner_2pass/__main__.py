@@ -216,12 +216,13 @@ def main():
                 print("ERROR: Embedded subtitle selector cannot be empty")
                 parser.print_usage()
                 sys.exit(21)
-
+        model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
+        Utils.ensure_model(output_dir=model_dir)
         predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
         subs_list, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
             video_file_path=local_video_path,
             subtitle_file_path=local_subtitle_path,
-            weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights"),
+            weights_dir=os.path.join(model_dir, "weights"),
             stretch=stretch,
             stretch_in_lang=stretch_in_lang,
             exit_segfail=exit_segfail,

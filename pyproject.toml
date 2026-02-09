@@ -49,6 +49,7 @@ dependencies = [
     "idna<3.9",
     "isort==4.3.4",
     "joblib>=1.2.0",
+    "kagglehub~=0.4.3",
     "le-pycaption==2.2.0a1",
     "librosa<0.10.0",
     "locket==0.2.0",

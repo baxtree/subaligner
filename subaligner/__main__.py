@@ -346,18 +346,20 @@ def main():
                         sys.exit(21)
 
                 voice_probabilities = None
+                model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
+                Utils.ensure_model(output_dir=model_dir)
                 predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
                 if FLAGS.mode == "single":
                     aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
                         video_file_path=local_video_path,
                         subtitle_file_path=local_subtitle_path,
-                        weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights")
+                        weights_dir=os.path.join(model_dir, "weights")
                     )
                 elif FLAGS.mode == "dual":
                     aligned_subs, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
                         video_file_path=local_video_path,
                         subtitle_file_path=local_subtitle_path,
-                        weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights"),
+                        weights_dir=os.path.join(model_dir, "weights"),
                         stretch=stretch,
                         stretch_in_lang=stretch_in_lang,
                         exit_segfail=exit_segfail,
