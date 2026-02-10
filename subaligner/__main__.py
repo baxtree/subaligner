@@ -4,15 +4,15 @@ usage: subaligner [-h] [-m {single,dual,script,shift,transcribe}] [-v VIDEO_PATH
                   [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
                   [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-os OFFSET_SECONDS]
                   [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                  [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}] [-ip INITIAL_PROMPT] [-mcl MAX_CHAR_LENGTH]
+                  [-md MODEL_DIR] [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large,large-v2,large-v3,large-v3-turbo}] [-ip INITIAL_PROMPT] [-mcl MAX_CHAR_LENGTH]
                   [-tr {helsinki-nlp,whisper,facebook-mbart,facebook-m2m100}] [-tf TRANSLATION_FLAVOUR] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-upp] [-wtc] [-lgs] [-d] [-q] [-ver]
 
 Subaligner command line interface
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -s SUBTITLE_PATH [SUBTITLE_PATH ...], --subtitle_path SUBTITLE_PATH [SUBTITLE_PATH ...]
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .ssa, .tmp, .srt, .sbv, .stl, .json, .sami, .ttml, .smi, .txt, .scc, .sub, .ass, .vtt, .xml, .ytt, .dfxp) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .stl, .sub, .txt, .tmp, .dfxp, .json, .sbv, .scc, .xml, .ssa, .ass, .sami, .srt, .smi, .ttml, .ytt, .vtt) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
   -l MAX_LOGLOSS, --max_logloss MAX_LOGLOSS
                         Max global log loss for alignment
   -so, --stretch_on     Switch on stretch on subtitles)
@@ -30,9 +30,11 @@ optional arguments:
                         Offset by which the subtitle will be shifted
   -ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --main_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
+  -md MODEL_DIR, --model_dir MODEL_DIR
+                        Path to a model directory for overriding the default model directory
   -mr {whisper}, --transcription_recipe {whisper}
                         LLM recipe used for transcribing video files
-  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v2,large-v3,large,large-v3-turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large,large-v2,large-v3,large-v3-turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large,large-v2,large-v3,large-v3-turbo}
                         Flavour variation for a specific LLM recipe supporting transcription
   -ip INITIAL_PROMPT, --initial_prompt INITIAL_PROMPT
                         Optional text to provide the transcribing context or specific phrases
@@ -167,6 +169,13 @@ def main():
         type=str.lower,
         choices=Utils.get_stretch_language_codes(),
         help="Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]",
+    )
+    parser.add_argument(
+        "-md",
+        "--model_dir",
+        type=str,
+        default=None,
+        help="Path to a model directory for overriding the default model directory",
     )
     from subaligner.llm import TranscriptionRecipe
     from subaligner.llm import WhisperFlavour
@@ -346,8 +355,11 @@ def main():
                         sys.exit(21)
 
                 voice_probabilities = None
-                model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
-                Utils.ensure_model(output_dir=model_dir)
+                if FLAGS.model_dir is not None:
+                    model_dir = FLAGS.model_dir
+                else:
+                    model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
+                    Utils.ensure_model(output_dir=model_dir)
                 predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
                 if FLAGS.mode == "single":
                     aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-usage: subaligner_1pass [-h] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs]
-                        [-d] [-q] [-ver]
+usage: subaligner_1pass [-h] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-md MODEL_DIR] [-mpt MEDIA_PROCESS_TIMEOUT]
+                        [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs] [-d] [-q] [-ver]
 
 Run single-stage alignment
 
@@ -15,6 +15,8 @@ options:
                         Path to the output subtitle file
   -t TRANSLATE, --translate TRANSLATE
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -md MODEL_DIR, --model_dir MODEL_DIR
+                        Path to a model directory for overriding the default model directory
   -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
                         Maximum waiting time in seconds when processing media files
   -sat SEGMENT_ALIGNMENT_TIMEOUT, --segment_alignment_timeout SEGMENT_ALIGNMENT_TIMEOUT
@@ -28,7 +30,7 @@ required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .dfxp, .txt, .vtt, .srt, .sbv, .ytt, .ssa, .scc, .tmp, .sami, .smi, .stl, .sub, .xml, .ass, .ttml) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .ssa, .txt, .sami, .tmp, .stl, .vtt, .sbv, .sub, .dfxp, .scc, .ass, .smi, .ytt, .srt, .json, .xml, .ttml) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -92,6 +94,13 @@ def main():
         "--translate",
         type=str,
         help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
+    parser.add_argument(
+        "-md",
+        "--model_dir",
+        type=str,
+        default=None,
+        help="Path to a model directory for overriding the default model directory",
     )
     parser.add_argument(
         "-mpt",
@@ -182,8 +191,11 @@ def main():
                 parser.print_usage()
                 sys.exit(21)
 
-        model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
-        Utils.ensure_model(output_dir=model_dir)
+        if FLAGS.model_dir is not None:
+            model_dir = FLAGS.model_dir
+        else:
+            model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
+            Utils.ensure_model(output_dir=model_dir)
         predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
         subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
             video_file_path=local_video_path,

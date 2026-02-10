@@ -44,7 +44,7 @@ dependencies = [
     "graphviz==0.8.3",
     "HeapDict==1.0.0",
     "h5py<4.0.0",
-    "html5lib==1.0b9",
+    "html5lib==1.1",
     "hyperopt==0.2.4",
     "idna<3.9",
     "isort==4.3.4",

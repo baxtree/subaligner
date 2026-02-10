@@ -2,7 +2,7 @@
 """
 usage: subaligner_2pass [-h] [-v VIDEO_PATH] [-s SUBTITLE_PATH] [-l MAX_LOGLOSS] [-so]
                         [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs] [-d] [-q] [-ver]
+                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-o OUTPUT] [-t TRANSLATE] [-md MODEL_DIR] [-mpt MEDIA_PROCESS_TIMEOUT] [-sat SEGMENT_ALIGNMENT_TIMEOUT] [-lgs] [-d] [-q] [-ver]
 
 Run dual-stage alignment
 
@@ -21,6 +21,8 @@ options:
                         Path to the output subtitle file
   -t TRANSLATE, --translate TRANSLATE
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
+  -md MODEL_DIR, --model_dir MODEL_DIR
+                        Path to a model directory for overriding the default model directory
   -mpt MEDIA_PROCESS_TIMEOUT, --media_process_timeout MEDIA_PROCESS_TIMEOUT
                         Maximum waiting time in seconds when processing media files
   -sat SEGMENT_ALIGNMENT_TIMEOUT, --segment_alignment_timeout SEGMENT_ALIGNMENT_TIMEOUT
@@ -34,7 +36,7 @@ required arguments:
   -v VIDEO_PATH, --video_path VIDEO_PATH
                         File path or URL to the video file
   -s SUBTITLE_PATH, --subtitle_path SUBTITLE_PATH
-                        File path or URL to the subtitle file (Extensions of supported subtitles: .smi, .ssa, .srt, .ttml, .scc, .sbv, .ytt, .vtt, .sami, .txt, .stl, .tmp, .ass, .dfxp, .xml, .sub) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
+                        File path or URL to the subtitle file (Extensions of supported subtitles: .vtt, .xml, .sub, .ass, .ssa, .sbv, .ytt, .json, .tmp, .ttml, .txt, .smi, .srt, .dfxp, .sami, .stl, .scc) or selector for the embedded subtitle (e.g., embedded:page_num=888 or embedded:stream_index=0)
 """
 
 import argparse
@@ -119,6 +121,13 @@ def main():
         "--translate",
         type=str,
         help="Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)",
+    )
+    parser.add_argument(
+        "-md",
+        "--model_dir",
+        type=str,
+        default=None,
+        help="Path to a model directory for overriding the default model directory",
     )
     parser.add_argument(
         "-mpt",
@@ -216,8 +225,11 @@ def main():
                 print("ERROR: Embedded subtitle selector cannot be empty")
                 parser.print_usage()
                 sys.exit(21)
-        model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
-        Utils.ensure_model(output_dir=model_dir)
+        if FLAGS.model_dir is not None:
+            model_dir = FLAGS.model_dir
+        else:
+            model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
+            Utils.ensure_model(output_dir=model_dir)
         predictor = Predictor(media_process_timeout=FLAGS.media_process_timeout, segment_alignment_timeout=FLAGS.segment_alignment_timeout)
         subs_list, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
             video_file_path=local_video_path,

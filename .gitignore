@@ -33,10 +33,7 @@ misc/tmp
 wheels*
 /training.log
 Pipfile.lock
-models/training/.complete
-models/training/config
-models/training/model
-models/training/weights
+!subaligner/models/training/.gitkeep
 
 # Unit test / coverage reports
 htmlcov/

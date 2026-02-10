@@ -2,16 +2,16 @@
 """
 usage: subaligner_batch [-h] [-m {single,dual,script,transcribe}] [-sd SUBTITLE_DIRECTORY] [-vd VIDEO_DIRECTORY] [-l MAX_LOGLOSS] [-so]
                         [-sil {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-od OUTPUT_DIRECTORY] [-of {srt,ytt,ttml,txt,smi,xml,ssa,ass,dfxp,sub,scc,tmp,sami,vtt,stl,sbv}] [-t TRANSLATE]
+                        [-fos] [-tod TRAINING_OUTPUT_DIRECTORY] [-od OUTPUT_DIRECTORY] [-of {tmp,txt,sami,scc,smi,stl,xml,dfxp,ass,vtt,srt,ssa,sbv,ytt,json,ttml,sub}] [-t TRANSLATE]
                         [-ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}]
-                        [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}] [-lgs] [-d] [-q] [-ver]
+                        [-md MODEL_DIR] [-mr {whisper}] [-mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large,large-v2,large-v3,large-v3-turbo}] [-lgs] [-d] [-q] [-ver]
 
 Batch align multiple subtitle files and audiovisual files
 
 Subtitle files and their companion audiovisual files need to be stored in two separate directories.
 Each file pair needs to share the same base filename, the part before the extension.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -sd SUBTITLE_DIRECTORY, --subtitle_directory SUBTITLE_DIRECTORY
                         Path to the subtitle directory
@@ -28,15 +28,17 @@ optional arguments:
                         Path to the output directory containing training results
   -od OUTPUT_DIRECTORY, --output_directory OUTPUT_DIRECTORY
                         Path to the output subtitle directory
-  -of {srt,ytt,ttml,txt,smi,xml,ssa,ass,dfxp,sub,scc,tmp,sami,vtt,stl,sbv}, --output_format {srt,ytt,ttml,txt,smi,xml,ssa,ass,dfxp,sub,scc,tmp,sami,vtt,stl,sbv}
+  -of {tmp,txt,sami,scc,smi,stl,xml,dfxp,ass,vtt,srt,ssa,sbv,ytt,json,ttml,sub}, --output_format {tmp,txt,sami,scc,smi,stl,xml,dfxp,ass,vtt,srt,ssa,sbv,ytt,json,ttml,sub}
                         File format of the output subtitles
   -t TRANSLATE, --translate TRANSLATE
                         Source and target ISO 639-3 language codes separated by a comma (e.g., eng,zho)
   -ml {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}, --main_language {afr,amh,ara,arg,asm,aze,ben,bos,bul,cat,ces,cmn,cym,dan,deu,ell,eng,epo,est,eus,fas,fin,fra,gla,gle,glg,grc,grn,guj,heb,hin,hrv,hun,hye,ina,ind,isl,ita,jbo,jpn,kal,kan,kat,kir,kor,kur,lat,lav,lfn,lit,mal,mar,mkd,mlt,msa,mya,nah,nep,nld,nor,ori,orm,pan,pap,pol,por,ron,rus,sin,slk,slv,spa,sqi,srp,swa,swe,tam,tat,tel,tha,tsn,tur,ukr,urd,vie,yue,zho}
                         Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]
+  -md MODEL_DIR, --model_dir MODEL_DIR
+                        Path to a model directory for overriding the default model directory
   -mr {whisper}, --transcription_recipe {whisper}
                         LLM recipe used for transcribing video files
-  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large,turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large-v1,large-v2,large-v3,large}
+  -mf {tiny,tiny.en,small,medium,medium.en,base,base.en,large,large-v2,large-v3,large-v3-turbo}, --transcription_flavour {tiny,tiny.en,small,medium,medium.en,base,base.en,large,large-v2,large-v3,large-v3-turbo}
                         Flavour variation for a specific LLM recipe supporting transcription
   -lgs, --languages     Print out language codes used for stretch and translation
   -d, --debug           Print out debugging information
@@ -156,6 +158,13 @@ Each file pair needs to share the same base filename, the part before the extens
         choices=Utils.get_stretch_language_codes(),
         help="Target video's main language as an ISO 639-3 language code [https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes]",
     )
+    parser.add_argument(
+        "-md",
+        "--model_dir",
+        type=str,
+        default=None,
+        help="Path to a model directory for overriding the default model directory",
+    )
     from subaligner.llm import TranscriptionRecipe
     from subaligner.llm import WhisperFlavour
     parser.add_argument(
@@ -259,17 +268,22 @@ Each file pair needs to share the same base filename, the part before the extens
         local_subtitle_path = subtitle_file_paths[index] if FLAGS.mode != "transcribe" else "{}.srt".format(tempfile.mkstemp()[1])
         try:
             voice_probabilities = None
+            if FLAGS.model_dir is not None:
+                model_dir = FLAGS.model_dir
+            else:
+                model_dir = os.path.join(FLAGS.training_output_directory, "models", "training")
+                Utils.ensure_model(output_dir=model_dir)
             if FLAGS.mode == "single":
                 aligned_subs, audio_file_path, voice_probabilities, frame_rate = predictor.predict_single_pass(
                     video_file_path=local_video_path,
                     subtitle_file_path=local_subtitle_path,
-                    weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights")
+                    weights_dir=os.path.join(model_dir, "weights")
                 )
             elif FLAGS.mode == "dual":
                 aligned_subs, subs, voice_probabilities, frame_rate = predictor.predict_dual_pass(
                     video_file_path=local_video_path,
                     subtitle_file_path=local_subtitle_path,
-                    weights_dir=os.path.join(FLAGS.training_output_directory, "models", "training", "weights"),
+                    weights_dir=os.path.join(model_dir, "weights"),
                     stretch=stretch,
                     stretch_in_lang=stretch_in_lang,
                     exit_segfail=exit_segfail,
