@@ -53,7 +53,7 @@ dependencies = [
     "le-pycaption==2.2.0a1",
     "librosa<0.10.0",
     "locket==0.2.0",
-    "Markdown==2.6.11",
+    "Markdown==3.8.1",
     "mccabe==0.6.1",
     "networkx>=2.5.1",
     "numba>=0.50.0,<0.62.0",
