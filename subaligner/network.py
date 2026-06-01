@@ -1,6 +1,7 @@
 import os
 import math
 import importlib
+import platform
 import psutil
 import numpy as np
 import tensorflow as tf
@@ -297,10 +298,9 @@ class Network(object):
             earlyStopping,
         ]
         if not resume:
-            Optimizer = getattr(tf_optimizers, self.hyperparameters.optimizer)
             self.__model.compile(
                 loss=self.hyperparameters.loss,
-                optimizer=Optimizer(learning_rate=self.hyperparameters.learning_rate),
+                optimizer=Network.__get_optimizer(self.hyperparameters),
                 metrics=self.hyperparameters.metrics,
             )
         initial_epoch = 0
@@ -392,10 +392,9 @@ class Network(object):
             earlyStopping,
         ]
         if not resume:
-            Optimizer = getattr(tf_optimizers, self.hyperparameters.optimizer)
             self.__model.compile(
                 loss=self.hyperparameters.loss,
-                optimizer=Optimizer(learning_rate=self.hyperparameters.learning_rate),
+                optimizer=Network.__get_optimizer(self.hyperparameters),
                 metrics=self.hyperparameters.metrics,
             )
         if resume:
@@ -453,10 +452,9 @@ class Network(object):
         """
 
         network = cls(cls.__secret, input_shape, hyperparameters)
-        Optimizer = getattr(tf_optimizers, hyperparameters.optimizer)
         network.__model.compile(
             loss=hyperparameters.loss,
-            optimizer=Optimizer(learning_rate=hyperparameters.learning_rate),
+            optimizer=Network.__get_optimizer(hyperparameters),
             metrics=hyperparameters.metrics,
         )
         initial_epoch = 0
@@ -497,10 +495,9 @@ class Network(object):
         initial_epoch = 0
         batch_size = hyperparameters.batch_size
         validation_split = hyperparameters.validation_split
-        Optimizer = getattr(tf_optimizers, hyperparameters.optimizer)
         network.__model.compile(
             loss=hyperparameters.loss,
-            optimizer=Optimizer(learning_rate=hyperparameters.learning_rate),
+            optimizer=Network.__get_optimizer(hyperparameters),
             metrics=hyperparameters.metrics,
         )
 
@@ -524,6 +521,21 @@ class Network(object):
     @staticmethod
     def reset() -> None:
         K.clear_session()
+
+    @staticmethod
+    def __get_optimizer(hyperparameters: Hyperparameters):
+        optimizer_module = tf_optimizers
+        if all([
+            hyperparameters.optimizer == "Adam",
+            platform.system() == "Darwin",
+            platform.machine() == "arm64",
+            hasattr(tf_optimizers, "legacy"),
+            hasattr(tf_optimizers.legacy, "Adam"),
+        ]):
+            optimizer_module = tf_optimizers.legacy
+
+        Optimizer = getattr(optimizer_module, hyperparameters.optimizer)
+        return Optimizer(learning_rate=hyperparameters.learning_rate)
 
     @staticmethod
     def __lstm(input_shape: Tuple, hyperparameters: Hyperparameters, is_bidirectional: bool = False) -> Model:

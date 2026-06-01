@@ -126,7 +126,7 @@ dist: clean-dist test-dist
 	.$(PYTHON)/bin/python -m build --sdist --wheel
 
 release:
-	.$(PYTHON)/bin/twine upload dist/*
+	.$(PYTHON)/bin/twine upload dist/*.whl dist/*.tar.gz
 
 pipenv-install:
 	pipenv install

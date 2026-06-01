@@ -3,7 +3,7 @@
 </div>
 
 [![Build Status](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml/badge.svg?branch=master)](https://github.com/baxtree/subaligner/actions/workflows/ci-pipeline.yml?query=branch%3Amaster) ![Codecov](https://img.shields.io/codecov/c/github/baxtree/subaligner)
-[![python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
+[![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/subaligner/badge/?version=latest)](https://subaligner.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/baxtree/subaligner)](https://github.com/baxtree/subaligner/blob/master/LICENSE)
 [![PyPI](https://badge.fury.io/py/subaligner.svg)](https://badge.fury.io/py/subaligner)
@@ -28,13 +28,13 @@ Required by the basic installation: [FFmpeg](https://www.ffmpeg.org/)
 ## Basic Installation
 <details>
 <summary>Install from PyPI</summary>
-<pre><code>pip install -U pip && pip install -U setuptools wheel</code></pre>
+<pre><code>pip install -U pip && pip install wheel</code></pre>
 <pre><code>pip install subaligner</code></pre>
 </details>
 <details>
 <summary>Install from source</summary>
 <pre><code>git clone git@github.com:baxtree/subaligner.git && cd subaligner</code></pre>
-<pre><code>pip install -U pip && pip install -U setuptools</code></pre>
+<pre><code>pip install -U pip</code></pre>
 <pre><code>pip install .</code></pre>
 </details>
 :information_source: <small style="line-height: 1.2;">It is highly recommended creating a virtual environment prior to installation.</small>
@@ -47,21 +47,18 @@ Required by the basic installation: [FFmpeg](https://www.ffmpeg.org/)
 
 <details>
 <summary>Install dependencies for enabling forced alignment</summary>
-<pre><code>pip install 'setuptools<65.0.0'</code></pre>
-<pre><code>pip install 'subaligner[stretch]'</code></pre>
+<pre><code>pip install --no-build-isolation 'subaligner[stretch]'</code></pre>
 </details>
 
 <details>
 <summary>Install dependencies for setting up the development environment</summary>
-<pre><code>pip install 'setuptools<65.0.0'</code></pre>
-<pre><code>pip install 'subaligner[dev]'</code></pre>
+<pre><code>pip install --no-build-isolation 'subaligner[dev]'</code></pre>
 </details>
 
 
 <details>
 <summary>Install all extra dependencies</summary>
-<pre><code>pip install 'setuptools<65.0.0'</code></pre>
-<pre><code>pip install 'subaligner[harmony]'</code></pre>
+<pre><code>pip install --no-build-isolation 'subaligner[harmony]'</code></pre>
 </details>
 
 Note that `subaligner[stretch]`, `subaligner[dev]` and `subaligner[harmony]` require [eSpeak](https://espeak.sourceforge.net/) to be pre-installed:
@@ -73,7 +70,7 @@ Note that `subaligner[stretch]`, `subaligner[dev]` and `subaligner[harmony]` req
 Also, if Python 3.12+ is used, you will need to install the following patch for those extras to fully function:
 <details>
 <summary>Install patched aeneas</summary>
-<pre><code>pip install git+https://github.com/baxtree/aeneas.git@v1.7.3.1#egg=aeneas</code></pre>
+<pre><code>pip install --no-build-isolation -r requirements-py312-patched.txt</code></pre>
 </details>
 
 ## Container Support

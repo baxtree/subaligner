@@ -1,4 +1,5 @@
 graft subaligner
 include pyproject.toml
 include setup.py
+include requirements-py312-patched.txt
 global-exclude *.py[cod]
