@@ -29,7 +29,7 @@ classifiers = [
 dependencies = [
     "astor==0.7.1",
     "beautifulsoup4<4.9.0",
-    "bleach==3.3.0",
+    "bleach==6.4.0",
     "cachetools==3.1.1",
     "captionstransformer~=1.2.1",
     "certifi<2024.12.14",
