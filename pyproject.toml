@@ -37,7 +37,7 @@ dependencies = [
     "cloudpickle~=1.6.0",
     "cycler==0.10.0",
     "decorator==4.3.0",
-    "distributed==2021.10.0",
+    "distributed==2026.1.0",
     "filelock<4.0.0",
     "google-pasta~=0.2",
     "graphviz==0.8.3",
